@@ -1,0 +1,603 @@
+---
+title: "Create the skeleton of the R project (package, app, book)"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r development, include=FALSE}
+library(testthat)
+```
+
+```{r development-load}
+# Load already included functions if relevant
+pkgload::load_all(export_all = FALSE)
+```
+
+# `use_dev_history()`: Use a dev history file
+
+Creates `dev_history.Rmd` files:
+
+- "dev_history_package": Instructions to create and develop a R package
+- "dev_history_renv": Instructions to init renv
+
+This function will put the file into your "dev" folder.
+
+```{r function-use_dev_history}
+#' Une a dev histroy file
+#'
+#' @param path Path to project to add dev_history in
+#' @param type Type of dev_history. Multiple types possible among "package", "book", "renv".
+#'
+#' @export
+use_dev_history <- function(path = ".", type = c("package", "renv")) {
+  type <- match.arg(type, choices = c("package", "book", "renv"), several.ok = TRUE)
+
+  old <- setwd(path)
+  on.exit(setwd(old))
+
+  if (!dir.exists(file.path(path, "dev"))) {
+    dir.create(file.path(path, "dev"))
+  }
+
+  if (any(grepl("connect", type))) {
+    add_git_ignore("rsconnect/", directory = path)
+  }
+
+  for (i in type) {
+    file <- system.file("package", paste0("dev_history_", i, ".R"), package = "lozen")
+    if (file == "") {
+      file <- system.file("package", paste0("dev_history_", i, ".Rmd"), package = "lozen")
+    }
+    if (file == "") {
+      file <- system.file("package", paste0("flat_", i, ".Rmd"), package = "lozen")
+    }
+    if (file == "") {
+      stop("template ", i, " not found")
+    }
+    file.copy(file, file.path(path, "dev"))
+  }
+
+  add_build_ignore("dev")
+}
+```
+
+```{r examples-use_dev_history}
+withr::with_tempdir({
+  use_dev_history(path = ".", type = c("package", "book", "renv"))
+})
+```
+
+```{r tests-use_dev_history}
+test_that("use_dev_history works", {
+
+})
+```
+
+# `create_r_project()`: Create a R project with full content skeleton
+
+```{r function-create_r_project}
+#' Create a R project with full content skeleton
+#'
+#' @param project_path project_path
+#' @param type type
+#' @param name_licence name for the licence
+#' @param type_licence type of the licence, should be a function like usethis::use_mit_licence
+#'
+#' @return Side Effect: Transform project as package or book:
+#'
+#' - With package, golem or book skeleton
+#' - git necessary files
+#' - pkgdown or book template
+#' - GitLab CI
+#'
+#' @export
+#'
+create_r_project <- function(project_path, type = c("package", "golem", "book"), name_licence, type_licence) {
+  type <- match.arg(type)
+
+  if (type == "book") {
+    create_book_project(project_path)
+  } else {
+    # Transform as R package
+    # Change wd and proj for usethis
+    # old <- setwd(project_path)
+    # Create project in case not already a project
+    usethis::create_project(project_path, open = FALSE)
+    # create content
+    usethis::with_project(project_path, {
+      if (type == "package") {
+        usethis::create_package(path = project_path, open = FALSE)
+        attachment::att_amend_desc()
+      } else if (type == "golem") {
+        golem::create_golem(path = project_path, open = FALSE, overwrite = TRUE)
+        attachment::att_amend_desc()
+      }
+    })
+  }
+  # setwd(old)
+
+  add_kit_project(project_path, name_licence = name_licence, type_licence = type_licence)
+
+  if (type %in% c("package", "golem")) {
+    add_kit_package(project_path)
+  }
+
+  project_path
+}
+```
+
+
+```{r example-create_r_project, eval=FALSE}
+withr::with_tempdir({
+  project_path <- getwd()
+  create_r_project(
+    project_path,
+    type = c("package"),
+    name_licence = "Bob",
+    type_licence = usethis::use_proprietary_license
+  )
+})
+
+withr::with_tempdir({
+  project_path <- getwd()
+  create_r_project(
+    project_path,
+    type = c("golem"),
+    name_licence = "Bob",
+    type_licence = usethis::use_proprietary_license
+  )
+})
+
+withr::with_tempdir({
+  project_path <- getwd()
+  create_r_project(
+    project_path,
+    type = c("book"),
+    name_licence = "Bob",
+    type_licence = usethis::use_proprietary_license
+  )
+})
+```
+
+```{r tests-create_r_project}
+test_that("create_r_project works", {
+
+})
+```
+
+# `create_book_project()`: Transform project as book with lozen template
+
+```{r function-create_book_project}
+#' Transform project as book with lozen template
+#'
+#' @param project_path project_path
+#' @param bookdown_path a path to a bookdown
+#' @param css path(s) for css to copy
+#' @param footer path for footer to copy
+#' @param logo path for logo to copy
+#' @param index path for index to copy
+#' @param output_yml path for output_yml to copy
+
+#'
+#' @return Side Effect: Transform project as book
+#' @export
+create_book_project <- function(project_path,
+                                bookdown_path = system.file("lozendown", package = "lozen"),
+                                css = NULL,
+                                footer = NULL,
+                                logo = NULL,
+                                index = NULL,
+                                output_yml = NULL) {
+  old <- setwd(project_path)
+  on.exit(setwd(old))
+
+  all_files <- list.files(
+    bookdown_path,
+    full.names = TRUE,
+    all.files = TRUE,
+    no.. = TRUE
+  )
+
+
+  alldirs <- all_files[fs::is_dir(all_files)]
+  purrr::walk(alldirs, ~ fs::dir_copy(.x, project_path))
+  allfiles <- all_files[!fs::is_dir(all_files)]
+  purrr::walk(allfiles, ~ fs::file_copy(.x, project_path))
+
+  ## Add dev_history_book in "dev/"
+  dev_path <- file.path(project_path, "dev")
+  if (!file.exists(dev_path)) {
+    dir.create(path = dev_path)
+  }
+  use_dev_history(path = project_path, type = c("book", "renv"))
+
+  # ## Template HTML
+  ## CSS
+  if (!is.null(css)) {
+    file.copy(from = css, to = project_path, overwrite = TRUE)
+  }
+  ## FOOTER
+  if (!is.null(footer)) {
+    file.copy(from = footer, to = project_path, overwrite = TRUE)
+  }
+  ## logo
+  if (!is.null(logo)) {
+    file.copy(from = logo, to = project_path, overwrite = TRUE)
+  }
+
+  # ## Modify index.Rmd
+  if (!is.null(index)) {
+    file.copy(
+      index,
+      "index.Rmd",
+      overwrite = TRUE
+    )
+  }
+
+  ## DESCRIPTION
+  file_desc <- file.path(project_path, "DESCRIPTION")
+  if (!file.exists(file_desc)) {
+    fields <- c(list(Type = "Compendium"), usethis::use_description_defaults())
+    desc <- desc::desc(text = glue::glue("{names(fields)}: {fields}"))
+    desc$write(file_desc)
+  }
+  # Update content
+  imports <- unique(c("bookdown", "knitr", attachment::att_from_rmds(".", recursive = FALSE)))
+  attachment::att_to_desc_from_is(path.d = file_desc, imports = imports)
+
+  ## Add _output.yml pour template lozen
+  if (!is.null(output_yml)) {
+    file.copy(
+      output_yml,
+      file.path(project_path, "_output.yml"),
+      overwrite = TRUE
+    )
+  }
+
+  ## Hide _book from git
+  # gitignore
+  add_git_ignore(c(
+    "_book/", "*.log", "_main.tex", "*_files/", ".Rproj.user",
+    ".Rhistory", "gitbook.*"
+  ))
+
+  message("book created")
+  message("You need to follow \'dev_history_book.Rmd\' after that for the CI to create the pdf_book.")
+  project_path
+}
+```
+
+```{r example-create_book_project, eval=FALSE}
+withr::with_tempdir({
+  project_path <- getwd()
+  create_book_project(project_path)
+})
+```
+
+```{r tests-create_book_project}
+# test_that("create_book_project works", {
+#
+# })
+```
+
+
+# `add_kit_project()`: Add necessary files for any R project
+
+```{r function-add_kit_project}
+#' Add necessary files for any R project
+#'
+#' @param project_path project_path
+#' @param name_licence Name for the licence
+#' @param type_licence should be a function, example : type_licence = usethis::use_proprietary_license
+#'
+#' @return Side Effect, add new files :
+#'
+#' - gitattributes
+#' - NEWS.md
+#'
+#' @export
+#'
+add_kit_project <- function(project_path = ".", name_licence, type_licence) {
+  if (!inherits(type_licence, "function")) {
+    stop("type_licence should be a function, example : type_licence = usethis::use_proprietary_license")
+  }
+  # Add gitattributes
+  gitattributes <- system.file("gitlab", "gitattributes", package = "lozen")
+  file.copy(gitattributes, file.path(project_path, ".gitattributes"), overwrite = TRUE)
+
+  # Change wd and proj for usethis
+  # old <- setwd(project_path)
+  # on.exit(setwd(old))
+  usethis::with_project(project_path, setwd = TRUE, {
+    # Licence
+    type_licence(name_licence)
+
+    # NEWS
+    usethis::use_template("NEWS.md", data = list(), open = FALSE)
+  })
+
+  message("Kit project created")
+}
+```
+
+```{r example-add_kit_project, eval=FALSE}
+withr::with_tempdir({
+  project_path <- getwd()
+  usethis::create_project(path = project_path, open = FALSE)
+  add_kit_project(
+    project_path,
+    name_licence = "Bob",
+    type_licence = usethis::use_proprietary_license
+  )
+})
+```
+
+```{r tests-add_kit_project}
+# test_that("add_kit_project works", {
+#
+# })
+```
+
+# `add_kit_package()`: Add files necessary for a package, including {golem}
+
+```{r function-add_kit_package}
+#' Add files necessary for a package, including {golem}
+#'
+#' @param project_path project_path
+#' @param pkgdown_yml path to yaml conf for pkgdown
+#' @inheritParams use_dev_history
+#'
+#' @return Side Effect, add new files :
+#'
+#' - dev/dev_history
+#' - templates for pkgdown if pkgodwn_yml is not null
+#' - testthat
+#'
+#' @export
+#'
+add_kit_package <- function(project_path = ".",
+                            type = c("package", "renv"),
+                            pkgdown_yml = NULL) {
+  type <- match.arg(type, several.ok = TRUE)
+
+  ## Add dev_history in "dev/"
+  dev_path <- normalizePath(file.path(project_path, "dev"), mustWork = FALSE)
+  if (!dir.exists(dev_path)) {
+    dir.create(dev_path)
+  }
+  use_dev_history(path = project_path, type = type)
+
+  ## Add pkgdown file
+  old <- setwd(project_path)
+  on.exit(setwd(old))
+  usethis::with_project(project_path, setwd = TRUE, {
+    # gitignore
+    add_git_ignore(c("docs"))
+    # buildignore
+    add_build_ignore(c("_pkgdown.yml", "pkgdown", "ci/lib"))
+
+    if (!is.null(pkgdown_yml)) {
+      file.copy(
+        pkgdown_yml,
+        file.path(project_path, "_pkgdown.yml")
+      )
+    }
+
+
+    ## Add testthat
+    usethis::use_testthat()
+    usethis::use_test("start")
+  })
+  message("Kit package created")
+
+  return(project_path)
+}
+```
+
+```{r example-add_kit_package, eval=FALSE}
+withr::with_tempdir({
+  project_path <- getwd()
+  usethis::create_package(path = project_path, open = FALSE)
+  add_kit_package(project_path, type = c("package", "book", "renv"))
+})
+```
+
+```{r tests-add_kit_package}
+test_that("add_kit_package works", {
+
+})
+```
+
+# `add_build_ignore()`: Add files to buildignore
+
+```{r function-add_build_ignore}
+#' Add files to Rbuildignore
+#'
+#' @param x vector of filenames
+#' @param directory path where to Rbuildignore should be written
+add_build_ignore <- function(x, directory = ".") {
+  build_file <- file.path(directory, ".Rbuildignore")
+
+  if (!file.exists(build_file)) {
+    writeLines("", build_file)
+  }
+
+  build_ignore <- readLines(build_file)
+
+  to_ignore <- paste0("^", gsub("[.]", "\\\\.", x), "$")
+
+  to_ignore <- to_ignore[!to_ignore %in% build_ignore]
+
+  if (length(to_ignore) != 0) {
+    writeLines(enc2utf8(c(build_ignore, to_ignore)), build_file)
+  }
+}
+```
+
+```{r example-add_build_ignore, eval=FALSE}
+withr::with_tempdir({
+  add_build_ignore("rsconnect/", directory = ".")
+})
+```
+
+```{r tests-add_build_ignore}
+test_that("add_build_ignore works", {
+
+})
+```
+
+# `add_git_ignore()`: Add files to gitignore
+
+```{r function-add_git_ignore}
+#' Add files to gitignore
+#'
+#' @param x vector of filenames
+#' @param directory path where to .gitignore should be written
+add_git_ignore <- function(x, directory = ".") {
+  git_file <- file.path(directory, ".gitignore")
+
+  if (!file.exists(git_file)) {
+    writeLines("", git_file)
+  }
+
+  git_ignore <- readLines(git_file)
+
+  to_ignore <- x
+
+  to_ignore <- x[!x %in% git_ignore]
+
+  if (length(to_ignore) != 0) {
+    writeLines(enc2utf8(c(git_ignore, to_ignore)), git_file)
+  }
+}
+```
+
+```{r example-add_git_ignore, eval=FALSE}
+withr::with_tempdir({
+  add_git_ignore("*.R", directory = ".")
+})
+```
+
+```{r tests-add_git_ignore}
+test_that("add_git_ignore works", {
+
+})
+```
+
+
+
+```{r tests-local_project, filename = "local_project"}
+project_path <- tempfile("my.project")
+dir.create(project_path)
+# usethis::create_project(project_path, open = FALSE)
+
+# create_r_project ----
+test_that("create_r_project works", {
+  # project_path <- usethis::create_project(path = tempfile(), open = FALSE)
+  expect_message(
+    r_project <- create_r_project(project_path, type = c("package"), name_licence = "Test", type_licence = usethis::use_mit_license),
+    "package created"
+  )
+  # expect_equal(r_project, project_path)
+  expect_true(file.exists(file.path(r_project, "DESCRIPTION")))
+  expect_true(file.exists(file.path(r_project, "NAMESPACE")))
+  # expect_true(file.exists(file.path(r_project, "_pkgdown.yml")))
+  expect_true(file.exists(file.path(r_project, ".gitattributes")))
+  expect_true(file.exists(file.path(r_project, "dev", "dev_history_package.Rmd")))
+  expect_true(file.exists(file.path(r_project, "dev", "dev_history_renv.Rmd")))
+  expect_true(file.exists(file.path(r_project, "NEWS.md")))
+  expect_true(file.exists(file.path(r_project, "LICENSE")))
+})
+
+# add_git_templates ----
+test_that("add_git_templates works", {
+  # project_path is not a git repository in this case
+  expect_message(
+    add_git_templates(project_path, type = c("commit")),
+    "this is not a git repository"
+  )
+  expect_true(file.exists(file.path(project_path, ".gitlab", "template_commit")))
+  expect_message(
+    add_git_templates(project_path, type = c("mr")),
+    "MR template added"
+  )
+  expect_true(file.exists(file.path(project_path, ".gitlab", "merge_request_templates", "template_mr.md")))
+
+  # project_path is a git repository in this case
+  gert::git_init(project_path)
+  expect_message(
+    add_git_templates(project_path, type = c("commit")),
+    "Your local git configuration"
+  )
+})
+
+# Clean local projects
+unlink(project_path, recursive = TRUE)
+
+# BOOK ====
+project_path_book <- tempfile("book-")
+dir.create(project_path_book)
+
+# create_book_project ----
+test_that("create_book_project works", {
+  expect_message(
+    r_project <- create_book_project(project_path_book),
+    "book created"
+  )
+  expect_equal(r_project, project_path_book)
+  # (!file.exists(file.path(project_path_book, "DESCRIPTION")))
+  expect_true(file.exists(file.path(project_path_book, "DESCRIPTION")))
+
+  expect_true(file.exists(file.path(r_project, "dev", "dev_history_book.Rmd")))
+  expect_true(file.exists(file.path(r_project, "R", "functions_exemples.R")))
+  expect_true(file.exists(file.path(r_project, "pandoc", "reference.odt")))
+  # expect_true(file.exists(file.path(r_project, ".gitlab-ci.yml")))
+  # expect_true(file.exists(file.path(r_project, ".gitattributes")))
+  expect_true(file.exists(file.path(r_project, ".gitignore")))
+  expect_true(all(
+    file.exists(
+      file.path(
+        r_project,
+        c(
+          "01-page1.Rmd", "02-page2.Rmd", "03-page3.Rmd",
+          "DESCRIPTION", "_bookdown.yml"
+        )
+      )
+    )
+  ))
+})
+
+# add_kit_project to book ----
+add_kit_project(project_path = project_path_book, name_licence = "Test", type_licence = usethis::use_mit_license)
+test_that("add_kit_project works", {
+  expect_true(file.exists(file.path(project_path_book, ".gitattributes")))
+  expect_true(file.exists(file.path(project_path_book, "NEWS.md")))
+  expect_true(file.exists(file.path(project_path_book, "LICENSE")))
+})
+
+# Clean local projects
+unlink(project_path_book, recursive = TRUE)
+```
+
+
+
+
+```{r development-inflate, eval=FALSE}
+# Run but keep eval=FALSE to avoid infinite loop
+# Execute in the console directly
+fusen::inflate(
+  flat_file = "dev/flat_create_r_project_skeleton.Rmd",
+  vignette_name = "ba - Create the skeleton of the R project (package, app, book)",
+  overwrite = TRUE,
+  check = FALSE,
+  document = FALSE,
+  open_vignette = FALSE
+)
+
+rstudioapi::navigateToFile( # Go to the dev_history_package.Rmd to inflate all flat files
+  "dev/dev_history_package.Rmd",
+  line = 170
+)
+```
+

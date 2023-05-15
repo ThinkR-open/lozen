@@ -1,0 +1,571 @@
+---
+title: "flat_deploy_connect.Rmd empty"
+output: html_document
+editor_options:
+  chunk_output_type: console
+---
+
+```{r development, include=FALSE}
+library(testthat)
+```
+
+
+```{r development-load}
+# Load already included functions if relevant
+pkgload::load_all(export_all = FALSE)
+```
+
+# deploy_connect
+
+```{r function-deploy_connect}
+# This is an internal function to deploy on connect,
+# it will be used by deploy_connect_shiny,deploy_connect_pkgdown and other functions
+# that will be added later.
+deploy_connect <- function(connect_url,
+                           connect_user,
+                           connect_api_token,
+                           app_name,
+                           app_primary_doc = NULL,
+                           deploy_dir,
+                           connect_name,
+                           file_to_ignore_regex,
+                           forceUpdate,
+                           lint,
+                           ...) {
+  ## TODO
+  # stop_missing <- function(x){
+  #   if (missing(x)) {
+  #
+  #     name_param <- names(formals())
+  #   stop(name_param, " is missing")
+  #  }
+  # }
+
+  if (missing(connect_url)) {
+    stop("connect_url is missing")
+  }
+  if (missing(connect_user)) {
+    stop("connect_user is missing")
+  }
+  if (missing(connect_api_token)) {
+    stop("connect_api_token is missing")
+  }
+  if (missing(app_name)) {
+    stop("app_name is missing")
+  }
+
+  # app_name must not have punctuation to can be deploy
+
+  message("old app_name:", app_name)
+  app_name <- gsub(x = app_name, pattern = "\\.", replacement = "-")
+  message("NEW app_name:", app_name)
+
+  withr::with_options(
+    # This option prevents the following error:
+    # Error: The application directory contains more than 100000 files.
+    c(
+      "rsconnect.max.bundle.files" = 1e5
+    ),
+    {
+      cli::cat_rule("Adding server")
+      rsconnect::addServer(
+        httr::modify_url(connect_url, path = "__api__"),
+        name = connect_name
+      )
+
+      cli::cat_rule("Adding user")
+      rsconnect::connectApiUser(
+        account = connect_user,
+        server = connect_name,
+        apiKey = connect_api_token
+      )
+
+      appFiles <- list.files(
+        deploy_dir,
+        recursive = TRUE
+      )
+      appFiles <- appFiles[
+        !grepl(
+          file_to_ignore_regex,
+          appFiles
+        )
+      ]
+
+      cli::cat_rule("Deploying app")
+
+      rsconnect::deployApp(
+        appDir = deploy_dir,
+        appName = app_name,
+        appFiles = appFiles,
+        appPrimaryDoc = app_primary_doc,
+        account = connect_user,
+        server = connect_name,
+        forceUpdate = forceUpdate,
+        lint = lint,
+        ...
+      )
+    }
+  )
+}
+```
+
+```{r tests-deploy_connect}
+test_that("deploy_connect works", {
+  # We check that there are errors when no arguments are provided
+  expect_error(deploy_connect())
+  expect_error(
+    deploy_connect(
+      connect_url = "pif"
+    )
+  )
+  expect_error(
+    deploy_connect(
+      connect_url = "pif",
+      connect_user = "paf"
+    )
+  )
+  expect_error(
+    deploy_connect(
+      connect_url = "pif",
+      connect_user = "paf",
+      connect_api_token = "pouf"
+    )
+  )
+
+  # TODO TEST DEPLOY_CONNECT MANUAL
+})
+```
+
+
+# deploy_connect_shiny
+    
+```{r function-deploy_connect_shiny}
+#' deploy_connect
+#'
+#' Before using it, please follow these steps :
+#'
+#' - Ask the Mission Lead Dev for their deployment token on Connect, this is the one you will need to use.
+#'
+#' - Add the environment variables to your personal ".Renviron" to manually deploy to Connect:
+#'   + Add `CONNECT_USER` with username.
+#'   + Add `CONNECT_TOKEN` with the token.
+#'   + Add `CONNECT_URL` with the connect url
+#'
+#'
+#' @return used for side effects
+#'
+#' @param connect_url URL of the Connect server
+#' @param connect_user User name to use to connect to the Connect server
+#' @param connect_api_token API token to use to connect to the Connect server
+#' @param app_name Name of the app to deploy
+#' @param deploy_dir Directory to deploy
+#' @param connect_name Name of the Connect server
+#' @param file_to_ignore_regex Regex to use to ignore files
+#' @param ... Other arguments to pass to rsconnect::deployApp
+#' @inheritParams rsconnect::deployApp
+#' @inheritParams rsconnect::deployApp
+#'
+#' @details
+#' TODO
+#'
+#' @export
+deploy_connect_shiny <- function(connect_url = Sys.getenv("CONNECT_URL"),
+                                 connect_user = Sys.getenv("CONNECT_USER"),
+                                 connect_api_token = Sys.getenv("CONNECT_TOKEN"),
+                                 app_name = Sys.getenv("APP_NAME", unset = Sys.getenv("CI_PROJECT_NAME")),
+                                 deploy_dir = getwd(),
+                                 connect_name = "connect",
+                                 file_to_ignore_regex = ".Rprofile$|^.Renviron$|renv/|rstudio_.*/|deliverables/|dev/|data-raw/|dockerfiles/",
+                                 forceUpdate = FALSE,
+                                 lint = FALSE,
+                                 ...) {
+  cli::cat_bullet("Deploying the app on Connect")
+  deploy_connect(
+    connect_url = connect_url,
+    connect_user = connect_user,
+    connect_api_token = connect_api_token,
+    app_name = app_name,
+    deploy_dir = deploy_dir,
+    connect_name = connect_name,
+    file_to_ignore_regex = file_to_ignore_regex,
+    forceUpdate = forceUpdate,
+    lint = lint,
+    ...
+  )
+}
+```
+  
+```{r example-deploy_connect_shiny, eval=FALSE}
+#' \dontrun{
+deploy_connect_shiny(
+  connect_url = Sys.getenv("CONNECT_URL"),
+  connect_user = Sys.getenv("CONNECT_USER"),
+  connect_api_token = Sys.getenv("CONNECT_TOKEN"),
+  app_name = "app_test"
+)
+#' }
+```
+  
+```{r tests-deploy_connect_shiny}
+test_that("deploy_connect_shiny works", {
+  expect_true(inherits(deploy_connect_shiny, "function"))
+})
+```
+  
+  
+# detect_deploy_dir
+    
+```{r function-detect_deploy_dir}
+#' detect the proper folder to deploy
+#'
+#'
+#' @noRd
+detect_deploy_dir <- function(deploy_dir = c(
+                                file.path(getwd(), "public"),
+                                file.path(getwd(), "docs"),
+                                file.path(getwd(), "inst/site/"),
+                                file.path(getwd(), ".")
+                              )) {
+  available <- deploy_dir[which(dir.exists(deploy_dir))]
+  used <- available[1]
+
+  message("available deploy_dir ", available)
+  message("used deploy_dir ", used)
+
+  return(used)
+}
+```
+  
+
+    
+  
+  
+# deploy_connect_pkgdown
+    
+```{r function-deploy_connect_pkgdown}
+#' deploy_connect_pkgdown
+#'
+#' Before using it, please follow these steps :
+#'
+#' - Ask the Mission Lead Dev for their deployment token on Connect, this is the one you will need to use.
+#'
+#' - Add the environment variables to your personal ".Renviron" to manually deploy to Connect:
+#'   + Add `CONNECT_USER` with username.
+#'   + Add `CONNECT_TOKEN` with the token.
+#'   + Add `CONNECT_URL` with the connect url
+#'
+#'
+#' @return used for side effects
+#'
+#' @param connect_url URL of the Connect server
+#' @param connect_user User name to use to connect to the Connect server
+#' @param connect_api_token API token to use to connect to the Connect server
+#' @param app_name Name of the app to deploy
+#' @param deploy_dir vectoro Directory path to deploy, the first available with be used.
+#' default is c(file.path(getwd(), "public"),
+#' file.path(getwd(), "docs"),
+#' file.path(getwd(), "inst/site/"),
+#' file.path(getwd(), ".")   )
+#' @param connect_name Name of the Connect server
+#' @param file_to_ignore_regex Regex to use to ignore files
+#' @param app_primary_doc If the application contains more than one document,
+#'  this parameter indicates the primary one, as a path relative to appDir.
+#'  Can be NULL, in which case the primary document is inferred from the
+#'  contents being deployed.
+#' @param ... Other arguments to pass to rsconnect::deployApp
+#' @inheritParams rsconnect::deployApp
+#'
+#' @details
+#' TODO
+#'
+#' @export
+deploy_connect_pkgdown <- function(connect_url = Sys.getenv("CONNECT_URL"),
+                                   connect_user = Sys.getenv("CONNECT_USER"),
+                                   connect_api_token = Sys.getenv("CONNECT_TOKEN"),
+                                   app_name = Sys.getenv("APP_NAME", unset = Sys.getenv("CI_PROJECT_NAME")),
+                                   deploy_dir =
+                                     c(
+                                       file.path(getwd(), "public"),
+                                       file.path(getwd(), "docs"),
+                                       file.path(getwd(), "inst/site/"),
+                                       file.path(getwd(), ".")
+                                     ),
+                                   connect_name = "connect",
+                                   file_to_ignore_regex = ".Rprofile$|^.Renviron$|renv/|rstudio_.*/|deliverables/|dev/|data-raw/|dockerfiles/",
+                                   forceUpdate = FALSE,
+                                   lint = FALSE,
+                                   app_primary_doc = "index.html",
+                                   ...) {
+  cli::cat_bullet("Deploying the pkgdown on Connect")
+
+  deploy_dir_to_use <- detect_deploy_dir(deploy_dir)
+
+  if (!dir.exists(deploy_dir_to_use)) {
+    stop("Please check that your pkgdown exists and that it is located in the inst/site/ directory")
+  }
+
+  deploy_connect(
+    connect_url = connect_url,
+    connect_user = connect_user,
+    connect_api_token = connect_api_token,
+    app_name = app_name,
+    deploy_dir = deploy_dir_to_use,
+    connect_name = connect_name,
+    file_to_ignore_regex = file_to_ignore_regex,
+    forceUpdate = forceUpdate,
+    lint = lint,
+    app_primary_doc = app_primary_doc,
+    ...
+  )
+}
+```
+  
+```{r example-deploy_connect_pkgdown, eval=FALSE}
+#' \dontrun{
+# We assume that you are working on a R package
+# if not done yet, create your pkgdown
+pkgdown::build_site(
+  pkg = ".",
+  override = list(destination = "inst/site/")
+)
+if (Sys.getenv("CONNECT_URL") != "" &
+  Sys.getenv("CONNECT_USER") != "" &
+  Sys.getenv("CONNECT_TOKEN") != "") {
+  deploy_connect_pkgdown(
+    app_name = "titi",
+    deploy_dir = file.path(project_path, "inst/site/")
+  )
+}
+#' }
+```
+  
+```{r tests-deploy_connect_pkgdown}
+test_that("deploy_connect_pkgdown works", {
+  skip_on_ci()
+
+  if (Sys.getenv("CONNECT_URL") != "" &
+    Sys.getenv("CONNECT_USER") != "" &
+    Sys.getenv("CONNECT_TOKEN") != "") {
+    dummypackage <- tempfile(pattern = "pkgdown")
+    dir.create(dummypackage)
+    fusen::fill_description(pkg = dummypackage, fields = list(Title = "Dummy Package"))
+    dev_file <-
+      fusen::add_minimal(
+        pkg = dummypackage,
+        overwrite = TRUE,
+        open = FALSE
+      )
+    # let's create a flat file
+    flat_file <- dev_file[grepl("flat_", dev_file)]
+
+    usethis::with_project(dummypackage, {
+      # Add licence
+      usethis::use_mit_license("John Doe")
+      # we inflate the flat file
+      suppressMessages(
+        fusen::inflate(
+          pkg = dummypackage,
+          flat_file = flat_file,
+          vignette_name = "Get started",
+          check = FALSE,
+          open_vignette = FALSE,
+          document = FALSE,
+          overwrite = "yes"
+        )
+      )
+
+      # create pkgdown
+      try(pkgdown::build_site(
+        pkg = dummypackage,
+        override = list(destination = "inst/site/")
+      ))
+
+      if ("tutu" %in% rsconnect::applications()[["name"]]) {
+        try(rsconnect::terminateApp(appName = "tutu"))
+      }
+      expect_false("tutu" %in% rsconnect::applications()[["name"]])
+
+      # deploy pkgdown
+      deploy_connect_pkgdown(
+        app_name = "tutu",
+        deploy_dir = file.path(dummypackage, "inst/site/"),
+        launch.browser = FALSE
+      )
+      expect_true("tutu" %in% rsconnect::applications()[["name"]])
+
+      # if interactive mode, open the app
+      if (interactive()) {
+        browseURL(rsconnect::applications()[["url"]][which(rsconnect::applications()[["name"]] == "tutu")])
+      }
+
+      # delete the pkgdown
+      try(rsconnect::terminateApp(appName = "tutu"))
+      expect_false("tutu" %in% rsconnect::applications()[["name"]])
+    })
+    unlink(dummypackage, recursive = TRUE)
+  }
+})
+```
+    
+
+# deploy_connect_bookdown
+    
+```{r function-deploy_connect_bookdown}
+#' deploy_connect_bookdown
+#'
+#' Before using it, please follow these steps :
+#'
+#' - Ask the Mission Lead Dev for their deployment token on Connect, this is the one you will need to use.
+#'
+#' - Add the environment variables to your personal ".Renviron" to manually deploy to Connect:
+#'   + Add `CONNECT_USER` with username.
+#'   + Add `CONNECT_TOKEN` with the token.
+#'   + Add `CONNECT_URL` with the connect url
+#'
+#'
+#' @return used for side effects
+#'
+#' @param connect_url URL of the Connect server
+#' @param connect_user User name to use to connect to the Connect server
+#' @param connect_api_token API token to use to connect to the Connect server
+#' @param app_name Name of the app to deploy
+#' @param deploy_dir Directory to deploy
+#' @param connect_name Name of the Connect server
+#' @param file_to_ignore_regex Regex to use to ignore files
+#' @param ... Other arguments to pass to rsconnect::deployApp
+#' @inheritParams rsconnect::deployApp
+#' @inheritParams rsconnect::deployApp
+#'
+#' @details
+#' TODO
+#'
+#' @export
+deploy_connect_bookdown <- function(connect_url = Sys.getenv("CONNECT_URL"),
+                                    connect_user = Sys.getenv("CONNECT_USER"),
+                                    connect_api_token = Sys.getenv("CONNECT_TOKEN"),
+                                    app_name = Sys.getenv("APP_NAME", unset = Sys.getenv("CI_PROJECT_NAME")),
+                                    deploy_dir = file.path(getwd(), "_book"),
+                                    connect_name = "connect",
+                                    file_to_ignore_regex = ".Rprofile$|^.Renviron$|renv/|rstudio_.*/|deliverables/|dev/|data-raw/|dockerfiles/",
+                                    forceUpdate = FALSE,
+                                    lint = FALSE,
+                                    ...) {
+  cli::cat_bullet("Deploying the app on Connect")
+  deploy_connect(
+    connect_url = connect_url,
+    connect_user = connect_user,
+    connect_api_token = connect_api_token,
+    app_name = app_name,
+    deploy_dir = deploy_dir,
+    connect_name = connect_name,
+    file_to_ignore_regex = file_to_ignore_regex,
+    forceUpdate = forceUpdate,
+    lint = lint,
+    ...
+  )
+}
+```
+  
+```{r example-deploy_connect_bookdown, eval=FALSE}
+#' \dontrun{
+if (
+  Sys.getenv("CONNECT_URL") != "" &
+    Sys.getenv("CONNECT_USER") != "" &
+    Sys.getenv("CONNECT_TOKEN") != ""
+) {
+  project_name <- "lozen-example-bookdown"
+
+  tmpdir <- tempfile(pattern = "book-")
+  dir.create(tmpdir)
+  project_path <- file.path(tmpdir, project_name)
+
+  bookdown::create_bs4_book(path = project_path)
+
+  bookdown::render_book(input = project_path)
+
+  deploy_connect_bookdown(
+    app_name = project_name,
+    deploy_dir = file.path(project_path, "_book")
+  )
+}
+#' }
+```
+
+```{r tests-deploy_connect_bookdown}
+test_that("deploy_connect_bookdown works", {
+  skip_on_ci()
+  if (
+    Sys.getenv("CONNECT_URL") != "" &
+      Sys.getenv("CONNECT_USER") != "" &
+      Sys.getenv("CONNECT_TOKEN") != ""
+  ) {
+    project_name <- "lozen-example-bookdown"
+
+    tmpdir <- tempfile(pattern = "book-")
+    dir.create(tmpdir)
+    project_path <- file.path(tmpdir, project_name)
+
+    bookdown::create_bs4_book(path = project_path)
+
+    bookdown::render_book(input = project_path)
+
+    deployed_apps <- rsconnect::applications()
+
+    if (project_name %in% deployed_apps[["name"]]) {
+      try(
+        rsconnect::terminateApp(
+          appName = project_name
+        )
+      )
+    }
+
+    deploy_connect_bookdown(
+      app_name = project_name,
+      deploy_dir = file.path(project_path, "_book")
+    )
+
+    deployed_apps <- rsconnect::applications()
+
+    bookdown_is_deployed <- project_name %in% deployed_apps[["name"]]
+
+    expect_true(bookdown_is_deployed)
+
+    if (interactive()) {
+      deployed_apps %>%
+        dplyr::filter(name == project_name) %>%
+        dplyr::pull(url) %>%
+        browseURL()
+    }
+
+    if (isTRUE(bookdown_is_deployed)) {
+      Sys.sleep(10)
+      try(
+        rsconnect::terminateApp(
+          appName = project_name
+        )
+      )
+    }
+  }
+})
+```
+    
+  
+  
+  
+
+```{r development-inflate, eval=FALSE}
+# Run but keep eval=FALSE to avoid infinite loop
+# Execute in the console directly
+fusen::inflate(
+  flat_file = "dev/flat_deploy_connect.Rmd",
+  vignette_name = "bg - Deploy on Connect",
+  overwrite = TRUE,
+  check = FALSE,
+  document = FALSE,
+  open_vignette = FALSE
+)
+# Executer la doc avec la bonne ligne de code
+rstudioapi::navigateToFile("dev/dev_history_package.Rmd", line = 211)
+```
+
+

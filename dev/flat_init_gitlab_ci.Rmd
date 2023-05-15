@@ -1,0 +1,706 @@
+---
+title: "flat_init_gitlab_ci.Rmd empty"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r development, include=FALSE}
+library(testthat)
+library(purrr)
+library(yaml)
+```
+
+```{r development-load}
+# Load already included functions if relevant
+pkgload::load_all(export_all = FALSE)
+```
+
+## `use_gitlab_ci()`: Set gitlab continuous integration
+
+```{r function-use_gitlab_ci}
+# Gitlab-CI
+#'
+#' Set gitlab continuous integration
+#'
+#' @param image Docker image used as basis. See \url{https://github.com/rocker-org/rocker}
+#' @param project_path Path of the project to add CI in.
+#' @inheritParams gitlabr::use_gitlab_ci
+#'
+#' @details See \code{\link[gitlabr]{use_gitlab_ci}}
+#'
+#' @export
+use_gitlab_ci <- function(image = "rocker/verse",
+                          repo_name = "https://packagemanager.rstudio.com/all/__linux__/focal/latest",
+                          project_path = ".",
+                          type = "check-coverage-pkgdown") {
+  ci_file <- file.path(project_path, ".gitlab-ci.yml")
+  gitlabr::use_gitlab_ci(
+    image = image,
+    repo_name = repo_name,
+    path = ci_file,
+    type = type
+  )
+
+  if (grepl("check", type)) {
+    lines <- readLines(ci_file)
+
+    script <- grep('"--as-cran"', lines)
+    lines[script] <- gsub(',\\s*"--as-cran"', "", lines[script])
+    lines[script] <- gsub('"--as-cran"', "", lines[script])
+
+    writeLines(enc2utf8(lines), ci_file)
+  }
+
+  if (grepl("pkgdown", type)) {
+    lines <- readLines(ci_file)
+
+    stage <- grep("stage: pkgdown$", lines)
+    script <- grep("script", lines)
+    renv <- grep("renv::restore", lines)
+
+    if (length(renv) == 0) {
+      extra <- script[script > stage][1]
+    } else {
+      renv_extra <- renv[renv > stage][1]
+      extra <- script[script > renv_extra][1]
+    }
+    lines[extra] <- paste0(
+      lines[extra],
+      "\n",
+      # Add extra line
+      '    - Rscript -e \'install.packages("thinkrtemplate", repos = c("thinkropen" = "https://thinkr-open.r-universe.dev"))\''
+    )
+
+    writeLines(enc2utf8(lines), ci_file)
+  }
+
+  ci_file
+}
+```
+
+```{r examples-use_gitlab_ci, eval = FALSE}
+withr::with_tempdir({
+  use_gitlab_ci(image = "r-base")
+})
+
+withr::with_tempdir({
+  use_gitlab_ci(
+    image = "rocker/verse",
+    repo_name = "https://packagemanager.rstudio.com/all/__linux__/focal/latest",
+    type = "check-coverage-pkgdown"
+  )
+})
+```
+
+```{r tests-use_gitlab_ci}
+test_that("init_gitlab_ci works for bookdown", {
+  # TODO - Remove ; allow test to pass on CI
+  skip_on_ci()
+
+  # Test on Gitlab : Create a bookdown and test the CI
+  if (Sys.getenv("ALLOW_CI_TESTS_ON_GITLAB", unset = "FALSE") == "TRUE") {
+    # Pour un template CI "bookdown"
+    output_bookdown <- with_gitlab_project(
+      gitlab_url = Sys.getenv("GITLAB_URL", unset = "https://gitlab.com"),
+      namespace_id = NULL,
+      private_token = Sys.getenv("GITLAB_TOKEN"),
+      project_name = "bookdown.test.project",
+      exp = {
+        bookdown::create_bs4_book(path = ".")
+        bookdown::render_book()
+        lozen::use_gitlab_ci(type = "bookdown")
+      }
+    )
+
+    expect_equal(
+      object = output_bookdown$status,
+      expected = "success"
+    )
+
+    # Pour un template CI "bookdown-production"
+    # output_bookdown_production <- with_gitlab_project(
+    #   gitlab_url = Sys.getenv("GITLAB_URL"),
+    #   namespace_id = 1013,
+    #   private_token = Sys.getenv("GITLAB_TOKEN"),
+    #   project_name = "bookdown.production.test.project",
+    #   branch_focus_for_ci = "production",
+    #   exp = {
+    #     bookdown::create_bs4_book(path = ".")
+    #     bookdown::render_book()
+    #     lozen::use_gitlab_ci(type = "bookdown-production")
+    #   }
+    # )
+    #
+    # expect_equal(object = output_bookdown_production$status,
+    #              expected = "success")
+
+    # Test on gitlab.com : Create a bookdown and test the CI
+    ## run depending on env variable value
+    # TODO
+  }
+})
+
+test_that("init_gitlab_ci works for shiny", {
+  # TODO - Remove ; allow test to pass on CI
+  skip_on_ci()
+
+  # Test on Gitlab : Create a Golem and test the CI
+  if (Sys.getenv("ALLOW_CI_TESTS_ON_GITLAB", unset = "FALSE") == "TRUE") {
+    # Pour un template CI "check-coverage-pkgdown"
+    output_golem <- lozen::with_gitlab_project(
+      gitlab_url = Sys.getenv("GITLAB_URL", unset = "https://gitlab.com"),
+      namespace_id = NULL,
+      private_token = Sys.getenv("GITLAB_TOKEN"),
+      project_name = "golem.test.project",
+      exp = {
+        lozen::create_r_project(project_path = getwd(), type = "golem", name_licence = "test", type_licence = usethis::use_mit_license)
+        lozen::use_gitlab_ci(type = "check-coverage-pkgdown")
+      }
+    )
+
+    expect_equal(
+      object = output_golem$status,
+      expected = "success"
+    )
+  }
+})
+
+test_that("init_gitlab_ci works for a R package", {
+  # TODO - Remove ; allow test to pass on CI
+  skip_on_ci()
+
+  # Test on Gitlab : Create a Package and test the CI
+  if (Sys.getenv("ALLOW_CI_TESTS_ON_GITLAB", unset = "FALSE") == "TRUE") {
+    # Pour un template CI "check-coverage-pkgdown"
+    output_package <- lozen:::with_gitlab_project(
+      gitlab_url = Sys.getenv("GITLAB_URL", unset = "https://gitlab.com"),
+      namespace_id = NULL,
+      private_token = Sys.getenv("GITLAB_TOKEN"),
+      project_name = "package.test.project",
+      exp = {
+        lozen::create_r_project(project_path = getwd(), type = "package", name_licence = "test", type_licence = usethis::use_mit_license)
+        # Add dummy function
+        dir.create(file.path(getwd(), "R/"))
+        file.create(file.path(getwd(), "R/fun.R"))
+        writeLines(con = file.path(getwd(), "R/fun.R"), "somme <- function(a,b) a+b")
+        lozen::use_gitlab_ci(type = "check-coverage-pkgdown")
+      }
+    )
+
+    expect_equal(
+      object = output_package$status,
+      expected = "success"
+    )
+  }
+})
+
+
+test_that("init_gitlab_ci works for a quarto or Rmd file", {
+  # TODO
+})
+```
+
+
+  
+## `read_ci()`: Import yaml CI files as list 
+
+Handlers will convert all parameters as list.
+    
+```{r function-read_ci}
+#' read_ci
+#'
+#' Import yaml CI files as list
+#'
+#' @param path Path to the yaml file
+#'
+#' @importFrom yaml read_yaml
+#'
+#' @return list a list of all CI parameters
+#' @export
+#'
+#' @examples
+read_ci <- function(path = "./.gitlab-ci.yml") {
+  ci_list <- read_yaml(file = path, handlers = list("seq" = as.list))
+  return(ci_list)
+}
+```
+  
+```{r example-read_ci}
+yaml_path <- system.file("yaml", ".gitlab-ci-shiny.yml", package = "lozen")
+ci_list <- read_ci(path = yaml_path)
+```
+  
+```{r tests-read_ci}
+test_that("read_ci works", {
+  yaml_path <- system.file("yaml", ".gitlab-ci-shiny.yml", package = "lozen")
+  ci_list <- read_ci(path = yaml_path)
+
+  expect_equal(
+    object = class(x = ci_list),
+    expected = "list"
+  )
+  expect_equal(
+    object = ci_list,
+    expected = list(
+      image = "rocker/verse:latest", variables = list(R_LIBS_USER = "ci/lib"),
+      cache = list(key = "global-cache", paths = list("${R_LIBS_USER}")),
+      stages = list("deploy_connect"), deploying = list(
+        stage = "deploy_connect",
+        script = list(
+          "echo \"Library path for packages :\" R_LIBS_USER",
+          "mkdir -p R_LIBS_USER", "Rscript -e 'install.packages(c(\"git2r\"));install.packages(\"gitlabr\", repos = c(\"https://thinkr-open.r-universe.dev\", \"https://cloud.r-project.org\"))'",
+          "Rscript -e 'options(remotes.git_credentials = git2r::cred_user_pass(\"gitlab-ci-token\", Sys.getenv(\"CI_JOB_TOKEN\")));remotes::install_git(\"https://forge.thinkr.fr/thinkr/thinkrverse/lozen\", build_vignettes = FALSE, ref = Sys.getenv(\"LOZEN_BRANCH\", unset = \"main\"))'",
+          "Rscript -e 'lozen::deploy_connect_shiny(connect_url = Sys.getenv(\"CONNECT_URL\"),connect_user = Sys.getenv(\"CONNECT_USER\"),connect_api_token = Sys.getenv(\"CONNECT_TOKEN\"),app_name = Sys.getenv(\"APP_NAME\", unset = Sys.getenv(\"CI_PROJECT_NAME\")))'"
+        )
+      )
+    )
+  )
+})
+```
+
+## `combine_ci()` : Merge two yaml as a list into a combined list
+    
+```{r function-combine_ci}
+#' combine CI
+#'
+#' Merge two yaml as a list into a combined list
+#'
+#' @param ci1 List of initial CI parameters
+#' @param ci2 List of CI parameters to append to the initial CI
+#'
+#' @importFrom purrr map map2
+#' @importFrom stats setNames
+#'
+#' @return list list of combined CI parameters
+#'
+#' @export
+combine_ci <- function(ci1, ci2) {
+  les_nom <- unique(c(names(ci1), names(ci2)))
+
+  duplicated_with_name <- function(.x, .y, ...) {
+    !duplicated(paste(names(.x), .x))
+  }
+
+  bonne_base <- les_nom %>%
+    map(~ {
+      (c(ci1[[.x]], ci2[[.x]]))
+    }) %>%
+    setNames(les_nom)
+  bool <- map2(
+    .x = bonne_base, .y = names(bonne_base),
+    .f = duplicated_with_name
+  )
+  out <- map2(bonne_base, bool, .f = ~ .x[.y])
+  return(out)
+}
+```
+  
+```{r example-combine_ci}
+# pkgdown yml
+full <- yaml::read_yaml(file = system.file("yaml", ".gitlab-ci-pkg.yml", package = "lozen"))
+
+# shiny yaml
+connect <- yaml::read_yaml(file = system.file("yaml", ".gitlab-ci-shiny.yml", package = "lozen"))
+
+ci_list <- combine_ci(ci1 = full, ci2 = connect)
+```
+  
+```{r tests-combine_ci}
+test_that("combine_ci works", {
+  # pkgdown yml
+  full <- yaml::read_yaml(file = system.file("yaml", ".gitlab-ci-pkg.yml", package = "lozen"))
+
+  # shiny yaml
+  connect <- yaml::read_yaml(file = system.file("yaml", ".gitlab-ci-shiny.yml", package = "lozen"))
+
+  ci_list <- combine_ci(ci1 = full, ci2 = connect)
+
+  expect_equal(
+    object = ci_list,
+    expected = list(
+      image = c("rocker/verse", "rocker/verse:latest"), variables = list(
+        GIT_DEPTH = 10L, REPO_NAME = "https://packagemanager.rstudio.com/all/__linux__/focal/latest",
+        R_LIBS_USER = "ci/lib"
+      ), cache = list(
+        key = "global-cache",
+        paths = "${R_LIBS_USER}"
+      ), stages = c(
+        "build", "test", "pkgdown",
+        "pkgdown-move", "deploy", "deploy_connect"
+      ), building = list(
+        stage = "build", script = c(
+          "lsb_release -c", "R -e \"sessionInfo()\"",
+          "if [[ $CI_DEFAULT_BRANCH == \"master\" || $CI_DEFAULT_BRANCH = \"main\" ]]; then echo \"OK - Default branch is master or main\"; else echo \"Default branch is not master or main; please add yours ($CI_DEFAULT_BRANCH) where needed, as well as in the present line of code\" ; exit 1; fi",
+          "apt-get update -qq && apt-get install -y libharfbuzz-dev libfribidi-dev",
+          "echo \"Library path for packages :\" $R_LIBS_USER", "mkdir -p $R_LIBS_USER",
+          "Rscript -e 'install.packages(\"remotes\")'", "Rscript -e 'install.packages(\"rcmdcheck\")'",
+          "Rscript -e 'remotes::install_local(upgrade = \"never\")'",
+          "R -e 'rcmdcheck::rcmdcheck(args = c(\"--no-manual\"), error_on = \"warning\", check_dir = \"check\")'"
+        ), artifacts = list(paths = "check", expire_in = "30 days")
+      ),
+      coverage = list(
+        stage = "test", allow_failure = TRUE, when = "on_success",
+        only = c("main", "master", "production"), script = c(
+          "Rscript -e 'remotes::install_local(upgrade = \"never\")'",
+          "Rscript -e 'remotes::install_cran(c(\"covr\", \"DT\"), upgrade = \"never\")'",
+          "Rscript -e 'covr::gitlab(quiet = FALSE)'"
+        ), coverage = "/Coverage: \\d+\\.\\d+/",
+        artifacts = list(paths = "public", expire_in = "30 days")
+      ),
+      integration = list(
+        stage = "pkgdown", allow_failure = TRUE,
+        when = "on_success", only = c(
+          "main", "master", "production",
+          "test-ci"
+        ), script = c(
+          "Rscript -e 'install.packages(\"thinkrtemplate\", repos = c(\"thinkropen\" = \"https://thinkr-open.r-universe.dev\"))'",
+          "Rscript -e 'remotes::install_cran(c(\"pkgdown\"), upgrade = \"never\")'",
+          "Rscript -e 'remotes::install_local(upgrade = \"never\")'",
+          "Rscript -e 'pkgdown::build_site()'"
+        ), artifacts = list(
+          paths = "docs", expire_in = "30 days"
+        )
+      ), `integration-test` = list(
+        stage = "pkgdown-move", dependencies = "integration",
+        only = "test-ci", script = c(
+          "mkdir -p public/test",
+          "curl --location --output artifacts.zip --header \"JOB-TOKEN: $CI_JOB_TOKEN\" \"$CI_API_V4_URL/projects/$CI_PROJECT_ID/jobs/artifacts/$CI_DEFAULT_BRANCH/download?job=pages\" && unzip artifacts.zip && rm artifacts.zip && echo \"copied $CI_DEFAULT_BRANCH artifacts\" || echo \"copied $CI_DEFAULT_BRANCH artifacts failed\"",
+          "curl --location --output artifacts.zip --header \"JOB-TOKEN: $CI_JOB_TOKEN\" \"$CI_API_V4_URL/projects/$CI_PROJECT_ID/jobs/artifacts/production/download?job=pages\" && unzip artifacts.zip && rm artifacts.zip && echo \"copied production artifacts\" || echo \"copied production artifacts failed\"",
+          "cp -r docs/* public/test"
+        ), artifacts = list(
+          paths = "public",
+          expire_in = "30 days"
+        )
+      ), `integration-production` = list(
+        stage = "pkgdown-move", dependencies = "integration",
+        only = "production", script = c(
+          "mkdir -p public/production",
+          "curl --location --output artifacts.zip --header \"JOB-TOKEN: $CI_JOB_TOKEN\" \"$CI_API_V4_URL/projects/$CI_PROJECT_ID/jobs/artifacts/$CI_DEFAULT_BRANCH/download?job=pages\" && unzip artifacts.zip && rm artifacts.zip && echo \"copied $CI_DEFAULT_BRANCH artifacts\" || echo \"copied $CI_DEFAULT_BRANCH artifacts failed\"",
+          "cp -r docs/* public/production"
+        ), artifacts = list(
+          paths = "public",
+          expire_in = "30 days"
+        )
+      ), `integration-main` = list(
+        stage = "pkgdown-move", dependencies = "integration",
+        only = c("main", "master"), script = c(
+          "mkdir -p public",
+          "curl --location --output artifacts.zip --header \"JOB-TOKEN: $CI_JOB_TOKEN\" \"$CI_API_V4_URL/projects/$CI_PROJECT_ID/jobs/artifacts/production/download?job=pages\" && unzip artifacts.zip && rm artifacts.zip && echo \"copied production artifacts\" || echo \"copied production artifacts failed\"",
+          "cp -r docs/* public"
+        ), artifacts = list(
+          paths = "public",
+          expire_in = "30 days"
+        )
+      ), pages = list(
+        stage = "deploy",
+        script = "echo \"deployment with cache\"", artifacts = list(
+          paths = "public"
+        ), only = c(
+          "main", "master", "production",
+          "test-ci"
+        )
+      ), deploying = list(
+        stage = "deploy_connect",
+        script = c(
+          "echo \"Library path for packages :\" R_LIBS_USER",
+          "mkdir -p R_LIBS_USER", "Rscript -e 'install.packages(c(\"git2r\"));install.packages(\"gitlabr\", repos = c(\"https://thinkr-open.r-universe.dev\", \"https://cloud.r-project.org\"))'",
+          "Rscript -e 'options(remotes.git_credentials = git2r::cred_user_pass(\"gitlab-ci-token\", Sys.getenv(\"CI_JOB_TOKEN\")));remotes::install_git(\"https://forge.thinkr.fr/thinkr/thinkrverse/lozen\", build_vignettes = FALSE, ref = Sys.getenv(\"LOZEN_BRANCH\", unset = \"main\"))'",
+          "Rscript -e 'lozen::deploy_connect_shiny(connect_url = Sys.getenv(\"CONNECT_URL\"),connect_user = Sys.getenv(\"CONNECT_USER\"),connect_api_token = Sys.getenv(\"CONNECT_TOKEN\"),app_name = Sys.getenv(\"APP_NAME\", unset = Sys.getenv(\"CI_PROJECT_NAME\")))'"
+        )
+      )
+    )
+  )
+})
+```
+
+## `clean_image()` : select image in CI info
+
+This function will keep a single docker image from the CI parameters if multiple are in the list. It will keep the image from the initial CI file.
+
+```{r function-clean_image}
+#' clean image
+#'
+#' Manage image in yaml
+#'
+#' @param ci List of CI parameters, imported from yaml file
+#'
+#' @return list the list of CI parameters with a unique docker image
+#'
+#' @export
+clean_image <- function(ci) {
+  ci[["image"]] <- ci[["image"]][1]
+  return(ci)
+}
+```
+  
+```{r example-clean_image}
+# pkgdown yml
+full <- yaml::read_yaml(file = system.file("yaml", ".gitlab-ci-pkg.yml", package = "lozen"))
+
+# shiny yaml
+connect <- yaml::read_yaml(file = system.file("yaml", ".gitlab-ci-shiny.yml", package = "lozen"))
+
+ci_list <- combine_ci(ci1 = full, ci2 = connect)
+ci_list <- clean_image(ci_list)
+```
+  
+```{r tests-clean_image}
+test_that("clean_image works", {
+  # pkgdown yml
+  full <- yaml::read_yaml(file = system.file("yaml", ".gitlab-ci-pkg.yml", package = "lozen"))
+
+  # shiny yaml
+  connect <- yaml::read_yaml(file = system.file("yaml", ".gitlab-ci-shiny.yml", package = "lozen"))
+
+  ci_list_order1 <- clean_image(
+    combine_ci(
+      ci1 = full,
+      ci2 = connect
+    )
+  )
+
+  expect_equal(
+    object = ci_list_order1["image"],
+    expected = list(image = "rocker/verse")
+  )
+
+  ci_list_order2 <- clean_image(
+    combine_ci(
+      ci1 = connect,
+      ci2 = full
+    )
+  )
+
+  expect_equal(
+    object = ci_list_order2["image"],
+    expected = list(image = "rocker/verse:latest")
+  )
+})
+```
+  
+
+
+
+# check_if_yaml_exists
+    
+```{r function-check_if_yaml_exists}
+#' Check if yaml file exist
+#'
+#' Check if yaml file already exist and ask permission for overwriting
+#'
+#'
+#'
+#' @param dir directory to scan
+#' @param file_name filename to use .gitlab-ci.yml
+#' @param append boolean do we allow to append stage to existing ci file. TRUE by default
+#'
+#' @export
+check_if_yaml_exists <- function(dir = ".",
+                                 file_name = ".gitlab-ci.yml",
+                                 append = TRUE) {
+  path_to_yaml <- file.path(dir, file_name)
+
+  if (
+    file.exists(path_to_yaml) &&
+      !append
+  ) {
+    append <- utils::askYesNo(
+      glue("The file {path_to_yaml} already exists. Do you want to append the  the Connect CI to existing CI stage(s) ?"),
+      default = FALSE
+    )
+  } else {
+    append <- TRUE
+  }
+
+
+  # Stop if file exist and append not permitted
+  if (
+    file.exists(path_to_yaml) &&
+      !append
+  ) {
+    stop(glue("The file {path_to_yaml} already exists. Please remove it or use the argument append = TRUE"))
+  }
+
+  return(path_to_yaml)
+}
+```
+  
+```{r example-check_if_yaml_exists}
+# check_if_yaml_exists()
+```
+  
+```{r tests-check_if_yaml_exists}
+test_that("check_if_yaml_exists works", {
+  expect_true(inherits(check_if_yaml_exists, "function"))
+})
+```
+
+
+# create_deploy_ci_stage
+    
+```{r function-create_deploy_ci_stage}
+#' Title
+#'
+
+#' @param image image
+#'
+#' @param deploy_function deploy_function
+#' @param stage_name stage_name
+#' @param ... dots not used
+#' @importFrom purrr map2_chr
+#' @importFrom utils getFromNamespace
+#' @export
+create_deploy_ci_stage <- function(image,
+                                   deploy_function,
+                                   stage_name = deploy_function,
+                                   ...) {
+  stopifnot("deploy_function exist" = length(getFromNamespace(x = deploy_function, "lozen")) > 0)
+  #  dots <- list(...)
+  #  if ( length(dots) == 0){  dots <-""}
+  #  bonus <- paste(map2_chr(as.character(names(dots)),
+  #
+  #                           as.character(glue::glue('"{dots}"'))
+  #
+  #
+  #                          ,paste, sep = " = "),collapse=",")
+  #
+  # le_call <- glue::glue("Rscript -e 'lozen::{deploy_function}(connect_url = Sys.getenv(\"CONNECT_URL\"),connect_user = Sys.getenv(\"CONNECT_USER\"),connect_api_token = Sys.getenv(\"CONNECT_TOKEN\"),app_name = Sys.getenv(\"APP_NAME\", unset = Sys.getenv(\"CI_PROJECT_NAME\")),{bonus})'"
+  #        )
+  # IDEE de COlin a creuser pour permettre un controle fin des parametres depuis le CI
+  #   build_rscript_call <- function(lozen_fun, ...) {
+  #   dots <- match.call(expand.dots = FALSE)$`...`
+  #   sprintf(
+  #     "Rscript -e 'lozen::%s(%s)'",
+  #     as.character(substitute(lozen_fun)),
+  #     paste(
+  #       names(dots),
+  #       dots,
+  #       sep = "=",
+  #       collapse = ","
+  #     )
+  #   )
+  # }
+
+
+
+  le_call <- glue::glue("Rscript -e 'lozen::{deploy_function}(connect_url = Sys.getenv(\"CONNECT_URL\"),connect_user = Sys.getenv(\"CONNECT_USER\"),connect_api_token = Sys.getenv(\"CONNECT_TOKEN\"),app_name = Sys.getenv(\"APP_NAME\", unset = Sys.getenv(\"CI_PROJECT_NAME\")))'")
+
+
+
+  # Create list of Connect CI parameters
+  connect_ci_list <- list(
+    image = image,
+    variables = list(
+      R_LIBS_USER = "ci/lib"
+    ),
+    cache = list(
+      key = "global-cache",
+      paths = list(
+        "${R_LIBS_USER}"
+      )
+    ),
+    stages = list(
+      stage_name
+    ),
+    deploying = list(
+      stage = stage_name,
+      script = c(
+        "echo \"Library path for packages :\" $R_LIBS_USER",
+        "mkdir -p $R_LIBS_USER",
+        # Install git2r and pak
+        "Rscript -e 'install.packages(c(\"git2r\"));install.packages(\"gitlabr\", repos = c(\"https://thinkr-open.r-universe.dev\", \"https://cloud.r-project.org\"))'",
+        "Rscript -e 'options(remotes.git_credentials = git2r::cred_user_pass(\"gitlab-ci-token\", Sys.getenv(\"CI_JOB_TOKEN\")));remotes::install_git(\"https://forge.thinkr.fr/thinkr/thinkrverse/lozen\", build_vignettes = FALSE, ref = Sys.getenv(\"LOZEN_BRANCH\", unset = \"main\"))'",
+        le_call
+      )
+    )
+  )
+  connect_ci_list
+}
+```
+  
+```{r example-create_deploy_ci_stage}
+create_deploy_ci_stage(
+  image = "rocker/verse",
+  deploy_function = "deploy_connect_shiny"
+)
+```
+  
+```{r tests-create_deploy_ci_stage}
+test_that("create_deploy_ci_stage works", {
+  expect_true(inherits(create_deploy_ci_stage, "function"))
+  expect_true(is.list(create_deploy_ci_stage(
+    image = "rocker/verse",
+    deploy_function = "deploy_connect_shiny"
+  )))
+})
+```
+  
+# amend_yaml
+    
+```{r function-amend_yaml}
+#' Amend yaml
+#'
+#' combien, if needed, to an existing .gitlab-ci.yml file
+#'
+#'
+#' @param path_to_yaml pat to .gtilab-ci.yml file
+#' @param connect_ci_list list, output of `create_deploy_ci_stage`
+#'
+#'
+#' @export
+amend_yaml <- function(path_to_yaml,
+                       connect_ci_list) {
+  # Write CI to yaml
+  if (file.exists(path_to_yaml)) {
+    # Combine existing and new connect CI if yaml already exist
+    init_ci_list <- read_ci(path = path_to_yaml)
+
+    combine_ci(
+      ci1 = init_ci_list,
+      ci2 = connect_ci_list
+    ) |>
+      clean_image() |>
+      write_yaml(
+        file = path_to_yaml
+      )
+  } else {
+    # Write connect CI as yaml if no yaml currently exist
+    connect_ci_list |>
+      write_yaml(
+        file = path_to_yaml
+      )
+  }
+}
+```
+  
+```{r example-amend_yaml}
+# amend_yaml()
+```
+  
+```{r tests-amend_yaml}
+test_that("amend_yaml works", {
+  expect_true(inherits(amend_yaml, "function"))
+})
+```
+  
+# Inflate  
+  
+  
+```{r development-inflate, eval=FALSE}
+# Run but keep eval=FALSE to avoid infinite loop
+# Execute in the console directly
+fusen::inflate(
+  flat_file = "dev/flat_init_gitlab_ci.Rmd",
+  vignette_name = "be - Initilialise GitLab CI",
+  overwrite = TRUE,
+  check = FALSE,
+  document = FALSE,
+  open_vignette = FALSE
+)
+
+rstudioapi::navigateToFile( # Go to the dev_history_package.Rmd to inflate all flat files
+  "dev/dev_history_package.Rmd",
+  line = 173
+)
+```

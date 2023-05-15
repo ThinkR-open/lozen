@@ -1,0 +1,83 @@
+Package: lozen
+Title: Management tools for missions
+Version: 1.1.0.9007
+Authors@R: c(
+    person("Sébastien", "Rochette", , "sebastien@thinkr.fr", role = c("aut", "cre"),
+           comment = c(ORCID = "0000-0002-1565-9313")),
+    person("Margot", "Brard", , "margot@thinkr.fr", role = "aut",
+           comment = c(ORCID = "0000-0001-6754-0659")),
+    person("Murielle", "Delmotte", , "murielle@thinkr.fr", role = "aut",
+           comment = c(ORCID = "0000-0002-1339-2424")),
+    person("Swann", "Floc'hlay", , "swann@thinkr.fr", role = "aut",
+           comment = c(ORCID = "0000-0003-1477-830X")),
+    person("Yohann", "Mansiaux", , "yohann@thinkr.fr", role = "aut",
+           comment = c(ORCID = "0000-0002-8905-6603")),
+    person("ThinkR", role = "cph")
+  )
+Description: Management tools for missions (internal and external).
+    Includes weekly, GL projects, etc.
+License: file LICENSE
+Depends: 
+    R (>= 3.5)
+Imports: 
+    attachment,
+    cli,
+    desc,
+    dplyr,
+    forcats,
+    fs,
+    gert,
+    ggplot2,
+    gh,
+    gitlabr (>= 2.0.1.9000),
+    glue,
+    golem,
+    httr,
+    lubridate,
+    magrittr,
+    pkgdown,
+    purrr,
+    rsconnect,
+    scales,
+    stats,
+    stringi,
+    stringr,
+    tibble,
+    tidyr,
+    usethis,
+    utils,
+    withr,
+    yaml,
+    yesno
+Suggests: 
+    bookdown (>= 0.27),
+    covr,
+    devtools,
+    DT,
+    fusen,
+    git2r,
+    gitdown,
+    htmltools,
+    knitr (>= 1.39),
+    markdown,
+    rcmdcheck,
+    remotes,
+    renv,
+    rmarkdown (>= 2.14),
+    shiny,
+    testdown,
+    testthat (>= 3.0.0),
+    thinkrtemplate
+VignetteBuilder: 
+    knitr
+Remotes: 
+    rstudio/renv,
+    ThinkR-open/gitlabr,
+    ThinkR-open/testdown,
+    ThinkR-open/thinkrtemplate
+Config/fusen/version: 0.5.0.9001
+Config/testthat/edition: 3
+Encoding: UTF-8
+LazyData: true
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.2.3

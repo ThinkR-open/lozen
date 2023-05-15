@@ -1,0 +1,78 @@
+image: rocker/verse
+
+variables:
+  GIT_DEPTH: 10
+  REPO_NAME: "https://packagemanager.rstudio.com/all/__linux__/focal/latest"
+  R_LIBS: "ci/lib"
+  R_LIBS_USER: "ci/lib"
+  SITE_BY_BRANCH: "TRUE"
+
+cache:
+  key: global-cache
+  paths:
+      - $R_LIBS_USER
+
+stages:
+  - book-create
+  - prepare-deploy
+  - deploy
+  - deploy-connect
+
+book-branch:
+    stage: book-create
+    except:
+        - gh-pages
+    script:
+        - echo "options(repos = c(CRAN = '${REPO_NAME}'), download.file.method = 'libcurl')" >> ${R_HOME}/etc/Rprofile.site
+        - echo "Library path for packages :" $R_LIBS_USER
+        - mkdir -p $R_LIBS_USER
+        - Rscript -e 'install.packages(c("remotes", "attachment", "tinytex", "usethis"))'
+        - /bin/bash install_chrome.sh
+        # The only remotes installation correctly working with GitLab. cf. https://github.com/r-lib/remotes/pull/608
+        # - Rscript -e 'remotes::install_github("dgkf/remotes", ref= "dev/gitlab-git-api-fallback")'
+        - Rscript install_book_deps.R
+        # - Rscript -e 'tinytex::install_tinytex()'
+        - mkdir -p public
+        - Rscript -e 'bookdown::render_book("index.Rmd", output_format = "bookdown::bs4_book", clean = FALSE, output_dir = "public")'
+        # - Rscript -e 'bookdown::render_book("index.Rmd", output_format = "bookdown::pdf_book", clean = FALSE, output_dir = "public")'
+        # - Rscript -e 'bookdown::render_book("index.Rmd", output_format = "pagedown::html_paged", clean = FALSE);file.copy("_main.html", "public/index.html")'
+        - pandoc -o public/rapport.odt public/index.html --data-dir=pandoc
+        - mv _main.knit.md public/_main.knit.md
+        # - R -e 'pagedown::chrome_print("public/index.html", "public/rapport.pdf", extra_args = c("--no-sandbox", "--disable-gpu"), verbose = TRUE)'
+    artifacts:
+        paths:
+            - public
+        expire_in: 30 days
+
+gh-pages-prep:
+    stage: prepare-deploy
+    only:
+      - main
+      - master
+      - production
+      - validation
+    script:
+      # Use https://github.com/statnmap/GitLab-Pages-Deploy
+      # Deploy a unique site in gh-pages branch,
+      # or a sub-website for each branch if SITE_BY_BRANCH: "TRUE"
+      - wget https://raw.githubusercontent.com/statnmap/GitLab-Pages-Deploy/main/deploy_pages_branch.sh
+      - /bin/bash deploy_pages_branch.sh
+
+pages:
+    stage: deploy
+    script:
+        - echo "book deployment"
+    artifacts:
+        paths:
+            - public
+    only:
+        # Because we use "deploy_pages_branch", only gh-pages branch needs to be deployed
+        # All outputs from other branches in "prepare-deploy" step will push in "gh-pages"
+        - gh-pages
+
+connect:
+  stage: deploy-connect
+  only:
+    - gh-pages
+  script:
+    - Rscript "dev_history_connect.R"

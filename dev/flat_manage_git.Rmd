@@ -1,0 +1,333 @@
+---
+title: "flat_manage_gitlab_or_github_common_tools.Rmd empty"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r development, include=FALSE}
+library(testthat)
+```
+
+```{r development-load}
+# Load already included functions if relevant
+pkgload::load_all(export_all = FALSE)
+```
+
+# Define local installation and clone
+
+This code will clone the project locally, in a temporary directory.
+
+```{r function-clone_locally}
+#' Clone project locally
+#'
+#' @param project_name project_name
+#' @param group_url group_url
+#' @param full_url Full url to the repository. Superseeds group_url and project_name if used.
+#' @param project_path project_path
+#' @param open Logical. Whether to open the RStudio project.
+#'
+#' @importFrom utils browseURL
+#'
+#' @return project_path. Side effect: clone the project.
+#' @export
+#'
+clone_locally <- function(project_name, group_url, full_url, project_path, open = TRUE) {
+  if (!missing(full_url)) {
+    project_name <- gsub("[.]git$", "", basename(full_url))
+  }
+
+  if (missing(project_path)) {
+    # Local installation
+    tmpdir <- tempfile(pattern = "pkg-")
+    dir.create(tmpdir)
+    project_path <- file.path(tmpdir, project_name)
+  }
+
+  if (!missing(full_url)) {
+    # normalgit2r <- try(
+    #   git2r::clone(url = full_url, local_path = project_path)
+    # )
+    #
+    # if (inherits(normalgit2r, "try-error")) {
+    gert::git_clone(
+      url = full_url,
+      path = project_path
+    )
+    # }
+    # }
+  } else {
+    # normalgit2r <- try(
+    #   git2r::clone(url = paste0(group_url, "/", project_name), local_path = project_path)
+    # )
+    #
+    # if (inherits(normalgit2r, "try-error")) {
+    #   cleangit2r <- try(
+    #     git2r::clone(
+    #       url = paste0(group_url, "/", gsub("[.]", "-", project_name)),
+    #       local_path = project_path
+    #     )
+    #   )
+    #
+    #   if (inherits(cleangit2r, "try-error")) {
+    normal <- try(
+      gert::git_clone(
+        url = paste0(group_url, "/", project_name),
+        path = project_path
+      )
+    )
+
+    if (inherits(normal, "try-error")) {
+      gert::git_clone(
+        url = paste0(group_url, "/", gsub("[.]", "-", project_name)),
+        path = project_path
+      )
+      #   }
+      # }
+    }
+  }
+
+  if (isTRUE(open)) {
+    browseURL(project_path)
+  }
+
+  message("Project cloned locally: ", project_path)
+  project_path
+}
+```
+  
+```{r example-clone_locally, eval = FALSE}
+#' \dontrun{
+project_path <- clone_locally(
+  project_name = the_project[["name"]],
+  group_url = group_url,
+  open = TRUE
+)
+#' }
+```
+  
+```{r tests-clone_locally}
+test_that("clone_locally works", {
+  expect_true(inherits(clone_locally, "function"))
+})
+```
+
+# Add commit templates
+
+```{r function-add_git_templates}
+#' Add MR GitLab or GitHub template and local issue template
+#'
+#' @param project_path project_path
+#' @param type type
+#' @param target_dir Directory name where to save templates
+#'
+#' @return Side effect: template in .gitlab/.github and in .git
+#' @export
+#'
+add_git_templates <- function(project_path = ".",
+                              type = c("commit", "mr"),
+                              target_dir = ".gitlab") {
+  old <- setwd(project_path)
+  on.exit(setwd(old))
+
+  type <- match.arg(type, several.ok = TRUE)
+
+  gitlab_path <- file.path(project_path, target_dir)
+  if (!dir.exists(gitlab_path)) {
+    dir.create(gitlab_path)
+  }
+
+  if (!file.exists(".Rbuildignore")) {
+    writeLines("", ".Rbuildignore")
+  }
+  r_build_ignore <- readLines(".Rbuildignore")
+  if (paste0(target_dir, "/") %in% r_build_ignore) {
+    writeLines(enc2utf8(c(r_build_ignore, paste0(target_dir, "/"))), ".Rbuildignore")
+  }
+
+  ## MR template
+  if ("mr" %in% type) {
+    if (grepl("gitlab", target_dir)) {
+      file.copy(
+        system.file("gitlab", "merge_request_templates", package = "lozen"),
+        gitlab_path,
+        overwrite = TRUE, recursive = TRUE
+      )
+    } else if (grepl("github", target_dir)) {
+      file.copy(
+        system.file("gitlab", "merge_request_templates", "template_mr.md", package = "lozen"),
+        file.path(gitlab_path, "pull_request_template.md"),
+        overwrite = TRUE
+      )
+    }
+
+    message("MR template added, find it when creating a new MR on the graphical interface")
+  }
+
+  ## Issue template
+  if ("commit" %in% type) {
+    file.copy(
+      system.file("gitlab", "template_commit", package = "lozen"),
+      gitlab_path,
+      overwrite = TRUE, recursive = TRUE
+    )
+
+    if (dir.exists(file.path(project_path, ".git"))) {
+      gert::git_config_set(repo = project_path, name = "commit.template", value = paste0(target_dir, "/template_commit"))
+      message("Your local git configuration now uses a template for commit message in Terminal")
+    } else {
+      message(
+        "commit.template not set locally because this is not a git repository. ",
+        "Start using git with `git init` and set your commit template with:\n",
+        glue::glue('gert::git_config_set(repo = "{project_path}", name = "commit.template", value = "{paste0(target_dir, "/template_commit")}")')
+      )
+    }
+  }
+
+  # buildignore
+  add_build_ignore(target_dir)
+  add_git_ignore(paste0("!", target_dir, "/*/*"))
+}
+```
+  
+```{r example-add_git_templates, eval = FALSE}
+#' \dontrun{
+add_git_templates(
+  project_path = project_path,
+  type = c("commit", "mr")
+)
+#' }
+```
+  
+```{r tests-add_git_templates}
+test_that("add_git_templates works", {
+  expect_true(inherits(add_git_templates, "function"))
+})
+```
+  
+# Manage branches
+
+## Push to server
+
+```{r function-push_all_to_branch}
+#' Push everything on a branch
+#'
+#' @param project_path project_path
+#' @param message commit message
+#' @param branch branch name. main by default
+#' @param main_branch main branch name. main by default
+#' @export
+#'
+#' @return Side effect: commit output
+push_all_to_branch <- function(project_path, branch = "main", main_branch = "main", message = "Init repo") {
+  # If already a git repo
+  if (branch != main_branch) {
+    if (gert::git_branch_exists(branch = branch, repo = project_path)) {
+      gert::git_branch_checkout(branch = branch, repo = project_path)
+    } else {
+      message(paste("branch", branch, "does not exist. It will be created."))
+      gert::git_branch_create(branch = branch, ref = main_branch, repo = project_path)
+      gert::git_branch_checkout(branch = branch, repo = project_path)
+    }
+  }
+
+  # Commit the change
+  all_files <- list.files(project_path, recursive = TRUE, all.files = TRUE)
+  all_files <- all_files[!grepl("[.]git/", all_files)]
+  added <- gert::git_add(files = all_files, repo = project_path)
+  if (nrow(added) > 0) {
+    gert::git_commit(message = message, repo = project_path)
+  }
+
+  # Push
+  gert::git_push(repo = project_path)
+  message(paste0("'", gert::git_branch(repo = project_path), "' pushed to remote server"))
+}
+
+#' Push main to server
+#' @inheritParams  push_all_to_branch
+#' @export
+push_main <- function(project_path, branch = "main", main_branch = "main", message = "Init repo") {
+  push_all_to_branch(branch = branch, main_branch = main_branch, project_path = project_path, message = message)
+}
+
+
+#' Push master to server
+#' @inheritParams  push_all_to_branch
+#' @export
+push_master <- function(project_path, branch = "master", main_branch = "master", message = "Init repo") {
+  push_all_to_branch(branch = branch, main_branch = main_branch, project_path = project_path, message = message)
+}
+```
+  
+```{r example-push_all_to_branch, eval = FALSE}
+#' \dontrun{
+push_all_to_branch(
+  project_path = project_path
+)
+#' }
+```
+  
+```{r tests-push_all_to_branch}
+test_that("push_main works", {
+  expect_true(inherits(push_all_to_branch, "function"))
+  expect_true(inherits(push_main, "function"))
+  expect_true(inherits(push_master, "function"))
+})
+```
+
+## Start _main_ and create a _production_ branch
+
+  
+```{r function-create_production}
+#' Create branch production from master
+#'
+#' @param project_path project_path
+#'
+#' @return Side effect: New branch on the server
+#' @export
+#'
+create_production <- function(project_path) {
+  gert::git_branch_create(branch = "production", repo = project_path)
+  gert::git_push(repo = project_path)
+  gert::git_pull(repo = project_path)
+  # normal <- try(git2r::push(project_path, set_upstream = TRUE))
+  # # gl_list_branches(project_id)
+  # gl_create_branch(project = project_id, ref = "master", branch = "production")
+  message("Branch named 'production' created")
+}
+```
+  
+```{r example-create_production, eval = FALSE}
+#' \dontrun{
+create_production(
+  project_path = project_path
+)
+#' }
+```
+  
+```{r tests-create_production}
+test_that("create_production works", {
+  expect_true(inherits(create_production, "function"))
+})
+```
+  
+
+```{r development-inflate, eval=FALSE}
+# Run but keep eval=FALSE to avoid infinite loop
+# Execute in the console directly
+fusen::inflate(
+  flat_file = "dev/flat_manage_git.Rmd",
+  vignette_name = "bb - Manage git tools (branches, commits, etc.)",
+  overwrite = TRUE,
+  check = FALSE,
+  document = FALSE,
+  open_vignette = FALSE
+)
+
+rstudioapi::navigateToFile( # Go to the dev_history_package.Rmd to inflate all flat files
+  "dev/dev_history_package.Rmd",
+  line = 170
+)
+```
+

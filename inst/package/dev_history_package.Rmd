@@ -1,0 +1,164 @@
+---
+title: "Dev history - Package"
+output: 
+  html_document:
+    toc: true
+    toc_depth: 1
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE,
+  eval = FALSE
+  )
+```
+
+```{r}
+# install.packages("remotes")
+remotes::install_github(repo = "Thinkr-open/papillon")
+install.packages('checkhelper', repos = 'https://thinkr-open.r-universe.dev')
+```
+
+
+In this document, you will find the useful steps/commands to start the development of a package (structure, documentation, ...)
+
+# At the beggining of the developments
+## Set the dev tools
+
+### Add git templates
+
+```{r}
+# GitLab MR and git commit templates
+lozen::add_git_templates()
+```
+
+### Add kit package
+
+```{r}
+lozen::add_kit_package(type = c("package", "deliverables"))
+lozen::add_kit_project(name_licence = "Exemple", type_licence = usethis::use_mit_license)
+```
+
+### Create a `inst` dir
+
+```{r}
+dir.create("inst")
+```
+
+### Hide some files in .Rbuildignore and .gitignore
+
+```{r}
+usethis::use_build_ignore("dev")
+usethis::use_build_ignore("ci/lib")
+usethis::use_build_ignore("rsconnect")
+
+usethis::use_git_ignore("docs/")
+usethis::use_git_ignore("rsconnect/")
+usethis::git_vaccinate()
+usethis::use_git_ignore(c(".DS_Store", ".Rproj.user", ".Rdata", ".Rhistory", ".httr-oauth"))
+```
+
+### Add some required packages
+
+```{r}
+# Pipe ----
+usethis::use_pipe()
+# _Tests ----
+usethis::use_testthat()
+```
+
+### Set the CI
+
+```{r}
+# _CI (cf {gitlabr} templates) ----
+lozen::use_gitlab_ci(image = "rocker/verse",
+                              gitlab_url = Sys.getenv("GITLAB_URL"),
+                              repo_name = "https://packagemanager.rstudio.com/all/__linux__/focal/latest",
+                              type = "check-coverage-pkgdown")
+
+# GitHub Actions ----
+# usethis::use_github_action_check_standard()
+# usethis::use_github_action("pkgdown")
+# usethis::use_github_action("test-coverage")
+```
+
+## Add general information/documentation about the package
+
+### Update DESCRIPTION
+
+```{r}
+library(desc)
+unlink("DESCRIPTION")
+
+my_desc <- description$new("!new")
+my_desc$set_version("0.0.0.9000")
+my_desc$set(Package = "dummypackage")
+my_desc$set(Title = "Some random package")
+my_desc$set(Description = "A random package.")
+my_desc$set(
+  "Authors@R",
+  'c(
+  person("John", "Doe", email = "john@doe.com", role = c("aut", "cre"))
+)'
+)
+my_desc$set("VignetteBuilder", "knitr")
+my_desc$del("Maintainer")
+my_desc$del("URL")
+my_desc$del("BugReports")
+my_desc$write(file = "DESCRIPTION")
+```
+
+### Licence
+
+```{r}
+usethis::use_proprietary_license("MyCompany")
+```
+
+### README
+
+```{r}
+#usethis::use_readme_rmd()
+papillon::generate_readme_rmd()
+papillon::generate_readme_rmd(parts = "description")
+```
+
+### NEWS
+
+```{r}
+usethis::use_news_md()
+```
+
+### Code of conduct
+
+```{r}
+usethis::use_code_of_conduct()
+```
+
+### Contributing guide
+
+```{r}
+usethis::use_tidy_contributing()
+```
+
+### Package-level documentation
+
+```{r}
+usethis::use_package_doc()
+```
+
+
+### Description and Bibliography
+
+```{r}
+papillon::create_pkg_desc_file(out.dir = "inst", source = c("archive"), to = "html")
+```
+
+## Tools to help to resolve issues
+
+```{r}
+# Get global variables
+checkhelper::print_globals()
+# Hexadecimal translation of an accent - if there are notes about non ASCII characters
+stringi::stri_trans_general("é", "hex")
+```
+

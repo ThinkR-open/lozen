@@ -1,0 +1,155 @@
+---
+title: "Dev history - Déployer un pkgdown sur Connect"
+output: 
+  html_document:
+    toc: true
+    toc_depth: 1
+editor_options: 
+  chunk_output_type: console
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE,
+  eval = FALSE
+  )
+```
+
+Dans ce document, vous trouverez les étapes/commandes importantes pour déployer un pkgdown sur Connect avec le CI.
+
+# Token & settings
+
+- Demander au Lead Dev de la mission son token de déploiement sur Connect, c'est celui-ci qu'il va falloir utiliser
+
+- Ajouter ces variables d'environnement dans votre ".Renviron" personnel pour tester un premier envoi manuel sur Connect
+  + `usethis::edit_r_environ(scope = "user")` (ou `scope = "project"`)
+  + Ajouter `CONNECT_USER` avec le nom d'utilisateur
+  + Ajouter `CONNECT_TOKEN` avec le token
+  + Ajouter `CONNECT_URL` avec l'url du connect
+  
+- Ajouter ces variables d'environnement en variable privée masquée dans le dépot GitLab : GitLab Settings > CI/CD > Variables > Expand > Add variable /!\\ Attention : si vous cochez "Protected" au moment de la création de la variable, alors celle-ci ne sera active que pour les branches protégées
+  + Ajouter `CONNECT_USER` avec le nom d'utilisateur
+  + Ajouter `CONNECT_TOKEN` avec le token
+  
+NB : Il n'est pas nécessaire de définir `CONNECT_URL` sur GitLab, car elle est déjà paramétrée de manière générique sur toute la forge.
+
+# Premier envoi manuel
+
+/!\ => La première fois, exécuter à la main le chunk ci-dessous. 
+
+Exécuter le code du premier chunk ci-dessous une première fois manuellement.  
+Le pkgdown doit exister en local (vous pouvez le construire avec `pkgdown::build_site()`).
+
+```{r}
+# Définir ici le nom de votre package (le suffixe "-pkgdown-website" sera automatiquement ajouté)
+name_pkg <- "lozen"
+```
+
+
+```{r}
+# Deps
+install.packages("rsconnect")
+install.packages("httr")
+
+if (dir.exists("public")) {
+  origwd <- setwd("public")
+} else if (dir.exists("docs")) {
+  origwd <- setwd("docs")
+} else {
+  origwd <- setwd(".")
+}
+
+print(paste("--", getwd(), "--"))
+
+connect_url <- httr::modify_url(url = Sys.getenv("CONNECT_URL"), 
+                                path = "__api__")
+rsconnect::addServer(connect_url, 
+                     name = "connect")
+
+rsconnect::connectApiUser(account = Sys.getenv("CONNECT_USER"),
+                          server = "connect",
+                          apiKey = Sys.getenv("CONNECT_TOKEN"))
+
+# vous devrez probablement cacher quelques dossiers, par exemple
+appFiles <- list.files(".", recursive = TRUE)
+appFiles <- appFiles[!grepl(".Rprofile$|^.Renviron$|renv/|rstudio_.*/|deliverables/|dev/|data-raw/|dockerfiles/", appFiles)]
+
+rsconnect::deployApp(
+  appDir = ".",                 # the directory containing the content
+  appName = paste0(name_pkg, "-pkgdown-website"),
+  appFiles = appFiles,          # the list of files to include as dependencies (all of them)
+  appPrimaryDoc = "index.html", # the primary file for pkgdown
+  appId = 22, # Define when known
+  account = Sys.getenv("CONNECT_USER"),
+  server  = "connect",
+  forceUpdate = TRUE
+)
+
+setwd(origwd)
+```
+
+### Récupérer les infos de déploiement
+
+Après le premier envoi manuel, définissez une url sur Connect directement pour avoir accès au site web - Ajuster les droits de lecture aussi
+
+Définir les droits de lecture de l'app sur Connect avec des individus et pas des groupes.
+Seuls les devs du projet et le client contact y ont accès
+
+Retourner sur le chunk ci-dessus, décommenter "appId = <id-sur-connect>" et completer par le numéro de l'app sur Connect qui a été déployée.
+
+# Paramétrage du CI
+
+- Ajouter la ligne suivante dans votre gitlab-ci.yml, **après la création du pkgdown**
+      Si c'est le pkgdown que vous voulez envoyer
+ `        - Rscript "dev/deploy_connect_pkgdown.R"`
+
+- Un exemple de stage complet de CI :
+  
+    - Attention avec les espaces, faire du LINT
+    - Changer master par main si besoin
+
+```yaml
+pkgdown-connect:
+  stage: deploy-pkgdown-connect
+  dependencies:
+    - pages
+  only:
+    - main
+    - master
+    - test-ci
+  script:
+  # To uncomment if you want to deploy a ShinyApp from a {golem}
+  # - echo "Library path for packages :" $R_LIBS_USER
+  # - mkdir -p $R_LIBS_USER
+  # - Rscript 'install.packages("remotes")'
+  # - Rscript -e 'remotes::install_local(upgrade = "never", dependencies = TRUE)'
+    - Rscript "dev/deploy_connect_pkgdown.R"
+  artifacts:
+    paths:
+    # This will download artifacts from previous jobs
+        - public
+    expire_in: 30 days
+```
+
+Ne pas oublier d'ajouter le stage "deploy-pkgdown-connect" à la liste des stages du début du fichier gitlab-ci.yml
+Dans cet ordre:
+
+```yaml
+stages:
+  - build
+  - test
+  - pkgdown
+  - pkgdown-move
+  - deploy
+  - deploy-pkgdown-connect
+```
+
+## Finaliser pour le CI
+
+Transformer ce Rmarkdown en script R qui sera utilisé lors du CI.  
+Si vous avez bien apporté les modifications nécessaires ci-dessus, tout devrait bien se passer.
+
+```{r, eval=FALSE}
+knitr::purl("dev/dev_history_connect_pkgdown.Rmd", "dev/deploy_connect_pkgdown.R")
+```

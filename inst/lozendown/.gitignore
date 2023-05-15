@@ -1,0 +1,12 @@
+.Rproj.user
+.Rhistory
+.Rdata
+.httr-oauth
+.DS_Store
+_book/
+public/
+_main.html
+_main.md
+*.log
+*_files/
+gitbook.*

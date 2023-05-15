@@ -1,0 +1,220 @@
+flat_build_pkgdown_with_reports.Rmd:
+  path: dev/flat_build_pkgdown_with_reports.Rmd
+  state: active
+  R: R/build_pkgdown_with_reports.R
+  tests: tests/testthat/test-build_pkgdown_with_reports.R
+  vignettes: vignettes/ad-build-a-pkgdown-with-reports.Rmd
+  inflate:
+    pkg: lozen
+    flat_file: dev/flat_build_pkgdown_with_reports.Rmd
+    vignette_name: ad - Build a pkgdown with reports
+    open_vignette: false
+    check: false
+    document: false
+    overwrite: 'yes'
+flat_create_new_project_github.Rmd:
+  path: dev/flat_create_new_project_github.Rmd
+  state: active
+  R: []
+  tests: []
+  vignettes: vignettes/ab-create-a-new-project-with-github.Rmd
+  inflate:
+    pkg: lozen
+    flat_file: dev/flat_create_new_project_github.Rmd
+    vignette_name: ab - Create a new project with GitHub
+    open_vignette: false
+    check: false
+    document: false
+    overwrite: 'yes'
+flat_create_new_project_gitlab.Rmd:
+  path: dev/flat_create_new_project_gitlab.Rmd
+  state: active
+  R: []
+  tests: tests/testthat/test-create_new_project_gitlab.R
+  vignettes: vignettes/aa-create-a-new-project-with-gitlab.Rmd
+  inflate:
+    pkg: lozen
+    flat_file: dev/flat_create_new_project_gitlab.Rmd
+    vignette_name: aa - Create a new project with GitLab
+    open_vignette: false
+    check: false
+    document: false
+    overwrite: 'yes'
+flat_create_r_project_skeleton.Rmd:
+  path: dev/flat_create_r_project_skeleton.Rmd
+  state: active
+  R:
+  - R/add_build_ignore.R
+  - R/local_project.R
+  - R/add_kit_package.R
+  - R/add_kit_project.R
+  - R/create_book_project.R
+  - R/create_r_project.R
+  - R/use_dev_history.R
+  tests:
+  - tests/testthat/test-use_dev_history.R
+  - tests/testthat/test-create_r_project.R
+  - tests/testthat/test-create_book_project.R
+  - tests/testthat/test-add_kit_project.R
+  - tests/testthat/test-add_kit_package.R
+  - tests/testthat/test-add_build_ignore.R
+  - tests/testthat/test-local_project.R
+  vignettes: vignettes/ba-create-the-skeleton-of-the-r-project--package-app-book-.Rmd
+  inflate:
+    pkg: lozen
+    flat_file: dev/flat_create_r_project_skeleton.Rmd
+    vignette_name: ba - Create the skeleton of the R project (package, app, book)
+    open_vignette: false
+    check: false
+    document: false
+    overwrite: 'yes'
+flat_create_special_issues.Rmd:
+  path: dev/flat_create_special_issues.Rmd
+  state: active
+  R:
+  - R/create_special_issues.R
+  - R/gh_add_template_issue.R
+  - R/gl_add_template_issue.R
+  tests:
+  - tests/testthat/test-create_special_issues.R
+  - tests/testthat/test-gl_add_template_issue.R
+  - tests/testthat/test-gh_add_template_issue.R
+  vignettes: vignettes/bf-create-special-issues.Rmd
+  inflate:
+    flat_file: dev/flat_create_special_issues.Rmd
+    vignette_name: bf - Create special issues
+    open_vignette: false
+    check: false
+    document: false
+    overwrite: 'yes'
+flat_create_weekly.Rmd:
+  path: dev/flat_create_weekly.Rmd
+  state: active
+  R:
+  - R/gh_create_weekly.R
+  - R/gh_create_weekly_new_projects_board.R
+  - R/gh_create_weekly_old_and_new_boards.R
+  - R/gl_create_weekly.R
+  - R/gl_get_milestones_progress.R
+  - R/graphql_to_tibble.R
+  - R/visualise_commits.R
+  tests:
+  - tests/testthat/test-gh_create_weekly_old_and_new_boards.R
+  - tests/testthat/test-gh_create_weekly.R
+  - tests/testthat/test-graphql_to_tibble.R
+  - tests/testthat/test-gh_create_weekly_new_projects_board.R
+  - tests/testthat/test-gl_create_weekly.R
+  - tests/testthat/test-visualise_commits.R
+  - tests/testthat/test-gl_get_milestones_progress.R
+  vignettes: vignettes/ac-create-weekly-with-github-or-gitlab.Rmd
+  inflate:
+    pkg: lozen
+    flat_file: dev/flat_create_weekly.Rmd
+    vignette_name: ac - Create Weekly with GitHub or GitLab
+    open_vignette: false
+    check: false
+    document: false
+    overwrite: 'yes'
+flat_deploy_connect.Rmd:
+  path: dev/flat_deploy_connect.Rmd
+  state: active
+  R:
+  - R/deploy_connect.R
+  - R/deploy_connect_bookdown.R
+  - R/deploy_connect_pkgdown.R
+  - R/deploy_connect_shiny.R
+  - R/detect_deploy_dir.R
+  tests:
+  - tests/testthat/test-deploy_connect.R
+  - tests/testthat/test-deploy_connect_shiny.R
+  - tests/testthat/test-deploy_connect_pkgdown.R
+  - tests/testthat/test-deploy_connect_bookdown.R
+  vignettes: vignettes/bg-deploy-on-connect.Rmd
+flat_helper_testthat.Rmd:
+  path: dev/flat_helper_testthat.Rmd
+  state: active
+  R:
+  - R/fetch_connect.R
+  - R/with_gitlab_project.R
+  tests:
+  - tests/testthat/test-with_gitlab_project.R
+  - tests/testthat/test-fetch_connect.R
+  vignettes: vignettes/cb-testthat-tools.Rmd
+flat_init_gitlab_ci.Rmd:
+  path: dev/flat_init_gitlab_ci.Rmd
+  state: active
+  R:
+  - R/amend_yaml.R
+  - R/check_if_yaml_exists.R
+  - R/clean_image.R
+  - R/combine_ci.R
+  - R/create_deploy_ci_stage.R
+  - R/read_ci.R
+  - R/use_gitlab_ci.R
+  tests:
+  - tests/testthat/test-use_gitlab_ci.R
+  - tests/testthat/test-read_ci.R
+  - tests/testthat/test-combine_ci.R
+  - tests/testthat/test-clean_image.R
+  - tests/testthat/test-check_if_yaml_exists.R
+  - tests/testthat/test-create_deploy_ci_stage.R
+  - tests/testthat/test-amend_yaml.R
+  vignettes: vignettes/be-initilialise-gitlab-ci.Rmd
+flat_manage_git.Rmd:
+  path: dev/flat_manage_git.Rmd
+  state: active
+  R:
+  - R/add_git_templates.R
+  - R/clone_locally.R
+  - R/create_production.R
+  - R/push_all_to_branch.R
+  tests:
+  - tests/testthat/test-clone_locally.R
+  - tests/testthat/test-add_git_templates.R
+  - tests/testthat/test-push_all_to_branch.R
+  - tests/testthat/test-create_production.R
+  vignettes: vignettes/bb-manage-git-tools--branches-commits-etc--.Rmd
+flat_manage_github_projects.Rmd:
+  path: dev/flat_manage_github_projects.Rmd
+  state: active
+  R:
+  - R/add_board_github.R
+  - R/add_wikis_github.R
+  - R/create_group_project_github.R
+  tests:
+  - tests/testthat/test-create_group_project_github.R
+  - tests/testthat/test-add_board_github.R
+  - tests/testthat/test-add_wikis_github.R
+  vignettes: vignettes/bd-manage-github-projects.Rmd
+flat_manage_gitlab_projects.Rmd:
+  path: dev/flat_manage_gitlab_projects.Rmd
+  state: active
+  R:
+  - R/add_board.R
+  - R/add_labels.R
+  - R/add_wikis.R
+  - R/create_group_project.R
+  - R/modify_autoclose_and_coverage.R
+  - R/project_options.R
+  - R/protect_branches.R
+  tests:
+  - tests/testthat/test-create_group_project.R
+  - tests/testthat/test-protect_branches.R
+  - tests/testthat/test-modify_autoclose_and_coverage.R
+  - tests/testthat/test-project_options.R
+  - tests/testthat/test-add_labels.R
+  - tests/testthat/test-add_board.R
+  - tests/testthat/test-add_wikis.R
+  vignettes: vignettes/bc-manage-gitlab-projects.Rmd
+flat_move_issues_from_gitlab_to_github.Rmd:
+  path: dev/flat_move_issues_from_gitlab_to_github.Rmd
+  state: active
+  R: R/move_issues_from_gitlab_to_github.R
+  tests: tests/testthat/test-move_issues_from_gitlab_to_github.R
+  vignettes: vignettes/bi-move-from-gitlab-to-github.Rmd
+flat_use_gitlab_ci_deploy_connect.Rmd:
+  path: dev/flat_use_gitlab_ci_deploy_connect.Rmd
+  state: active
+  R: R/use_gitlab_ci_deploy_connect.R
+  tests: tests/testthat/test-use_gitlab_ci_deploy_connect.R
+  vignettes: vignettes/bh-deploy-on-connect-through-gitlab-ci.Rmd

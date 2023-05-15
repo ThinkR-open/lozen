@@ -1,0 +1,2663 @@
+---
+title: "flat_multilist_to_tibble.Rmd empty"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+chunk_output_type: console
+---
+
+```{r development, include=FALSE}
+library(testthat)
+library(lubridate)
+library(gh)
+```
+
+```{r development-load, eval=FALSE}
+# Load already included functions if relevant
+pkgload::load_all(export_all = FALSE)
+fusen::load_flat_functions("dev/flat_create_weekly.Rmd")
+```
+
+```{r, message=FALSE}
+library(gh)
+library(dplyr)
+library(purrr)
+library(tidyr)
+library(glue)
+library(stringr)
+library(stringi)
+library(forcats)
+library(ggplot2)
+library(scales)
+library(gitlabr)
+library(lubridate)
+```
+
+# Create a weekly for GitHub with `gh_create_weekly_old_and_new_boards()` (old and new boards)
+
+This functions allow querying the last and the former versions of the Github API to retrieve the status of the project board.
+
+Please note that if you wish to work with the last version of Github board, you must have created a token and put it on a environment variable.
+
+By default, the function uses the `GITHUB_PAT` environment variable. Please ensure that the read:project scope is provided with your token.
+
+Please visit the [API documentation] (https://docs.github.com/en/issues/planning-and-tracking-with-projects/automating-your-project/using-the-api-to-manage-projects?tool=cli#finding-information-about-items-in-a-project) to generate a token with such privileges.
+
+```{r function-gh_create_weekly_old_and_new_boards}
+#' Create a weekly issues summary for GitHub
+#'
+#' @param date_min Minimal date to look for issues
+#' @param date_max Maximal date to look for issues
+#' @param user username or company name as shown on GitHub
+#' @param repo GitHub repository
+#' @param board_url url of the GitHub board. If using the "classic" board, which is deprecated by GitHub, you may want to use this url: `glue("/repos/{user}/{repo}/projects")`
+#' otherwise you may want to use this kind of url: `"https://github.com/orgs/myorganization/projects/someprojectnumber/" `
+#' Please not this not mandatory if you are setting `new_board = FALSE` since `board_url` can be guessed from `user` and `repo`
+#' @param new_board logical. Are you working with the classic board or the new board.
+#' @param regex_validation Regular expression to detect labels for issues waiting for validation
+#' @param regex_done Regular expression to detect labels for issues done by developers (and potentially awaiting validation by clients)
+#' @param regex_blocked Regular expression to detect labels for issues blocked (and potentially awaiting information by clients)
+#' @param regex_inprogress Regular expression to detect labels for issues in progress (and potentially awaiting review by lead dev.)
+#' @param regex_ready Regular expression to detect labels for issues ready (and potentially reorder by lead dev.)
+#' @param github_token token access to github API (read:project scope is required for the new github board).
+#' @param verbose Logical. Whether to return output in the console too.
+#'
+#' @importFrom lubridate as_date as_datetime format_ISO8601 now
+#' @importFrom dplyr select mutate filter rename any_of bind_rows inner_join
+#' @importFrom purrr map_dfr map_lgl
+#' @importFrom gh gh
+#' @importFrom glue glue
+#' @importFrom gitlabr multilist_to_tibble
+#'
+
+#' @return A Weekly to copy-paste in a Wiki and a tibble
+#'
+#' @export
+#'
+
+gh_create_weekly_old_and_new_boards <- function(date_min,
+                                                date_max,
+                                                user,
+                                                repo,
+                                                board_url,
+                                                new_board = TRUE,
+                                                regex_done = "close|closed|done",
+                                                regex_validation = "a valider|validation",
+                                                regex_blocked = "blocked|bloque|bloqu\\\\u00e9",
+                                                regex_inprogress = "in progress|en cours|review|revision|r\\\\u00e9vision|r\\\\u00e9-validation",
+                                                regex_ready = "ready|pret|pr\\\\u00eat",
+                                                github_token = Sys.getenv("GITHUB_PAT"),
+                                                verbose = FALSE) {
+  word_to_validate <- "Realised and to validate"
+  word_realised <- "Realised and validated"
+  word_blocked <- "Blocked"
+  word_in_progress <- "In progress"
+  word_new_issues <- "New issues opened"
+  word_ready <- "Ready"
+
+  date_min <- as_date(date_min)
+  date_max <- as_date(date_max)
+
+  if (date_max < date_min) {
+    stop("date_min should be lower or equal to date_max")
+  }
+
+  # get GH board
+  if (new_board) {
+    if (!grepl("^http", board_url)) {
+      stop("board_url with `new_board = TRUE` should be a real URL that works in your browser, starting with http(s)://")
+    }
+    if (!grepl("/orgs/|/users/", board_url)) {
+      stop("board_url does not seem to be a new board type. It should be created at the scale of the user or the organization. Otherwise, it may be a classic board, which requires to define `new_board = FALSE`")
+    }
+    board_tbl <- graphql_to_tibble(
+      board_url = board_url,
+      github_token = github_token
+    )
+  } else {
+    if (missing(board_url)) {
+      board_url <- glue::glue("/repos/{user}/{repo}/projects")
+      message(paste0("`board_url` is guessed from `user` and `repo` as you specified `new_board = FALSE`: ", board_url))
+    }
+    if (!grepl("^/repos", board_url)) {
+      stop("board_url should be like '/repos/{user}/{repo}/projects' as you specified `new_board = FALSE`. You can also keep it empty, it will be built automatically")
+    }
+    board <- gh(board_url, state = "open", per_page = 100)
+    board_tbl <- multilist_to_tibble(board)
+  }
+
+
+  if (nrow(board_tbl) == 0) {
+    stop("The board of the project is empty")
+  }
+
+  # Retrieve all issues
+  all_issues <- gh(glue("/repos/{user}/{repo}/issues"), state = "all")
+  all_issues_tbl <- multilist_to_tibble(all_issues)
+
+  #####################
+  # NEW PROJECT BOARD #
+  #####################
+
+  if (new_board) {
+    board_tbl <- board_tbl %>%
+      rename(
+        content_url = url,
+        created_at = createdAt,
+        updated_at = updatedAt,
+        closed_at = closedAt
+      ) %>%
+      mutate(state = tolower(state)) %>%
+      select(-id) %>%
+      mutate(content_url = gsub(content_url,
+        pattern = "https://github.com",
+        replacement = "https://api.github.com/repos"
+      ))
+
+    # Board columns names
+    board_tbl$board_column
+
+    # 2 - Cards from a column - Blocked
+    cards_tbl_blocked <- board_tbl %>%
+      filter(grepl(regex_blocked, stringi::stri_escape_unicode(tolower(board_column))) &
+        state == "open")
+
+    if (nrow(cards_tbl_blocked) != 0) {
+      cards_tbl_blocked <- inner_join(cards_tbl_blocked,
+        select(all_issues_tbl, id, number, assignees),
+        by = "number"
+      )
+
+      cards_tbl_blocked <- cards_tbl_blocked %>%
+        # mutate(info = "2 - :stop_sign: Blocked")
+        mutate(info = paste("__2__:stop_sign:", word_blocked))
+    }
+
+    # 4 - Cards from a column - En cours/Review
+
+    cards_tbl_progress <- board_tbl %>%
+      filter(
+        grepl(regex_inprogress, stringi::stri_escape_unicode(tolower(board_column))) &
+          state == "open" &
+          as_date(as_datetime(created_at)) <= date_max
+      )
+
+    if (nrow(cards_tbl_progress) != 0) {
+      cards_tbl_progress <- inner_join(cards_tbl_progress,
+        select(all_issues_tbl, id, number, assignees),
+        by = "number"
+      )
+      cards_tbl_progress <- cards_tbl_progress %>%
+        mutate(info = paste("__4__:spiral_notepad:", word_in_progress))
+    }
+
+    # 3 - Cards from a column - Validation
+    cards_tbl_valid <- board_tbl %>%
+      filter(
+        grepl(regex_validation, stringi::stri_escape_unicode(tolower(board_column))) &
+          state == "open"
+      )
+
+    if (nrow(cards_tbl_valid) != 0) {
+      cards_tbl_valid <- inner_join(cards_tbl_valid,
+        select(all_issues_tbl, id, number, assignees),
+        by = "number"
+      )
+
+      cards_tbl_valid <- cards_tbl_valid %>%
+        mutate(info = paste("__3__:thumbsup:", word_to_validate))
+    }
+
+
+    # 5 - Cards from a column - Pret/Ready
+
+    cards_tbl_ready <- board_tbl %>%
+      filter(
+        grepl(regex_ready, stringi::stri_escape_unicode(tolower(board_column))) &
+          state == "open"
+      )
+
+    if (nrow(cards_tbl_ready) != 0) {
+      cards_tbl_ready <- inner_join(cards_tbl_ready,
+        select(all_issues_tbl, id, number, assignees),
+        by = "number"
+      )
+
+      cards_tbl_ready <- cards_tbl_ready %>%
+        mutate(info = paste("__5__:thumbsup:", word_ready))
+    }
+
+    # 1 - Cards from a column - Done - Will get Validation later in duplicates
+    cards_tbl_done_closed <- board_tbl %>%
+      filter(
+        as_date(as_datetime(closed_at)) >= date_min &
+          state == "closed"
+      )
+
+    cards_tbl_done_open <- board_tbl %>%
+      filter(
+        grepl(regex_done, stringi::stri_escape_unicode(tolower(board_column))) &
+          state == "open" &
+          as_date(as_datetime(closed_at)) >= date_min &
+          as_date(as_datetime(closed_at)) <= date_max
+      )
+
+    cards_tbl_done <- bind_rows(
+      cards_tbl_done_closed,
+      cards_tbl_done_open
+    )
+
+    if (nrow(cards_tbl_done) != 0) {
+      cards_tbl_done <- inner_join(cards_tbl_done,
+        select(all_issues_tbl, id, number, assignees),
+        by = "number"
+      )
+
+      cards_tbl_done <- cards_tbl_done %>%
+        mutate(info = paste("__1__:white_check_mark:", word_realised))
+    }
+
+    #####################
+    # OLD PROJECT BOARD #
+    #####################
+  } else {
+    project_id <- board_tbl$id[1]
+    columns <- gh(glue("/projects/{project_id}/columns"), per_page = 100)
+
+    columns_tbl <- multilist_to_tibble(columns)
+
+    columns_tbl$name
+
+    # 2 - Cards from a column - Blocked
+    the_column <- grep(regex_blocked, stringi::stri_escape_unicode(tolower(columns_tbl$name)))
+    column_id <- columns_tbl$id[the_column]
+    cards_tbl_blocked <- map_dfr(
+      column_id,
+      ~ gh(glue("/projects/columns/{.x}/cards"), per_page = 100) %>%
+        multilist_to_tibble()
+    )
+
+
+    if (nrow(cards_tbl_blocked) != 0) {
+      cards_tbl_blocked <- cards_tbl_blocked %>%
+        mutate(issue_number = as.numeric(
+          gsub(content_url,
+            pattern = glue("https://api.github.com/repos/{user}/{repo}/issues/"),
+            replacement = ""
+          )
+        )) %>%
+        inner_join(., select(all_issues_tbl, number, state), by = c("issue_number" = "number"))
+
+      cards_tbl_blocked <- cards_tbl_blocked %>%
+        mutate(info = paste("__2__:stop_sign:", word_blocked)) %>%
+        filter(state == "open")
+    }
+
+    # 4 - Cards from a column - En cours/Review
+    the_column <- grep(regex_inprogress, stringi::stri_escape_unicode(tolower(columns_tbl$name)))
+    column_id <- columns_tbl$id[the_column]
+    cards_tbl_progress <- map_dfr(
+      column_id,
+      ~ gh(glue("/projects/columns/{.x}/cards"), per_page = 100) %>%
+        multilist_to_tibble()
+    )
+
+
+    if (nrow(cards_tbl_progress) != 0) {
+      cards_tbl_progress <- cards_tbl_progress %>%
+        mutate(issue_number = as.numeric(
+          gsub(content_url,
+            pattern = glue("https://api.github.com/repos/{user}/{repo}/issues/"),
+            replacement = ""
+          )
+        )) %>%
+        inner_join(., select(all_issues_tbl, number, state), by = c("issue_number" = "number"))
+
+      cards_tbl_progress <- cards_tbl_progress %>%
+        mutate(info = paste("__4__:spiral_notepad:", word_in_progress)) %>%
+        filter(
+          state == "open" &
+            as_date(as_datetime(created_at)) <= date_max
+        )
+    }
+
+
+    # 3 - Cards from a column - Validation
+    the_column <- grep(regex_validation, stringi::stri_escape_unicode(tolower(columns_tbl$name)))
+    column_id <- columns_tbl$id[the_column]
+    cards_tbl_valid <- map_dfr(
+      column_id,
+      ~ gh(glue("/projects/columns/{.x}/cards"), per_page = 100) %>%
+        multilist_to_tibble()
+    )
+    if (nrow(cards_tbl_valid) != 0) {
+      cards_tbl_valid <- cards_tbl_valid %>%
+        mutate(issue_number = as.numeric(
+          gsub(content_url,
+            pattern = glue("https://api.github.com/repos/{user}/{repo}/issues/"),
+            replacement = ""
+          )
+        )) %>%
+        inner_join(., select(all_issues_tbl, number, state), by = c("issue_number" = "number"))
+
+      cards_tbl_valid <- cards_tbl_valid %>%
+        mutate(info = paste("__3__:thumbsup:", word_to_validate)) %>%
+        filter(state == "open")
+    }
+
+
+    # 5 - Cards from a column - Pret/Ready
+    the_column <- grep(regex_ready, stringi::stri_escape_unicode(tolower(columns_tbl$name)))
+    column_id <- columns_tbl$id[the_column]
+    cards_tbl_ready <- map_dfr(
+      column_id,
+      ~ gh(glue("/projects/columns/{.x}/cards"), per_page = 100) %>%
+        multilist_to_tibble()
+    )
+
+
+    if (nrow(cards_tbl_ready) != 0) {
+      cards_tbl_ready <- cards_tbl_ready %>%
+        mutate(issue_number = as.numeric(
+          gsub(content_url,
+            pattern = glue("https://api.github.com/repos/{user}/{repo}/issues/"),
+            replacement = ""
+          )
+        )) %>%
+        inner_join(., select(all_issues_tbl, number, state), by = c("issue_number" = "number"))
+
+
+
+      cards_tbl_ready <- cards_tbl_ready %>%
+        mutate(info = paste("__5__:thumbsup:", word_ready)) %>%
+        filter(state == "open")
+    }
+
+
+    # 1 - Cards from a column - Done - Will get Validation later in duplicates
+
+    cards_tbl_done_closed <- map_dfr(
+      columns_tbl$id,
+      ~ gh(glue("/projects/columns/{.x}/cards"), per_page = 100) %>%
+        multilist_to_tibble()
+    )
+
+    if (nrow(cards_tbl_done_closed) != 0) {
+      cards_tbl_done_closed <- cards_tbl_done_closed %>%
+        mutate(issue_number = as.numeric(
+          gsub(content_url,
+            pattern = glue("https://api.github.com/repos/{user}/{repo}/issues/"),
+            replacement = ""
+          )
+        )) %>%
+        inner_join(., select(all_issues_tbl, number, state, closed_at), by = c("issue_number" = "number"))
+
+      cards_tbl_done_closed <- cards_tbl_done_closed %>%
+        mutate(info = paste("__1__:white_check_mark:", word_realised)) %>%
+        filter(
+          as_date(as_datetime(closed_at)) >= date_min &
+            state == "closed"
+        )
+    }
+
+
+
+    the_column <- grep(regex_done, stringi::stri_escape_unicode(tolower(columns_tbl$name)))
+    column_id <- columns_tbl$id[the_column]
+    cards_tbl_done_open <- map_dfr(
+      column_id,
+      ~ gh(glue("/projects/columns/{.x}/cards"), per_page = 100) %>%
+        multilist_to_tibble()
+    )
+
+    if (nrow(cards_tbl_done_open) != 0) {
+      cards_tbl_done_open <- cards_tbl_done_open %>%
+        mutate(issue_number = as.numeric(
+          gsub(content_url,
+            pattern = glue("https://api.github.com/repos/{user}/{repo}/issues/"),
+            replacement = ""
+          )
+        )) %>%
+        inner_join(., select(all_issues_tbl, number, state, closed_at), by = c("issue_number" = "number"))
+
+      cards_tbl_done_open <- cards_tbl_done_open %>%
+        mutate(info = paste("__1__:white_check_mark:", word_realised)) %>%
+        filter(state == "open" &
+          as_date(as_datetime(closed_at)) >= date_min &
+          as_date(as_datetime(closed_at)) <= date_max)
+    }
+    cards_tbl_done <- bind_rows(
+      cards_tbl_done_closed,
+      cards_tbl_done_open
+    )
+  }
+
+  # New issues opened during the week (even if closed)
+  new_issues <- gh(glue("/repos/{user}/{repo}/issues"),
+    sort = "created", since = format_ISO8601(
+      as_datetime(paste0(date_min, "T00:00:01"),
+        tz = lubridate::tz(now())
+      ),
+      usetz = TRUE
+    ),
+    state = "all"
+  )
+
+  new_issues_all_tbl <- multilist_to_tibble(new_issues)
+  # Remove PR as they are listed as issues
+  if (any(grepl("pull_request", names(new_issues_all_tbl)))) {
+    new_issues_all_tbl <- new_issues_all_tbl %>%
+      filter(map_lgl(.[["pull_request"]], is.null))
+  }
+
+  if (nrow(new_issues_all_tbl) != 0) {
+    new_issues_tbl <- new_issues_all_tbl %>%
+      filter(
+        as_date(as_datetime(created_at)) >= date_min,
+        as_date(as_datetime(created_at)) <= date_max
+      ) %>%
+      rename(content_url = url) %>%
+      select(any_of(
+        unique(c(
+          "state",
+          names(cards_tbl_blocked),
+          names(cards_tbl_progress),
+          names(cards_tbl_valid),
+          names(cards_tbl_ready),
+          names(cards_tbl_done)
+        ))
+      )) %>%
+      mutate(info = "__9__:seedling: New issues opened")
+  } else {
+    new_issues_tbl <- new_issues_all_tbl
+  }
+
+  # Combine cards ----
+  list_all_cards <- list(
+    cards_tbl_blocked,
+    cards_tbl_progress,
+    cards_tbl_valid,
+    cards_tbl_ready,
+    cards_tbl_done,
+    new_issues_tbl
+  )
+
+  card_is_full <- purrr::map_lgl(list_all_cards, ~ nrow(.x) != 0)
+  all_cards_weekly <- bind_rows(list_all_cards[card_is_full])
+
+  if (nrow(all_cards_weekly) == 0) {
+    stop("There is nothing to report in the weekly")
+  }
+
+  all_cards_weekly_text <- all_cards_weekly %>%
+    mutate(
+      issue_get = gsub("https://api.github.com", "", content_url),
+      issue_li = create_issue_li_gh(issue_get)
+    )
+
+  all_cards_weekly_text_collapse <-
+    collapse_li(all_cards_weekly_text) %>%
+    mutate(
+      text_weekly_all = gsub(
+        text_weekly_all,
+        pattern = "__\\d{1,1}__",
+        replacement = ""
+      )
+    )
+
+  out <- list(
+    weekly_issues = all_cards_weekly_text,
+    weekly_info = all_cards_weekly_text_collapse$text_weekly_all
+  )
+
+  if (verbose) {
+    cat(out$weekly_info)
+  }
+  return(out)
+}
+```
+
+  
+```{r example-gh_create_weekly_old_and_new_boards, error = TRUE}
+#' \dontrun{
+user <- "ThinkR-open"
+repo <- "example-weekly"
+date_min <- "2022-06-30"
+date_max <- "2022-06-30"
+board_url_old <- glue::glue("/repos/{user}/{repo}/projects")
+board_url_new <- "https://github.com/orgs/ThinkR-open/projects/4/"
+
+# old board
+weekly_old <- gh_create_weekly_old_and_new_boards(
+  date_min = date_min,
+  date_max = date_max,
+  user = user,
+  repo = repo,
+  board_url = board_url_old,
+  new_board = FALSE,
+  verbose = FALSE
+)
+cat(weekly_old$weekly_info)
+
+# clipr::write_clip(weekly_old$weekly_info)
+
+
+# new board
+weekly_new <- gh_create_weekly_old_and_new_boards(
+  date_min = date_min,
+  date_max = date_max,
+  user = user,
+  repo = repo,
+  board_url = board_url_new,
+  github_token = Sys.getenv("GITHUB_PAT"),
+  new_board = TRUE,
+  verbose = FALSE
+)
+cat(weekly_new$weekly_info)
+# clipr::write_clip(weekly_new$weekly_info)
+
+#' }
+```
+  
+```{r tests-gh_create_weekly_old_and_new_boards}
+user <- "ThinkR-open"
+repo <- "example-weekly"
+date_min <- "2022-06-30"
+date_max <- "2022-06-30"
+board_url_old <- glue::glue("/repos/{user}/{repo}/projects")
+board_url_new <- "https://github.com/orgs/ThinkR-open/projects/4/"
+
+test_that("gh_create_weekly_old_and_new_boards works with old boards", {
+  if (Sys.getenv("GITHUB_PAT") != "") {
+    weekly_old <- gh_create_weekly_old_and_new_boards(
+      date_min = date_min,
+      date_max = date_max,
+      user = user,
+      repo = repo,
+      board_url = board_url_old,
+      new_board = FALSE,
+      verbose = FALSE
+    )
+
+
+    info <- weekly_old$weekly_info
+
+    expect_length(info, 1)
+    expect_true(grepl(":spiral_notepad: In progress", info))
+    expect_true(grepl(":stop_sign: Blocked", info))
+    expect_true(grepl(":seedling: New issues opened", info))
+    expect_true(grepl(":thumbsup: Ready", info))
+    expect_true(grepl(":thumbsup: Realised and to validate", info))
+    expect_true(grepl(":white_check_mark: Realised and validated", info))
+
+    expect_equal(
+      weekly_old$weekly_issues$info,
+      c(
+        rep("__2__:stop_sign: Blocked", 3),
+        rep("__4__:spiral_notepad: In progress", 2),
+        "__3__:thumbsup: Realised and to validate",
+        "__5__:thumbsup: Ready",
+        rep("__1__:white_check_mark: Realised and validated", 2),
+        rep("__9__:seedling: New issues opened", 7)
+      )
+    )
+
+    expect_equal(
+      as.character(weekly_old$weekly_issues$issue_li[1]),
+      "- Issue blocked: [issue 6](https://github.com/ThinkR-open/example-weekly/issues/6) - Not assigned"
+    )
+  }
+})
+
+test_that("gh_create_weekly_old_and_new_boards works with new boards", {
+  if (Sys.getenv("GITHUB_PAT") != "") {
+    weekly_new <- gh_create_weekly_old_and_new_boards(
+      date_min = date_min,
+      date_max = date_max,
+      user = user,
+      repo = repo,
+      board_url = board_url_new,
+      github_token = Sys.getenv("GITHUB_PAT"),
+      new_board = TRUE,
+      verbose = FALSE
+    )
+
+    info <- weekly_new$weekly_info
+
+    expect_length(info, 1)
+    expect_true(grepl(":spiral_notepad: In progress", info))
+    expect_true(grepl(":stop_sign: Blocked", info))
+    expect_true(grepl(":seedling: New issues opened", info))
+    expect_true(grepl(":thumbsup: Ready", info))
+    expect_true(grepl(":thumbsup: Realised and to validate", info))
+    expect_true(grepl(":white_check_mark: Realised and validated", info))
+
+    expect_equal(
+      weekly_new$weekly_issues$info,
+      c(
+        rep("__2__:stop_sign: Blocked", 3),
+        rep("__4__:spiral_notepad: In progress", 2),
+        "__3__:thumbsup: Realised and to validate",
+        "__5__:thumbsup: Ready",
+        rep("__1__:white_check_mark: Realised and validated", 2),
+        rep("__9__:seedling: New issues opened", 7)
+      )
+    )
+
+    expect_equal(
+      as.character(weekly_new$weekly_issues$issue_li[1]),
+      "- [dev] Checklist mise en place: [issue 11](https://github.com/ThinkR-open/example-weekly/issues/11) - Not assigned"
+    )
+  }
+})
+
+
+test_that("gh_create_weekly_old_and_new_boards works checks the board url format correctly", {
+  if (Sys.getenv("GITHUB_PAT") != "") {
+    ############################
+    ## WORKING WITH NEW BOARD ##
+    ############################
+
+    # new board with incorrect url (no http)
+    board_url_new_without_http <- "orgs/ThinkR-open/projects/4/"
+
+    expect_error(
+      object = gh_create_weekly_old_and_new_boards(
+        date_min = date_min,
+        date_max = date_max,
+        user = user,
+        repo = repo,
+        board_url = board_url_new_without_http,
+        github_token = Sys.getenv("GITHUB_PAT"),
+        new_board = TRUE,
+        verbose = FALSE
+      )
+    )
+
+    # user uses new_board = TRUE but the url seems to indicate this is an old board
+    board_url_which_seems_to_be_an_old_board <- "https://github.com/ThinkR-open/example-weekly/projects/1"
+
+    expect_error(
+      object = gh_create_weekly_old_and_new_boards(
+        date_min = date_min,
+        date_max = date_max,
+        user = user,
+        repo = repo,
+        board_url = board_url_which_seems_to_be_an_old_board,
+        github_token = Sys.getenv("GITHUB_PAT"),
+        new_board = TRUE,
+        verbose = FALSE
+      )
+    )
+
+    ############################
+    ## WORKING WITH OLD BOARD ##
+    ############################
+
+    # if board_url is missing the user should be warned the url is guessed from the parameters user and repo
+    expect_message(
+      object = gh_create_weekly_old_and_new_boards(
+        date_min = date_min,
+        date_max = date_max,
+        user = user,
+        repo = repo,
+        github_token = Sys.getenv("GITHUB_PAT"),
+        new_board = FALSE,
+        verbose = FALSE
+      ),
+      regexp = paste(
+        "`board_url` is guessed from `user` and `repo` as you specified `new_board = FALSE`:",
+        glue::glue("/repos/{user}/{repo}/projects")
+      )
+    )
+
+
+    # if 'repos' if missing from board_url there is an error
+    expect_error(
+      object = gh_create_weekly_old_and_new_boards(
+        date_min = date_min,
+        date_max = date_max,
+        user = user,
+        repo = repo,
+        board_url = glue::glue("/{user}/{repo}/projects"),
+        github_token = Sys.getenv("GITHUB_PAT"),
+        new_board = FALSE,
+        verbose = FALSE
+      )
+    )
+  }
+})
+
+
+
+test_that("gh_create_weekly_old_and_new_boards works also with a 'user' and not necessarily an 'organization'", {
+  if (Sys.getenv("GITHUB_PAT_THE_THINKR") != "") {
+    weekly_new <- gh_create_weekly_old_and_new_boards(
+      date_min = "2023-01-01",
+      date_max = "2023-03-01",
+      user = "the-thinkr",
+      repo = "toy_project_board",
+      board_url = "https://github.com/users/the-thinkr/projects/1",
+      github_token = Sys.getenv("GITHUB_PAT_THE_THINKR"),
+      new_board = TRUE,
+      verbose = FALSE
+    )
+
+    info <- weekly_new$weekly_info
+
+    expect_length(info, 1)
+    expect_true(grepl(":spiral_notepad: In progress", info))
+    expect_true(grepl(":seedling: New issues opened", info))
+
+
+    expect_equal(
+      weekly_new$weekly_issues$info,
+      c(
+        rep("__4__:spiral_notepad: In progress", 1),
+        rep("__9__:seedling: New issues opened", 3)
+      )
+    )
+
+    expect_equal(
+      as.character(weekly_new$weekly_issues$issue_li[1]),
+      "- Une issue dans InProgress: [issue 2](https://github.com/the-thinkr/toy_project_board/issues/2) - Not assigned"
+    )
+  }
+})
+```
+  
+
+# Create a weekly for GitHub with `gh_create_weekly()` (old board only)
+
+Please note that you should use the function `gh_create_weekly_old_and_new_boards()` instead.
+    
+```{r function-gh_create_weekly}
+#' Create a weekly issues summary for GitHub
+#'
+#' @param date_min Minimal date to look for issues
+#' @param date_max Maximal date to look for issues
+#' @param user username or company name as shown on GitHub
+#' @param repo GitHub repository
+#' @param board_url url of the GitHub board. If using the "classic" board, which is deprecated by GitHub, you may want to use this url: `glue("/repos/{user}/{repo}/projects")`
+#' @param verbose Logical. Whether to return output in the console too.
+#'
+#' @importFrom lubridate as_date as_datetime format_ISO8601 now
+#' @importFrom dplyr select mutate filter rename any_of bind_rows
+#' @importFrom purrr map_dfr map_lgl
+#' @importFrom gh gh
+#' @importFrom glue glue
+#' @importFrom gitlabr multilist_to_tibble
+
+#' @return A Weekly to copy-paste in a Wiki and a tibble
+#'
+#' @export
+#' @examples
+gh_create_weekly <- function(date_min = Sys.Date() - 7,
+                             date_max = Sys.Date(),
+                             user = "thinkr-open",
+                             repo = "fusen",
+                             verbose = FALSE,
+                             board_url) {
+  .Deprecated("lozen::gh_create_weekly_old_and_new_boards()")
+
+  date_min <- as_date(date_min)
+  date_max <- as_date(date_max)
+
+  if (date_max < date_min) {
+    stop("date_min should be lower or equal to date_max")
+  }
+
+  # Partie graphQL
+  # A partir de l'url du projet -> récupérer le nom de l'organisation
+  # A partir de l'url du board -> récupérer l'identifiant du board
+  # Ensuite récupérer le node id du projet pour pouvoir récupérer les issues
+
+
+
+  # Github Projects
+  # >> Classic URL: glue("/repos/{user}/{repo}/projects")
+  board <- gh(board_url, state = "open", per_page = 100)
+  board_tbl <- multilist_to_tibble(board)
+  # Get the first
+  board_tbl$id[1]
+
+  # GitHub columns of a project
+  project_id <- board_tbl$id[1]
+  # >> Change here for new board
+  columns <- gh(glue("/projects/{project_id}/columns"), per_page = 100)
+  # <<<
+  columns_tbl <- multilist_to_tibble(columns)
+  columns_tbl$name
+
+  # 1 - Cards from a column - Realised
+  the_column <- grep("close|closed|a valider|validation|done", tolower(columns_tbl$name))
+  column_id <- columns_tbl$id[the_column]
+  cards_tbl_done <- map_dfr(
+    column_id,
+    # >> Change here for new board
+    ~ gh(glue("/projects/columns/{.x}/cards"), per_page = 100) %>%
+      # <<
+      multilist_to_tibble()
+  )
+  if (nrow(cards_tbl_done) != 0) {
+    cards_tbl_done <- cards_tbl_done %>%
+      mutate(info = "1 - :heavy_check_mark: Realised") %>%
+      filter(
+        as_date(as_datetime(updated_at)) >= date_min,
+        as_date(as_datetime(updated_at)) <= date_max
+      )
+  }
+
+  # 2 - Cards from a column - Blocked
+  the_column <- grep("blocked|bloque|bloqu\\\\u00e9", stringi::stri_escape_unicode(tolower(columns_tbl$name)))
+  column_id <- columns_tbl$id[the_column]
+  cards_tbl_blocked <- map_dfr(
+    column_id,
+    # >> Change here for new board
+    ~ gh(glue("/projects/columns/{.x}/cards"), per_page = 100) %>%
+      # <<
+      multilist_to_tibble()
+  )
+  if (nrow(cards_tbl_blocked) != 0) {
+    cards_tbl_blocked <- cards_tbl_blocked %>%
+      mutate(info = "2 - :stop_sign: Blocked")
+  }
+
+
+  # 3 - Cards from a column - Validation
+  the_column <- grep("a valider|validation", tolower(columns_tbl$name))
+  column_id <- columns_tbl$id[the_column]
+  cards_tbl_valid <- map_dfr(
+    column_id,
+    # >> Change here for new board
+    ~ gh(glue("/projects/columns/{.x}/cards"), per_page = 100) %>%
+      # <<<
+      multilist_to_tibble()
+  )
+  if (nrow(cards_tbl_valid) != 0) {
+    cards_tbl_valid <- cards_tbl_valid %>%
+      mutate(info = "3 - :thumbsup: To validate")
+  }
+
+  # 4 - Cards from a column - En cours/Review
+  the_column <- grep("in progress|en cours|review|revision|r\\\\u00e9vision", stringi::stri_escape_unicode(tolower(columns_tbl$name)))
+  column_id <- columns_tbl$id[the_column]
+  cards_tbl_progress <- map_dfr(
+    column_id,
+    # >> Change here for new board
+    ~ gh(glue("/projects/columns/{.x}/cards"), per_page = 100) %>%
+      # <<
+      multilist_to_tibble()
+  )
+  if (nrow(cards_tbl_progress) != 0) {
+    cards_tbl_progress <- cards_tbl_progress %>%
+      mutate(info = "4 - :spiral_notepad: In progress") %>%
+      filter(as_date(as_datetime(updated_at)) <= date_max)
+  }
+
+
+  # New issues opened during the week (even if closed)
+  # >> DO NOT Change here for new board
+  new_issues <- gh(glue("/repos/{user}/{repo}/issues"),
+    sort = "created", since = format_ISO8601(
+      as_datetime(paste0(date_min, "T00:00:01"),
+        tz = lubridate::tz(now())
+      ),
+      usetz = TRUE
+    ),
+    state = "all"
+  )
+
+  new_issues_all_tbl <- multilist_to_tibble(new_issues)
+  # Remove PR as they are listed as issues
+  if (any(grepl("pull_request", names(new_issues_all_tbl)))) {
+    new_issues_all_tbl <- new_issues_all_tbl %>%
+      filter(map_lgl(.[["pull_request"]], is.null))
+  }
+
+  if (nrow(new_issues_all_tbl) != 0) {
+    new_issues_tbl <- new_issues_all_tbl %>%
+      filter(
+        as_date(as_datetime(created_at)) >= date_min,
+        as_date(as_datetime(created_at)) <= date_max
+      ) %>%
+      rename(content_url = url) %>%
+      select(any_of(
+        unique(c(
+          "state",
+          names(cards_tbl_blocked),
+          names(cards_tbl_progress),
+          names(cards_tbl_valid),
+          names(cards_tbl_done)
+        ))
+      )) %>%
+      mutate(info = "9 - :seedling: New issues opened")
+  } else {
+    new_issues_tbl <- new_issues_all_tbl
+  }
+
+  # Combine cards ----
+  list_all_cards <- list(
+    cards_tbl_blocked,
+    cards_tbl_progress,
+    cards_tbl_valid,
+    cards_tbl_done,
+    new_issues_tbl
+  )
+
+  card_is_full <- purrr::map_lgl(list_all_cards, ~ nrow(.x) != 0)
+  all_cards_weekly <- bind_rows(list_all_cards[card_is_full])
+
+
+  # create_issue_li_gh(glue("/repos/{user}/{repo}/issues/1"))
+
+  all_cards_weekly_text <- all_cards_weekly %>%
+    mutate(
+      issue_get = gsub("https://api.github.com", "", content_url),
+      issue_li = create_issue_li_gh(issue_get)
+    )
+
+  all_cards_weekly_text_collapse <- collapse_li(all_cards_weekly_text)
+
+  out <- list(
+    weekly_issues = all_cards_weekly_text,
+    weekly_info = all_cards_weekly_text_collapse$text_weekly_all
+  )
+
+  if (verbose) {
+    cat(out$weekly_info)
+  }
+  return(out)
+}
+
+#' Get issue title for GitHub
+#' @noRd
+create_issue_li_gh <- function(issues_get) {
+  purrr::map_chr(issues_get, create_one_issue_li_gh)
+}
+
+#' Get one issue title for GitHub
+#' @noRd
+create_one_issue_li_gh <- function(issue_get) {
+  issue <- gh(issue_get, per_page = 100)
+  issue_tbl <- multilist_to_tibble(issue)
+  login <- purrr::map_chr(issue_tbl$assignee, ~ ifelse(length(.x) == 1, "Not assigned", paste0("@", .x[["login"]])))
+  glue("- {issue_tbl$title}: [issue {issue_tbl$number}{ifelse(issue_tbl$state == \'closed\', \' (closed)\', \'\')}]({issue_tbl$html_url}) - {login}")
+}
+
+
+#' Combine issues li list
+#' @noRd
+collapse_li <- function(x) {
+  x %>%
+    group_by(info) %>%
+    summarise(
+      text_weekly = paste(issue_li, collapse = "\n")
+    ) %>%
+    summarise(
+      text_weekly_all = paste(
+        paste0(info, "\n\n", text_weekly),
+        collapse = "\n\n\n"
+      )
+    )
+}
+```
+  
+```{r example-gh_create_weekly, error = TRUE}
+#' \dontrun{
+if (Sys.getenv("GITHUB_PAT") != "") {
+  user <- "ThinkR-open"
+  repo <- "example-weekly"
+  weekly <- gh_create_weekly(
+    date_min = "2022-06-30",
+    date_max = "2022-06-30",
+    user = user,
+    repo = repo,
+    board_url = glue::glue("/repos/{user}/{repo}/projects")
+  )
+}
+#' }
+# Copier dans le presse papier pour copier directement
+# clipr::write_clip(weekly$weekly_info)
+```
+  
+```{r tests-gh_create_weekly}
+test_user <- "thinkr-open"
+test_repo <- "example-weekly"
+
+test_that("gh_create_weekly works", {
+  expect_true(inherits(gh_create_weekly, "function"))
+
+  if (Sys.getenv("GITHUB_PAT") != "") {
+    weekly <- gh_create_weekly(
+      date_min = "2022-06-30",
+      date_max = "2022-06-30",
+      user = test_user,
+      repo = test_repo,
+      board_url = glue::glue("/repos/{test_user}/{test_repo}/projects")
+    )
+
+    info <- weekly$weekly_info
+    expect_length(info, 1)
+    expect_true(grepl("1 - :heavy_check_mark: Realised", info))
+    expect_true(grepl("2 - :stop_sign: Blocked", info))
+    expect_true(grepl("3 - :thumbsup: To validate", info))
+    expect_true(grepl("4 - :spiral_notepad: In progress", info))
+    expect_true(grepl("9 - :seedling: New issues opened", info))
+
+    expect_equal(
+      weekly$weekly_issues$info,
+      c(
+        rep("2 - :stop_sign: Blocked", 3),
+        "4 - :spiral_notepad: In progress",
+        "4 - :spiral_notepad: In progress",
+        "3 - :thumbsup: To validate",
+        "1 - :heavy_check_mark: Realised",
+        "1 - :heavy_check_mark: Realised",
+        rep("9 - :seedling: New issues opened", 7)
+      )
+    )
+
+    expect_equal(
+      as.character(weekly$weekly_issues$issue_li[1]),
+      "- Issue blocked: [issue 6](https://github.com/ThinkR-open/example-weekly/issues/6) - Not assigned"
+    )
+  }
+})
+
+test_that("create_issue_li_gh works", {
+  if (Sys.getenv("GITHUB_PAT") != "") {
+    expect_equal(
+      create_issue_li_gh(
+        glue("/repos/{test_user}/{test_repo}/issues/1")
+      ),
+      "- Issue done: [issue 1 (closed)](https://github.com/ThinkR-open/example-weekly/issues/1) - Not assigned"
+    )
+
+    expect_equal(create_one_issue_li_gh(glue("/repos/{test_user}/{test_repo}/issues/1")), "- Issue done: [issue 1 (closed)](https://github.com/ThinkR-open/example-weekly/issues/1) - Not assigned")
+  }
+})
+```
+  
+# Create a weekly for GitHub with `gh_create_weekly_new_projects_board()` (new board only)    
+
+## Query GraphQL Github API
+
+This functions allow querying the last version of the Github API to retrieve the status of the project board.
+
+By default, it uses the `GITHUB_PAT` environment variable. Please ensure that the read:project scope is provided with your token.
+
+Please visit the [API documentation] (https://docs.github.com/en/issues/planning-and-tracking-with-projects/automating-your-project/using-the-api-to-manage-projects?tool=cli#finding-information-about-items-in-a-project) to generate a token with such privileges.
+
+
+```{r function-graphql_to_tibble}
+#' Query GraphQL Github API
+#'
+#' This function helps you retrieving the status of a project board within the organization
+#'
+#' @param board_url url of the github project board
+#' @param github_token access token to the graphql api
+#'
+#' @importFrom stringr str_extract
+#' @importFrom glue glue
+#' @importFrom gh gh_gql
+#' @importFrom purrr map_dfr map_chr
+#' @importFrom gitlabr multilist_to_tibble
+#' @importFrom tidyr unnest_wider
+#' @importFrom dplyr mutate select
+#'
+#' @return a tibble
+#'
+#' @export
+graphql_to_tibble <- function(board_url, github_token = Sys.getenv("GITHUB_PAT")) {
+  if (github_token == "") {
+    stop("You must provide an access token to the Github Api (read:project scope is required)")
+  }
+
+  # extract organization and project number from board url to retrieve the node ID of the
+  # project within the organization
+  project_number <- str_extract(
+    string = board_url,
+    pattern = "(?<=projects/)[:digit:]{1,}"
+  )
+
+  organization_1 <-
+    str_extract(string = board_url, pattern = "(?<=github.com/)[:graph:]{1,}(?=/projects/)")
+  organization <- gsub("orgs/|users/", "", organization_1)
+  if (grepl("^orgs/", organization_1)) {
+    is_orgs_or_user <- "orgs"
+    organization <- gsub("orgs/|users/", "", organization_1)
+    req_project_id <- glue('
+  query{
+    organization(login: "$_organization_$"){
+      projectV2(number: $_project_number_$) {
+        id
+      }
+    }
+  }',
+      .open = "$_",
+      .close = "_$"
+    )
+  } else if (grepl("^users/", organization_1)) {
+    is_orgs_or_user <- "users"
+    organization <- gsub("orgs/|users/", "", organization_1)
+    req_project_id <-
+      req_project_id <- glue('
+  query{
+    user(login: "$_organization_$"){
+      projectV2(number: $_project_number_$) {
+        id
+      }
+    }
+  }',
+        .open = "$_",
+        .close = "_$"
+      )
+  }
+
+  project_id <- gh_gql(req_project_id, .token = github_token) %>%
+    unlist()
+
+
+  # check whether the provided token has the right scope
+  if ("errors.message" %in% names(project_id)) {
+    stop(project_id["errors.message"])
+  }
+
+
+  # get project board status
+  req_board_infos <- glue('query{
+    node(id: "$_project_id_$") {
+        ... on ProjectV2 {
+          items(first: 100) {
+            nodes{
+              id
+              fieldValues(first: 100) {
+                nodes{
+                  ... on ProjectV2ItemFieldSingleSelectValue {
+                    name
+                    field {
+                      ... on ProjectV2FieldCommon {
+                        name
+                      }
+                    }
+                  }
+                }
+              }
+              content{
+                ...on Issue {
+                  title
+                   url
+                  number
+                  state
+                  createdAt
+                  updatedAt
+                  closedAt
+                }
+              }
+            }
+          }
+        }
+      }
+    }',
+    .open = "$_",
+    .close = "_$"
+  )
+
+  board_infos <- gh_gql(req_board_infos,
+    .token = github_token
+  )
+
+  board_infos <- board_infos$data$node$items$nodes
+
+
+  # export to tibble
+  board_tbl <- map_dfr(board_infos, function(issue) {
+    multilist_to_tibble(issue) %>%
+      unnest_wider(content) %>%
+      mutate(board_column = unlist(fieldValues[[1]])[1]) %>%
+      select(-fieldValues)
+  })
+
+  return(board_tbl)
+}
+```
+  
+```{r example-graphql_to_tibble, eval = FALSE}
+#' \dontrun{
+
+# Example with board hosted in an organization github account
+board_url_organization <- "https://github.com/orgs/ThinkR-open/projects/4/"
+github_token <- Sys.getenv("GITHUB_PAT")
+
+graphql_to_tibble(
+  board_url = board_url_organization,
+  github_token = github_token
+)
+
+
+# Example with board hosted in a user github account
+board_url_user <- "https://github.com/users/the-thinkr/projects/1"
+github_token <- Sys.getenv("GITHUB_PAT")
+
+graphql_to_tibble(
+  board_url = board_url_user,
+  github_token = github_token
+)
+
+#' }
+```
+  
+```{r tests-graphql_to_tibble}
+
+test_that("graphql_to_tibble fails if problems are shown with the token", {
+  board_url <- "https://github.com/orgs/ThinkR-open/projects/4"
+
+  # if the token is missing the function must fail
+  expect_error(graphql_to_tibble(board_url = board_url_organization, github_token = ""))
+
+  # if the token has not the right scope the function must fail
+  if (Sys.getenv("GITHUB_PAT_NO_ACCESS_TO_GRAPHQL") != "") {
+    expect_error(graphql_to_tibble(
+      board_url = board_url,
+      github_token = Sys.getenv("GITHUB_PAT_NO_ACCESS_TO_GRAPHQL")
+    ))
+  }
+})
+
+test_that("graphql_to_tibble works with an organization board", {
+  expect_true(inherits(graphql_to_tibble, "function"))
+
+  board_url_organization <- "https://github.com/orgs/ThinkR-open/projects/4"
+
+  skip_if_not(isTRUE(Sys.getenv("GITHUB_PAT") != ""))
+
+  graphql_res <- graphql_to_tibble(
+    board_url = board_url_organization,
+    github_token = Sys.getenv("GITHUB_PAT")
+  )
+
+  expect_equal(nrow(graphql_res), 10)
+
+  expect_equal(nrow(dplyr::filter(graphql_res, board_column == "Open")), 1)
+  expect_equal(nrow(dplyr::filter(graphql_res, board_column == "Blocked")), 3)
+  expect_equal(nrow(dplyr::filter(graphql_res, board_column == "In Progress")), 1)
+  expect_equal(nrow(dplyr::filter(graphql_res, board_column == "Review")), 1)
+  expect_equal(nrow(dplyr::filter(graphql_res, board_column == "Validation")), 1)
+  expect_equal(nrow(dplyr::filter(graphql_res, board_column == "Ready")), 1)
+  expect_equal(nrow(dplyr::filter(graphql_res, board_column == "Done")), 2)
+})
+
+test_that("graphql_to_tibble works with a user board", {
+  expect_true(inherits(graphql_to_tibble, "function"))
+
+  if (Sys.getenv("GITHUB_PAT_THE_THINKR") != "") {
+    board_url_user <- "https://github.com/users/the-thinkr/projects/1"
+
+    graphql_res <- graphql_to_tibble(
+      board_url = board_url_user,
+      github_token = Sys.getenv("GITHUB_PAT_THE_THINKR")
+    )
+
+    expect_equal(nrow(graphql_res), 3)
+
+    expect_equal(nrow(dplyr::filter(graphql_res, board_column == "In Progress")), 1)
+    expect_equal(nrow(dplyr::filter(graphql_res, board_column == "Todo")), 1)
+    expect_equal(nrow(dplyr::filter(graphql_res, board_column == "Done")), 1)
+  }
+})
+```
+  
+## Create the weekly
+
+Please note that you should use the function `gh_create_weekly_old_and_new_boards()` instead.
+
+```{r function-gh_create_weekly_new_projects_board}
+#' Create a weekly issues summary for GitHub (new board)
+#'
+#'
+#' @param date_min Minimal date to look for issues
+#' @param date_max Maximal date to look for issues
+#' @param user username or company name as shown on GitHub
+#' @param repo GitHub repository
+#' @param board_url url of the GitHub board.
+#' @param github_token token access to graphQL API
+#' @param verbose Logical. Whether to return output in the console too.
+#'
+#' @importFrom lubridate as_date as_datetime format_ISO8601 now
+#' @importFrom dplyr select mutate filter rename any_of bind_rows inner_join
+#' @importFrom purrr map_dfr map_lgl
+#' @importFrom gh gh
+#' @importFrom glue glue
+#' @importFrom gitlabr multilist_to_tibble
+
+#' @return A Weekly to copy-paste in a Wiki and a tibble
+#'
+#' @export
+gh_create_weekly_new_projects_board <- function(date_min, date_max,
+                                                user, repo,
+                                                board_url, github_token = Sys.getenv("GITHUB_PAT"),
+                                                verbose = FALSE) {
+  .Deprecated("lozen::gh_create_weekly_old_and_new_boards()")
+
+  date_min <- as_date(date_min)
+  date_max <- as_date(date_max)
+
+  if (date_max < date_min) {
+    stop("date_min should be lower or equal to date_max")
+  }
+
+  board_content <- graphql_to_tibble(board_url = board_url, github_token = github_token)
+
+  if (nrow(board_content) == 0) {
+    stop("The board of the project is empty")
+  }
+
+  board_content <- board_content %>%
+    rename(
+      content_url = url,
+      created_at = createdAt,
+      updated_at = updatedAt
+    ) %>%
+    mutate(state = tolower(state)) %>%
+    select(-id) %>%
+    mutate(content_url = gsub(content_url, pattern = "https://github.com", replacement = "https://api.github.com/repos"))
+
+  # Board columns names
+  board_content$board_column
+
+  # Retrieve all issues
+  all_issues <- gh(glue("/repos/{user}/{repo}/issues"), state = "all")
+  all_issues_tbl <- multilist_to_tibble(all_issues)
+
+  # 1 - Cards from a column - Closed
+  cards_tbl_done <- board_content %>%
+    filter(grepl("close|closed|a valider|validation|done", tolower(board_column)))
+
+  if (nrow(cards_tbl_done) != 0) {
+    cards_tbl_done <- inner_join(cards_tbl_done,
+      select(all_issues_tbl, id, number, assignees),
+      by = "number"
+    )
+
+    cards_tbl_done <- cards_tbl_done %>%
+      mutate(info = "1 - :heavy_check_mark: Realised") %>%
+      filter(
+        as_date(as_datetime(updated_at)) >= date_min,
+        as_date(as_datetime(updated_at)) <= date_max
+      )
+  }
+
+  # 2 - Cards from a column - Blocked
+  cards_tbl_blocked <- board_content %>%
+    filter(grepl("blocked|bloque|bloqu\\\\u00e9", tolower(board_column)))
+
+  if (nrow(cards_tbl_blocked) != 0) {
+    cards_tbl_blocked <- inner_join(cards_tbl_blocked,
+      select(all_issues_tbl, id, number, assignees),
+      by = "number"
+    )
+
+    cards_tbl_blocked <- cards_tbl_blocked %>%
+      mutate(info = "2 - :stop_sign: Blocked")
+  }
+
+  # 3 - Cards from a column - Validation
+  cards_tbl_valid <- board_content %>%
+    filter(grepl("a valider|validation", tolower(board_column)))
+
+  if (nrow(cards_tbl_valid) != 0) {
+    cards_tbl_valid <- inner_join(cards_tbl_valid,
+      select(all_issues_tbl, id, number, assignees),
+      by = "number"
+    )
+
+    cards_tbl_valid <- cards_tbl_valid %>%
+      mutate(info = "3 - :thumbsup: To validate")
+  }
+
+
+  # 4 - Cards from a column - En cours/Review
+  cards_tbl_progress <- board_content %>%
+    filter(grepl("in progress|en cours|review|revision|r\\\\u00e9vision", tolower(board_column)))
+
+  if (nrow(cards_tbl_progress) != 0) {
+    cards_tbl_progress <- inner_join(cards_tbl_progress,
+      select(all_issues_tbl, id, number, assignees),
+      by = "number"
+    )
+
+
+    cards_tbl_progress <- cards_tbl_progress %>%
+      mutate(info = "4 - :spiral_notepad: In progress") %>%
+      filter(as_date(as_datetime(updated_at)) <= date_max)
+  }
+
+
+  # New issues opened during the week (even if closed)
+  # >> DO NOT Change here for new board
+  new_issues <- gh(glue("/repos/{user}/{repo}/issues"),
+    sort = "created", since = format_ISO8601(
+      as_datetime(paste0(date_min, "T00:00:01"),
+        tz = lubridate::tz(now())
+      ),
+      usetz = TRUE
+    ),
+    state = "all"
+  )
+
+  new_issues_all_tbl <- multilist_to_tibble(new_issues)
+  # Remove PR as they are listed as issues
+  if (any(grepl("pull_request", names(new_issues_all_tbl)))) {
+    new_issues_all_tbl <- new_issues_all_tbl %>%
+      filter(map_lgl(.[["pull_request"]], is.null))
+  }
+
+  if (nrow(new_issues_all_tbl) != 0) {
+    new_issues_tbl <- new_issues_all_tbl %>%
+      filter(
+        as_date(as_datetime(created_at)) >= date_min,
+        as_date(as_datetime(created_at)) <= date_max
+      ) %>%
+      rename(content_url = url) %>%
+      select(any_of(
+        unique(c(
+          "state",
+          names(cards_tbl_blocked),
+          names(cards_tbl_progress),
+          names(cards_tbl_valid),
+          names(cards_tbl_done)
+        ))
+      )) %>%
+      mutate(info = "9 - :seedling: New issues opened")
+  } else {
+    new_issues_tbl <- new_issues_all_tbl
+  }
+
+  # Combine cards ----
+  list_all_cards <- list(
+    cards_tbl_blocked,
+    cards_tbl_progress,
+    cards_tbl_valid,
+    cards_tbl_done,
+    new_issues_tbl
+  )
+
+  card_is_full <- purrr::map_lgl(list_all_cards, ~ nrow(.x) != 0)
+  all_cards_weekly <- bind_rows(list_all_cards[card_is_full])
+
+  all_cards_weekly_text <- all_cards_weekly %>%
+    mutate(
+      issue_get = gsub("https://api.github.com", "", content_url),
+      issue_li = create_issue_li_gh(issue_get)
+    )
+
+  all_cards_weekly_text_collapse <- collapse_li(all_cards_weekly_text)
+
+  out <- list(
+    weekly_issues = all_cards_weekly_text,
+    weekly_info = all_cards_weekly_text_collapse$text_weekly_all
+  )
+
+  if (verbose) {
+    cat(out$weekly_info)
+  }
+  return(out)
+}
+```
+  
+```{r example-gh_create_weekly_new_projects_board, error = TRUE}
+#' \dontrun{
+board_url <- "https://github.com/orgs/ThinkR-open/projects/4/"
+date_min <- "2022-06-30"
+date_max <- "2022-06-30"
+user <- "ThinkR-open"
+repo <- "example-weekly"
+
+if (Sys.getenv("GITHUB_PAT") != "") {
+  weekly <- gh_create_weekly_new_projects_board(
+    date_min = date_min,
+    date_max = date_max,
+    user = user,
+    repo = repo,
+    board_url = board_url,
+    github_token = Sys.getenv("GITHUB_PAT"),
+    verbose = FALSE
+  )
+}
+#' }
+# Copier dans le presse papier pour copier directement
+# clipr::write_clip(weekly$weekly_info)
+```
+  
+```{r tests-gh_create_weekly_new_projects_board}
+test_that("gh_create_weekly_new_projects_board works", {
+  expect_true(inherits(gh_create_weekly_new_projects_board, "function"))
+
+  test_user <- "thinkr-open"
+  test_repo <- "example-weekly"
+  board_url <- "https://github.com/orgs/ThinkR-open/projects/4/"
+
+
+  if (Sys.getenv("GITHUB_PAT") != "") {
+    weekly <- gh_create_weekly_new_projects_board(
+      date_min = "2022-06-30",
+      date_max = "2022-06-30",
+      user = test_user,
+      repo = test_repo,
+      board_url = board_url,
+      github_token = Sys.getenv("GITHUB_PAT"),
+      verbose = FALSE
+    )
+
+    info <- weekly$weekly_info
+    expect_length(info, 1)
+    expect_true(grepl("1 - :heavy_check_mark: Realised", info))
+    expect_true(grepl("2 - :stop_sign: Blocked", info))
+    expect_true(grepl("3 - :thumbsup: To validate", info))
+    expect_true(grepl("4 - :spiral_notepad: In progress", info))
+    expect_true(grepl("9 - :seedling: New issues opened", info))
+
+    expect_equal(
+      weekly$weekly_issues$info,
+      c(
+        rep("2 - :stop_sign: Blocked", 3),
+        "4 - :spiral_notepad: In progress",
+        "4 - :spiral_notepad: In progress",
+        "3 - :thumbsup: To validate",
+        "1 - :heavy_check_mark: Realised",
+        "1 - :heavy_check_mark: Realised",
+        rep("9 - :seedling: New issues opened", 7)
+      )
+    )
+
+    expect_equal(
+      as.character(weekly$weekly_issues$issue_li[1]),
+      "- [dev] Checklist mise en place: [issue 11](https://github.com/ThinkR-open/example-weekly/issues/11) - Not assigned"
+    )
+  }
+})
+```
+  
+
+# Create a weekly for GitLab with `gl_create_weekly()`
+    
+
+```{r function-gl_create_weekly}
+#' Create a Weekly/Daily summary of what happened in your GitLab Board
+#'
+#'
+#' @param project_id Id of the GitLab project
+#' @param date_min Minimal date to search from. The oldest date.
+#' @param date_max Maximal date to search to. The more recent date.
+#' @param language Character. Language: 'fr' ou 'en'.
+#' @param gitlab_url URL of the GitLab Forge
+#' @param private_token Your private GitLab instance token allowed to use the "api".
+#' @param verbose Logical. Whether to show the outputs in the console.
+#' @param regex_validation Regular expression to detect labels for issues waiting for validation
+#' @param regex_done Regular expression to detect labels for issues done by developers (and potentially awaiting validation by clients)
+#' @param regex_blocked Regular expression to detect labels for issues blocked (and potentially awaiting information by clients)
+#' @param regex_inprogress Regular expression to detect labels for issues in progress (and potentially awaiting review by lead dev.)
+#' @param regex_ready Regular expression to detect labels for issues ready (and potentially reorder by lead dev.)
+#' @param daily Logical. Create the daily issues summary for GitLab
+#' @param date_daily Date to search from.
+#' @param max_page_opened a numeric. The maximum number of pages to retrieve for open issues. Defaults to 10. 
+#' @param max_page_closed a numeric. The maximum number of pages to retrieve for close issues. Defaults to 5. 
+#' @importFrom gitlabr gl_connection set_gitlab_connection gl_list_issues gl_get_project
+#' @importFrom dplyr bind_rows rowwise mutate starts_with case_when filter arrange pull ungroup c_across summarise group_by left_join
+#' @importFrom glue glue
+#' @importFrom lubridate as_date
+#' @importFrom stats na.omit
+#' @importFrom stringr str_remove_all str_c
+#' @importFrom stringi stri_escape_unicode
+#' @importFrom purrr map
+#' @return A Weekly to copy-paste in a Wiki and a tibble
+#'
+#' @export
+gl_create_weekly <- function(project_id,
+                             date_min = Sys.Date() - 7,
+                             date_max = Sys.Date(),
+                             language = c("fr", "en"),
+                             gitlab_url = Sys.getenv("GITLAB_URL", unset = "https://gitlab.com"),
+                             private_token = Sys.getenv("GITLAB_TOKEN"),
+                             verbose = FALSE,
+                             regex_done = "close|closed|done",
+                             regex_validation = "a valider|validation",
+                             regex_blocked = "blocked|bloque|bloqu\\\\u00e9",
+                             regex_inprogress = "in progress|en cours|review|revision|r\\\\u00e9vision|r\\\\u00e9-validation",
+                             regex_ready = "ready|pret|pr\\\\u00eat",
+                             daily = FALSE,
+                             date_daily = Sys.Date(),
+                             max_page_opened = 10,
+                             max_page_closed = 5) {
+ 
+  if (isFALSE(is.numeric(max_page_opened)) | isFALSE(max_page_opened>=1)) {
+    stop("max_page_opened should be upper or equal to 1")
+  }
+  
+  if (isFALSE(is.numeric(max_page_closed)) | isFALSE(max_page_closed>=1)) {
+    stop("max_page_closed should be upper or equal to 1")
+  } 
+  
+  if (isTRUE(daily)) {
+    date_daily <- as_date(date_daily)
+    date_min <- date_daily
+    date_max <- date_min + 1
+  }
+
+  date_min <- as_date(date_min)
+  date_max <- as_date(date_max)
+
+  if (date_max < date_min) {
+    stop("date_min should be lower or equal to date_max")
+  }
+
+  if (private_token == "") {
+    stop("Please specify your private_token. This may be an environment variable named GITLAB_TOKEN")
+  }
+
+  # Language
+  language <- match.arg(language,
+    several.ok = FALSE
+  )
+
+  if (language == "fr") {
+    word_to_validate <- "R\u00e9alis\u00e9 et \u00e0 valider"
+    word_to_validate_daily <- "Tout frais fait du jour et \u00e0 valider"
+    word_realised <- "R\u00e9alis\u00e9 et valid\u00e9"
+    word_realised_daily <- "Tout frais fait du jour et valid\u00e9"
+    word_blocked <- "Bloqu\u00e9"
+    word_blocked_daily <- "Bloqu\u00e9, besoin de votre retour"
+    word_in_progress <- "En cours"
+    word_in_progress_daily <- "En cours, \u00e0 garder au chaud pour la prochaine fois"
+    word_in_progress_alert_daily <- "\u00c7a commence \u00e0 \u00eatre compliqu\u00e9 par ici, on va devoir r\u00e9-ajuster les priorit\u00e9s ou les besoins\n\n"
+    word_new_issues <- "Nouvelles issues ouvertes"
+    word_new_issues_daily <- "Les nouveaux tickets du jour"
+    word_ready <- "Pr\u00eat"
+    word_ready_daily <- "Les prochains sur la liste"
+    next_date <- "La prochaine date : (A remplir)"
+    last_weekly <- "Pour rappel, lien vers le Weekly pr\u00e9c\u00e9dent :"
+  } else if (language == "en") {
+    word_to_validate <- "Realised and to validate"
+    word_to_validate_daily <- "Freshly made of day and to validate"
+    word_realised <- "Realised and validated"
+    word_realised_daily <- "Freshly made of day and validated"
+    word_blocked <- "Blocked"
+    word_blocked_daily <- "Blocked, need your feedback"
+    word_in_progress <- "In progress"
+    word_in_progress_daily <- "In progress, to keep warm for the next time"
+    word_in_progress_alert_daily <- "It s getting complicated around here, we will have to readjust the priorities or needs\n\n"
+    word_new_issues <- "New issues opened"
+    word_new_issues_daily <- "The new tickets of the day"
+    word_ready <- "Ready"
+    word_ready_daily <- "Next on the list"
+    next_date <- "The next date: (to complete)"
+    last_weekly <- "As a reminder, links to the previous Weekly:"
+  }
+
+  # GitLab con
+  my_gitlab <- gl_connection(
+    gitlab_url = gitlab_url,
+    private_token = private_token
+  )
+
+  # Set the connection for the session
+  set_gitlab_connection(my_gitlab)
+
+  issues_open <- gl_list_issues(project = project_id, state = "opened", max_page = max_page_opened)
+  issues_closed <- gl_list_issues(project = project_id, state = "closed", max_page = max_page_closed)
+  message(paste0("Information: \n",
+                 dim(issues_open)[1], " open issues requested \n",
+                 dim(issues_closed)[1], " close issues requested"))
+
+  issues <- bind_rows(issues_open, issues_closed)
+
+  if (nrow(issues) == 0) {
+    message("There are no issues in the repository")
+    return(NULL)
+  }
+
+  # Info label state event - keep only the last label added
+  issues_info_label <- map(
+    pull(issues, iid),
+    ~ gl_resource_events(
+      project_id = project_id,
+      resource = "issues",
+      resource_id = .x,
+      event = "label"
+    )
+  ) %>%
+    bind_rows() %>%
+    filter(action != "remove") %>%
+    group_by(resource_id) %>%
+    filter(created_at == max(created_at)) %>%
+    filter(grepl(str_c(regex_blocked,
+      regex_ready,
+      regex_done,
+      regex_inprogress,
+      regex_validation,
+      sep = "|"
+    ), stri_escape_unicode(tolower(label.name)))) %>%
+    rename(last_state_date = "created_at") %>%
+    select(last_state_date, resource_id, label.name)
+
+  #------
+  issues_labels <- issues %>%
+    rowwise() %>%
+    mutate(all_labels = list(na.omit(c(c_across(cols = starts_with("labels")))))) %>%
+    ungroup() %>%
+    filter(as_date(as_datetime(created_at)) <= date_max)
+  # select(all_labels, starts_with("labels"))
+
+  issues_relabel <- issues_labels %>%
+    rowwise() %>%
+    mutate(
+      info = case_when(
+
+        # 2 - Cards from a column - Blocked
+        (state == "opened" &
+          any(grepl(regex_blocked, stringi::stri_escape_unicode(tolower(all_labels))))) ~
+          paste("2todelete - :octagonal_sign:", word_blocked),
+
+        # 4 - Cards from a column - En cours/Review
+        (state == "opened" &
+          any(grepl(regex_inprogress, stringi::stri_escape_unicode(tolower(all_labels)))) &
+          as_date(as_datetime(created_at)) <= date_max) ~
+          paste("4todelete - :notepad_spiral:", word_in_progress),
+
+        # 3 - Cards from a column - Validation
+        # grepl("a valider|validation", stringi::stri_escape_unicode(tolower("A valider")))
+        (state == "opened" &
+          any(grepl(regex_validation, stringi::stri_escape_unicode(tolower(all_labels))))) ~
+          paste("3todelete - :thumbsup:", word_to_validate),
+
+        # 5 - Cards from a column - Pret/Ready
+        (state == "opened" &
+          any(grepl(regex_ready, stringi::stri_escape_unicode(tolower(all_labels))))) ~
+          paste("5todelete - :thumbsup:", word_ready),
+
+        # 1 - Cards from a column - Done - Will get Validation later in duplicates
+        (state == "closed" & as_date(as_datetime(closed_at)) >= date_min) |
+          (state == "opened" &
+            any(grepl(regex_done, tolower(all_labels))) &
+            as_date(as_datetime(closed_at)) >= date_min &
+            as_date(as_datetime(closed_at)) <= date_max
+          ) ~
+          paste("1todelete - :white_check_mark:", word_realised)
+      )
+    ) # %>%
+  # arrange(info) %>%
+  # filter(!is.na(info)) %>%
+  # select(closed_at, state, info, all_labels) %>%
+  # View()
+  # issues_labels$state == "opened" &
+  # grepl(regex_inprogress, stringi::stri_escape_unicode(tolower(issues_labels$all_labels)))
+
+  # Dupliquer les issues ouvertes cette semaine
+  issues_relabel_dup <- issues_relabel %>%
+    bind_rows(
+      issues_relabel %>%
+        filter(as_date(as_datetime(created_at)) >= date_min &
+          as_date(as_datetime(created_at)) <= date_max) %>%
+        mutate(info = paste("9todelete - :seedling:", word_new_issues))
+    ) %>%
+    # Dupliquer les issues en cours
+    bind_rows(
+      issues_relabel %>%
+        filter(state == "opened" &
+          any(grepl(regex_inprogress, stri_escape_unicode(tolower(all_labels)))) &
+          as_date(as_datetime(created_at)) <= date_max) %>%
+        mutate(info = paste("6todelete - :notepad_spiral:", word_in_progress))
+    )
+
+  if (!any(grepl("assignees.username", names(issues_relabel_dup)))) {
+    issues_relabel_dup <- issues_relabel_dup %>%
+      mutate(assignees.username = NA)
+  }
+
+  issues_relabel_dup <- issues_relabel_dup %>%
+    left_join(issues_info_label, by = c("id" = "resource_id"))
+
+
+  issues_relabel_dup_li <- issues_relabel_dup %>%
+    # Add li text
+    mutate(
+      assignee_notempty = ifelse(is.na(assignees.username), "Not assigned", paste0("@", assignees.username)),
+      issue_li = glue("- {title}: [issue {iid}{ifelse(state == \'closed\', \' (closed)\', \'\')}]({web_url}) - {assignee_notempty}")
+    ) %>%
+    filter(!is.na(info)) %>%
+    arrange(info)
+
+
+  # If daily -> filter issue (recently) + reorder section issues
+  if (isTRUE(daily)) {
+    issues_relabel_dup_li <- issues_relabel_dup_li %>%
+      filter(!(info == paste("3todelete - :thumbsup:", word_to_validate) & as_date(as_datetime(updated_at)) < date_min) &
+        !(info == paste("2todelete - :octagonal_sign:", word_blocked) & as_date(as_datetime(updated_at)) < date_min))
+
+    issues_relabel_dup_li <- issues_relabel_dup_li %>%
+      mutate(
+        info = gsub(info, pattern = paste("3todelete - :thumbsup:", word_to_validate), replacement = paste("1todelete - :heavy_check_mark:", word_to_validate_daily)),
+        info = gsub(info, pattern = paste("1todelete - :white_check_mark:", word_realised), replacement = paste("2todelete - :heavy_check_mark:", word_realised_daily)),
+        info = gsub(info, pattern = paste("4todelete - :notepad_spiral:", word_in_progress), replacement = paste("3todelete - :memo:", word_in_progress_daily)),
+        info = gsub(info, pattern = paste("6todelete - :notepad_spiral:", word_in_progress), replacement = paste("4todelete - :warning:", word_in_progress_alert_daily)),
+        info = gsub(info, pattern = paste("2todelete - :octagonal_sign:", word_blocked), replacement = paste("5todelete - :octagonal_sign:", word_blocked_daily)),
+        info = gsub(info, pattern = paste("5todelete - :thumbsup:", word_ready), replacement = paste("6todelete - :soon:", word_ready_daily)),
+        info = gsub(info, pattern = paste("9todelete - :seedling:", word_new_issues), replacement = paste("9todelete - :seedling:", word_new_issues_daily))
+      ) %>%
+      arrange(info, updated_at)
+  } else { # if WEEKLY
+    issues_relabel_dup_li <- issues_relabel_dup_li %>%
+      filter(info != paste("6todelete - :notepad_spiral:", word_in_progress))
+  }
+
+  all_cards_weekly_text_collapse <- collapse_li(issues_relabel_dup_li) %>%
+    mutate(text_weekly_all = str_remove_all(text_weekly_all, "1todelete - |2todelete - |3todelete - |4todelete - |5todelete - |6todelete - |9todelete - "))
+
+  # If daily -> add next date to dev + ref last weekly
+  if (isTRUE(daily)) {
+    # Add a text at the top to explain that some parts must be deleted
+    title_paragraph <- paste0("## Daily - ", date_min, "\n\n\n")
+    detail_paragraph <- "_Note for the Lead Dev: Some sections were automatically created. This is the case for the section :warning: and the section :soon:. In the section :warning:, please delete the not-appropriate issues, or write a specific text. In the section :soon:, please arrange the issues according to the priority. Also, you must complete the next date for the mission. => DELETE THIS PARAGRAPH_\n\n\n"
+
+    all_cards_weekly_text_collapse <- all_cards_weekly_text_collapse %>%
+      mutate(text_weekly_all = paste(title_paragraph, detail_paragraph, text_weekly_all))
+
+    # Add the link to the previous weekly
+    proj_info <- gl_get_project(project = project_id)
+
+    all_cards_weekly_text_collapse <- all_cards_weekly_text_collapse %>%
+      mutate(text_weekly_all = paste(text_weekly_all,
+        paste0(":date: ", next_date),
+        paste0(
+          ":book: ", last_weekly,
+          " ",
+          paste0(gitlab_url, "/", proj_info$path_with_namespace, "/-/wikis/Weekly")
+        ),
+        sep = "\n\n\n"
+      ))
+  }
+
+  out <- list(
+    weekly_issues = issues_relabel_dup_li,
+    weekly_info = pull(all_cards_weekly_text_collapse)
+  )
+
+  if (verbose) {
+    cat(out$weekly_info)
+  }
+  return(out)
+}
+
+#' Gets a list of all state events for a single issue.
+#' @noRd
+gl_resource_events <- function(project_id,
+                               resource_id,
+                               resource = c("issues", "merge_requests", "epics"),
+                               event = c("label", "iteration", "milestone", "state", "weight"),
+                               ...) {
+  resource <- match.arg(resource)
+  event <- match.arg(event)
+
+
+  if (resource == "merge_requests" & event %in% c("iteration", "weight")) {
+    stop('merge_requests can not be associated with \"iteration\", \"weight\"')
+  }
+  if (resource == "epics" & event %in% c("iteration", "milestone", "state", "weight")) {
+    stop('epics can not be associated with \"iteration\", \"milestone\", \"state\", \"weight\"')
+  }
+
+  gitlab(
+    req = paste0("projects/", project_id, "/", resource, "/", resource_id, "/resource_", event, "_events"),
+    verb = httr::GET, ...
+  )
+}
+
+
+#' @rdname gl_create_weekly
+#' @param ... Additional arguments
+#' @export
+gl_create_daily <- purrr::partial(gl_create_weekly, daily = TRUE)
+```
+  
+```{r , eval = FALSE}
+#' \dontrun{
+# example-weekly = 37585948 (on GitLab.com)
+out <- gl_create_weekly(
+  project_id = "<get_your_id_project>",
+  date_min = Sys.Date() - 7,
+  private_token = Sys.getenv("GITLAB_TOKEN")
+)
+cat(out$weekly_info)
+# Copier dans le presse papier pour copier directement
+# clipr::write_clip(out$weekly_info)
+
+# Get the daily weekly for a past day
+out_past <- gl_create_daily(
+  project_id = "<get_your_id_project>",
+  date_daily = "2022-07-20",
+  private_token = Sys.getenv("GITLAB_TOKEN")
+)
+cat(out_past$weekly_info)
+
+# Get the daily weekly for a today
+out_today <- gl_create_daily(
+  project_id = "<get_your_id_project>",
+  private_token = Sys.getenv("GITLAB_TOKEN")
+)
+cat(out_today$weekly_info)
+
+# Copier dans le presse papier pour copier directement
+# clipr::write_clip(out$weekly_info)
+#' }
+```
+  
+```{r tests-gl_create_weekly}
+## 04-05-2023 On skip pour des raisons d'auth sur le CI
+skip_on_ci()
+
+test_that("gl_create_weekly works", {
+  expect_true(inherits(gl_create_weekly, "function"))
+  
+  gitlab_url <-
+    Sys.getenv("GITLAB_URL", unset = "https://gitlab.com")
+  
+  the_token <- Sys.getenv("GITLAB_TOKEN")
+  
+  # GitLab con
+  my_gitlab <- gl_connection(gitlab_url = gitlab_url,
+                             private_token = the_token)
+  
+  # Set the connection for the session
+  set_gitlab_connection(my_gitlab)
+  
+  # Get user infos
+  user_info <- gitlab(req = paste0("user"), verb = httr::GET)
+  user_name <- user_info %>% pull(username)
+  
+  project_name <- "lozenexempleissues"
+  
+  # Get user namespace (= group_id)
+  # namespace_id <- gitlabr::gitlab(req = "namespaces", search = user_name)[["id"]]
+  group_url <- user_info[["web_url"]]
+  
+  
+  # create_group_project ----
+  project_id <-
+    create_group_project(project_name, namespace_id = NULL)
+  
+  add_board(
+    project_id,
+    labels_order = c(
+      "Blocked",
+      "Ready",
+      "In progress",
+      "Review",
+      "Pre-validation",
+      "Validation"
+    ),
+    lg = "en"
+  )
+  
+  yesterday <- lubridate::today() - 1
+  
+  ### Open ans close issues for weekly
+  url <- paste0("/projects/", project_id, "/", "issues")
+  
+  ### List of issues
+  issues_need <- list(
+    test1 = list(created_at = yesterday,
+                 label = "Ready"),
+    test2 = list(created_at = yesterday,
+                 label = "In progress"),
+    test3 = list(created_at = yesterday,
+                 label = "Blocked"),
+    test4 = list(created_at = yesterday,
+                 label = "Review"),
+    test5 = list(created_at = yesterday,
+                 label = "Validation"),
+    test6 = list(created_at = yesterday,
+                 label = "Ready")
+  )
+  # Open issues
+  purrr::iwalk(issues_need, ~ {
+    gitlab(
+      url,
+      title = .y,
+      verb = httr::POST,
+      created_at = as.character(.x[["created_at"]]),
+      labels = .x[["label"]]
+    )
+  })
+  
+  # Close an issue
+  gitlabr::gl_close_issue(project = project_id,
+                          issue_id = 6,
+                          labels = "")
+  
+  weekly_en <- gl_create_weekly(
+    project_id = project_id,
+    language = "en",
+    date_min = yesterday,
+    date_max = lubridate::today(),
+    private_token = Sys.getenv("GITLAB_TOKEN")
+  )
+  
+  info_en <- weekly_en$weekly_info
+  
+  
+  expect_length(info_en, 1)
+  expect_true(grepl(":white_check_mark: Realised", info_en))
+  expect_true(grepl(":octagonal_sign: Blocked", info_en))
+  expect_true(grepl(":thumbsup: Realised and to validate", info_en))
+  expect_true(grepl(":notepad_spiral: In progress", info_en))
+  expect_true(grepl(":thumbsup: Ready", info_en))
+  expect_true(grepl(":seedling: New issues opened", info_en))
+  
+  expect_equal(
+    weekly_en$weekly_issues$info,
+    c(
+      "1todelete - :white_check_mark: Realised and validated",
+      "2todelete - :octagonal_sign: Blocked",
+      "3todelete - :thumbsup: Realised and to validate",
+      "4todelete - :notepad_spiral: In progress",
+      "4todelete - :notepad_spiral: In progress",
+      "5todelete - :thumbsup: Ready",
+      "9todelete - :seedling: New issues opened",
+      "9todelete - :seedling: New issues opened",
+      "9todelete - :seedling: New issues opened",
+      "9todelete - :seedling: New issues opened",
+      "9todelete - :seedling: New issues opened",
+      "9todelete - :seedling: New issues opened"
+    )
+  )
+  
+  # EN DAILY
+  daily_en <- gl_create_weekly(
+    project_id = project_id,
+    language = "en",
+    date_min = yesterday,
+    date_max = lubridate::today(),
+    private_token = Sys.getenv("GITLAB_TOKEN"),
+    daily = TRUE
+  )
+  
+  info_en <- daily_en$weekly_info
+  
+  expect_length(info_en, 1)
+  expect_true(grepl(":date: The next date", info_en))
+  expect_true(grepl(":book: As a reminder, links to the previous Weekly:", info_en))
+  
+  # FR WEEKLY
+  weekly_fr <- gl_create_weekly(
+    project_id = project_id,
+    language = "fr",
+    date_min = yesterday,
+    date_max = lubridate::today(),
+    private_token = Sys.getenv("GITLAB_TOKEN")
+  )
+  info_fr <- weekly_fr$weekly_info
+  
+  expect_length(info_fr, 1)
+  expect_true(grepl(":white_check_mark: R\u00e9alis\u00e9", info_fr))
+  expect_true(grepl(":octagonal_sign: Bloqu\u00e9", info_fr))
+  expect_true(grepl(":thumbsup: R\u00e9alis\u00e9 et \u00e0 valider", info_fr))
+  expect_true(grepl(":notepad_spiral: En cours", info_fr))
+  expect_true(grepl(":thumbsup: R\u00e9alis\u00e9 et \u00e0 valider", info_fr))
+  expect_true(grepl(":thumbsup: Pr\u00eat", info_fr))
+  
+  expect_equal(
+    weekly_fr$weekly_issues$info,
+    c(
+      "1todelete - :white_check_mark: Réalisé et validé",
+      "2todelete - :octagonal_sign: Bloqué",
+      "3todelete - :thumbsup: Réalisé et à valider",
+      "4todelete - :notepad_spiral: En cours",
+      "4todelete - :notepad_spiral: En cours",
+      "5todelete - :thumbsup: Prêt",
+      "9todelete - :seedling: Nouvelles issues ouvertes",
+      "9todelete - :seedling: Nouvelles issues ouvertes",
+      "9todelete - :seedling: Nouvelles issues ouvertes",
+      "9todelete - :seedling: Nouvelles issues ouvertes",
+      "9todelete - :seedling: Nouvelles issues ouvertes",
+      "9todelete - :seedling: Nouvelles issues ouvertes"
+    )
+  )
+  
+  # FR DAILY
+  daily_fr <- gl_create_daily(
+    project_id = project_id,
+    language = "fr",
+    date_daily = yesterday,
+    private_token = Sys.getenv("GITLAB_TOKEN")
+  )
+  
+  info_daily_fr <- daily_fr$weekly_info
+  
+  expect_length(info_daily_fr, 1)
+  expect_true(grepl(":date: La prochaine date", info_daily_fr))
+  expect_true(grepl(
+    ":book: Pour rappel, lien vers le Weekly pr\u00e9c\u00e9dent :",
+    info_daily_fr
+  ))
+  
+  # we need yesterday and group_url to get daily
+  expect_equal(object = info_daily_fr,
+               expected = glue::glue("## Daily - {yesterday}\n\n\n _Note for the Lead Dev: Some sections were automatically created. This is the case for the section :warning: and the section :soon:. In the section :warning:, please delete the not-appropriate issues, or write a specific text. In the section :soon:, please arrange the issues according to the priority. Also, you must complete the next date for the mission. => DELETE THIS PARAGRAPH_\n\n\n :heavy_check_mark: Tout frais fait du jour et à valider\n\n- test5: [issue 5]({group_url}/lozenexempleissues/-/issues/5) - Not assigned\n\n\n:heavy_check_mark: Tout frais fait du jour et validé\n\n- test6: [issue 6 (closed)]({group_url}/lozenexempleissues/-/issues/6) - Not assigned\n\n\n:memo: En cours, à garder au chaud pour la prochaine fois\n\n- test2: [issue 2]({group_url}/lozenexempleissues/-/issues/2) - Not assigned\n- test4: [issue 4]({group_url}/lozenexempleissues/-/issues/4) - Not assigned\n\n\n:warning: Ça commence à être compliqué par ici, on va devoir ré-ajuster les priorités ou les besoins\n\n\n\n- test2: [issue 2]({group_url}/lozenexempleissues/-/issues/2) - Not assigned\n- test4: [issue 4]({group_url}/lozenexempleissues/-/issues/4) - Not assigned\n\n\n:octagonal_sign: Bloqué, besoin de votre retour\n\n- test3: [issue 3]({group_url}/lozenexempleissues/-/issues/3) - Not assigned\n\n\n:soon: Les prochains sur la liste\n\n- test1: [issue 1]({group_url}/lozenexempleissues/-/issues/1) - Not assigned\n\n\n:seedling: Les nouveaux tickets du jour\n\n- test1: [issue 1]({group_url}/lozenexempleissues/-/issues/1) - Not assigned\n- test2: [issue 2]({group_url}/lozenexempleissues/-/issues/2) - Not assigned\n- test3: [issue 3]({group_url}/lozenexempleissues/-/issues/3) - Not assigned\n- test4: [issue 4]({group_url}/lozenexempleissues/-/issues/4) - Not assigned\n- test5: [issue 5]({group_url}/lozenexempleissues/-/issues/5) - Not assigned\n- test6: [issue 6 (closed)]({group_url}/lozenexempleissues/-/issues/6) - Not assigned\n\n\n:date: La prochaine date : (A remplir)\n\n\n:book: Pour rappel, lien vers le Weekly précédent : {group_url}/lozenexempleissues/-/wikis/Weekly")
+               )
+  
+  # Clean GitLab => Remove the project
+  gitlabr::gitlab(req = paste0("projects/", project_id),
+                  verb = httr::DELETE)
+  
+  
+})
+
+test_that("gl_create_weekly works checks the max_page", {
+  # EN WEEKLY
+    expect_error(
+      object = gl_create_weekly(
+        project_id = 123456789,
+        language = "en",
+        date_min = "2022-07-04",
+        date_max = "2022-07-20",
+        private_token = Sys.getenv("GITLAB_TOKEN"),
+        max_page_opened = NA
+      ), regexp = "max_page_opened should be upper or equal to 1"
+    )
+    
+    expect_error(
+      object = gl_create_weekly(
+        project_id = 123456789,
+        language = "en",
+        date_min = "2022-07-04",
+        date_max = "2022-07-20",
+        private_token = Sys.getenv("GITLAB_TOKEN"),
+        max_page_opened = 11,
+        max_page_closed = -5
+      ), regexp = "max_page_closed should be upper or equal to 1"
+    )
+})
+```
+
+# Visualise the nature of the developments for GitLab with `visualise_commits()`
+ 
+Only the main branch is considered.
+
+```{r function-visualise_commits}
+#' Visualise the nature of the developments (conventional commits)
+#'
+#' @param project_id Id of the GitLab project
+#' @param gitlab_url URL of the GitLab Forge
+#' @param private_token Your private GitLab instance token allowed to use the "api".
+#' @param path Path of the project if already pulled locally
+#' @param ref Branch name (or commit sha) from which to explore commits. By default NULL, it use the default branch
+#' @param date_min Minimal date to search from. The oldest date.
+#' @param date_max Maximal date to search to. The more recent date.
+#' @param language Character. Language: 'fr' ou 'en'.
+#' @param conv_tags Conventional commits tags
+#' @param color blue color for a graph
+#'
+#' @importFrom gitlabr gl_connection set_gitlab_connection gl_get_project
+#' @importFrom tidyr unnest replace_na
+#' @importFrom stringr str_detect str_extract_all
+#' @importFrom dplyr filter select mutate group_by count ungroup as_tibble n
+#' @importFrom purrr map_dfr
+#' @importFrom lubridate as_date as_datetime
+#' @importFrom ggplot2 ggplot aes geom_col scale_x_discrete labs theme_bw
+#' @importFrom forcats fct_expand fct_relevel
+#'
+#' @return A ggplot
+#' @export
+visualise_commits <- function(project_id,
+                              gitlab_url = Sys.getenv("GITLAB_URL", unset = "https://gitlab.com"),
+                              private_token = Sys.getenv("GITLAB_TOKEN"),
+                              path,
+                              ref = NULL,
+                              date_min = Sys.Date() - 7,
+                              date_max = Sys.Date(),
+                              language = c("fr", "en"),
+                              conv_tags = c("feat", "fix", "doc", "test", "ci", "refactor", "style", "chore"),
+                              color = "#15b7d6") {
+  if (missing(path)) {
+    if (private_token == "") {
+      stop(
+        "Please specify your private_token. This may be an environment variable named GITLAB_TOKEN"
+      )
+    }
+
+    # GitLab con
+    my_gitlab <- gl_connection(
+      gitlab_url = gitlab_url,
+      private_token = private_token
+    )
+
+    # Set the connection for the session
+    set_gitlab_connection(my_gitlab)
+
+    the_project <- gl_get_project(project = project_id)
+    group_url <- gsub(the_project[["name"]], "", the_project[["web_url"]])
+
+    path <- clone_locally(
+      project_name = the_project[["name"]],
+      group_url = group_url,
+      open = FALSE
+    )
+  }
+
+  date_min <- as_date(date_min)
+  date_max <- as_date(date_max)
+
+  if (date_max < date_min) {
+    stop("date_min should be lower or equal to date_max")
+  }
+
+  # Language
+  language <- match.arg(language,
+    several.ok = FALSE
+  )
+  conv_tags <- tolower(conv_tags)
+
+  if (language == "fr") {
+    title_plot <- "R\u00e9partition des d\u00e9veloppements r\u00e9alis\u00e9s"
+    title_y <- "Nombre de commits concern\u00e9s"
+    title_period <- "P\u00e9riode"
+  } else if (language == "en") {
+    title_plot <- "Distribution of realised developments"
+    title_y <- "Number of commits involved"
+    title_period <- "Period"
+  }
+
+  # Get commits
+  all_commits <- git2r::commits(
+    repo = path, ref = ref,
+    topological = TRUE, time = TRUE, reverse = FALSE
+  ) %>%
+    map_dfr(as_tibble) %>%
+    mutate(order = rev(1:n()))
+
+
+  if (nrow(all_commits) == 0) {
+    message("There are no commits in the repository")
+    return(NULL)
+  }
+
+  # Filter commits in range date and delete Merge requests commits
+  commits_date_range <- all_commits %>%
+    filter(as_date(as_datetime(when)) >= date_min &
+      as_date(as_datetime(when)) <= date_max) %>%
+    filter(!str_detect(message, "^merge")) %>%
+    mutate(message = tolower(message))
+
+  # TODO: extract tags:
+
+  if (nrow(commits_date_range) == 0) {
+    message("There are no commits for this period in the repository")
+    return(NULL)
+  }
+
+  # Filter commits that respect the conventional commit style
+  commits_conv <- commits_date_range %>%
+    mutate(conv_title = str_extract_all(message,
+      pattern = paste(paste0("^", conv_tags), collapse = "|")
+    )) %>%
+    select(sha, conv_title) %>%
+    unnest(conv_title, keep_empty = TRUE) %>%
+    replace_na(list(conv_title = "undefined")) %>%
+    mutate(
+      conv_title = fct_expand(conv_title, conv_tags),
+      conv_title = fct_relevel(conv_title, conv_tags)
+    )
+
+  # Count and plots
+  plot_commits <- commits_conv %>%
+    group_by(conv_title) %>%
+    count() %>%
+    ungroup() %>%
+    ggplot() +
+    aes(x = conv_title, y = n) +
+    geom_col(fill = color) +
+    scale_x_discrete(drop = FALSE) +
+    labs(
+      title = title_plot,
+      x = "",
+      y = title_y,
+      caption = paste(title_period, " : ", date_min, " - ", date_max)
+    ) +
+    theme_bw()
+
+  return(plot_commits)
+}
+```
+  
+```{r example-visualise_commits, eval = FALSE}
+#' \dontrun{
+
+  visualise_commits(
+    project_id = "<get_your_id_project>",
+    gitlab_url = Sys.getenv("GITLAB_URL", unset = "https://gitlab.com"),
+    date_min = "2022-09-22",
+    date_max = "2022-09-29",
+    private_token = Sys.getenv("GITLAB_TOKEN")
+  )
+
+  # Or on project already cloned
+  tempdir <-
+    clone_locally(full_url = "https://gitlab.com/my_name/my_repo", open = FALSE)
+
+  visualise_commits(
+    path = tempdir,
+    date_min = "2022-09-22",
+    date_max = "2022-09-29"
+  )
+}
+```
+  
+```{r tests-visualise_commits}
+## 04-05-2023 On skip pour des raisons d'auth sur le CI
+skip_on_ci()
+
+gitlab_url <-
+  Sys.getenv("GITLAB_URL", unset = "https://gitlab.com")
+
+the_token <- Sys.getenv("GITLAB_TOKEN")
+
+# GitLab con
+my_gitlab <- gl_connection(gitlab_url = gitlab_url,
+                           private_token = the_token)
+
+# Set the connection for the session
+set_gitlab_connection(my_gitlab)
+
+# Get user infos
+user_info <- gitlab(req = paste0("user"), verb = httr::GET)
+user_name <- user_info %>% pull(username)
+
+project_name <- "lozenexemplecommits"
+
+# Get user namespace (= group_id)
+# namespace_id <- gitlabr::gitlab(req = "namespaces", search = user_name)[["id"]]
+group_url <- user_info[["web_url"]]
+
+# create_group_project ----
+project_id <-
+  create_group_project(project_name, namespace_id = NULL)
+
+withr::with_tempdir({
+  tempdir <-
+    clone_locally(full_url = paste0(group_url, "/", project_name),
+                  open = FALSE)
+  
+  setwd(tempdir)
+  file_to_add <- tempfile(tmpdir = tempdir)
+  writeLines(letters[1:6], file_to_add)
+  
+  gert::git_config_set("user.name", "Jerry")
+  gert::git_config_set("user.email", "jerry@gmail.com")
+  gert::git_add(".")
+  gert::git_commit("random file")
+  gert::git_push()
+})
+
+
+test_that("visualise_commits works", {
+
+  on.exit({
+   gitlabr::gitlab(req = paste0("projects/", project_id),
+                  verb = httr::DELETE)
+  })
+
+  expect_true(inherits(visualise_commits, "function"))
+  yesterday <- lubridate::today() - 1
+  repart_commit_test <-
+    visualise_commits(
+      project_id = project_id,
+      gitlab_url = Sys.getenv("GITLAB_URL", unset = "https://gitlab.com"),
+      date_min = yesterday,
+      date_max = lubridate::today(),
+      private_token = Sys.getenv("GITLAB_TOKEN")
+    )
+  
+  expect_true(inherits(repart_commit_test, c("gg", "ggplot")))
+  
+  
+  expect_message(
+    repart_commit_not_ok <- visualise_commits(
+      project_id = project_id,
+      gitlab_url = Sys.getenv("GITLAB_URL", unset = "https://gitlab.com"),
+      date_min = yesterday-100,
+      date_max = lubridate::today()-100,
+      private_token = Sys.getenv("GITLAB_TOKEN")
+    ),
+    "There are no commits for this period in the repository"
+  )
+  
+  expect_null(repart_commit_not_ok)
+  
+  
+})
+```
+  
+# Visualise the progress of the milestones for GitLab with `gl_get_milestones_progress()`
+    
+```{r function-gl_get_milestones_progress}
+#' Visualise the progress of the milestones for GitLab
+#'
+#' @param project_id Id of the GitLab project
+#' @param language Character. Language: 'fr' ou 'en'.
+#' @param gitlab_url URL of the GitLab Forge
+#' @param private_token Your private GitLab instance token allowed to use the "api".
+#' @param color by defaut, warning color
+#'
+#' @importFrom gitlabr gl_connection set_gitlab_connection gl_proj_req gl_list_issues gitlab
+#' @importFrom dplyr rename filter bind_rows group_by count ungroup left_join select mutate desc
+#' @importFrom ggplot2 ggplot aes geom_col scale_x_continuous labs theme_minimal theme element_blank
+#' @importFrom scales label_number
+#' @importFrom forcats fct_reorder
+#'
+#' @return A ggplot
+#' @export
+#' @examples
+gl_get_milestones_progress <- function(project_id,
+                                       language = c("fr", "en"),
+                                       gitlab_url = Sys.getenv("GITLAB_URL", unset = "https://gitlab.com"),
+                                       private_token = Sys.getenv("GITLAB_TOKEN"),
+                                       color = "#f15522") {
+  if (private_token == "") {
+    stop("Please specify your private_token. This may be an environment variable named GITLAB_TOKEN")
+  }
+
+  # GitLab con
+  my_gitlab <- gl_connection(
+    gitlab_url = gitlab_url,
+    private_token = private_token
+  )
+
+  # Set the connection for the session
+  set_gitlab_connection(my_gitlab)
+
+  # Language
+  language <- match.arg(language,
+    several.ok = FALSE
+  )
+
+  if (language == "fr") {
+    title_plot <- "Progression des milestones"
+  } else if (language == "en") {
+    title_plot <- "Progression of milestones"
+  }
+
+  # Get global info about milestones
+  milestones <- gitlab(
+    req = gl_proj_req(
+      project_id,
+      req = "milestones"
+    )
+  )
+
+  if (nrow(milestones) == 0) {
+    message("No milestones recorded for this repository")
+    return(NULL)
+  }
+
+  milestones <- milestones %>%
+    rename(
+      milestone_name = title,
+      milestone_id = id
+    )
+
+  # Get all issues linked to a milestone from API
+  data_issues <- purrr::map(
+    milestones$milestone_id,
+    ~ gitlab(
+      req = gl_proj_req(
+        project_id,
+        req = c("milestones", .x, "issues")
+      )
+    )
+  )
+
+  progress_milestone <- milestones %>%
+    select(milestone_id, milestone_name) %>%
+    mutate(data = data_issues) %>%
+    tidyr::unnest(data, keep_empty = TRUE) %>%
+    select(milestone_id, milestone_name, id, iid, title, state) %>%
+    group_by(milestone_id, milestone_name) %>%
+    summarise(
+      nb_closed_issues = sum(state == "closed"),
+      total_nb = n(),
+      nb_open_issues = sum(state != "closed"),
+      progress = 100 * nb_closed_issues / n()
+    ) %>%
+    ungroup() %>%
+    mutate(max_progress = 100) %>%
+    select(
+      milestone_name,
+      milestone_id,
+      nb_closed_issues,
+      nb_open_issues,
+      total_nb,
+      progress,
+      max_progress
+    ) %>%
+    mutate(milestone_name = fct_reorder(milestone_name, rev(milestone_id)))
+
+
+  # Plot
+  plot_milestones <- progress_milestone %>%
+    ggplot() +
+    geom_col(aes(x = max_progress, y = milestone_name),
+      col = color, fill = NA, size = 0.10
+    ) +
+    geom_col(aes(x = progress, y = milestone_name),
+      fill = color
+    ) +
+    scale_x_continuous(
+      limits = c(0, 100),
+      labels = label_number(suffix = " %")
+    ) +
+    labs(
+      title = title_plot,
+      x = "",
+      y = ""
+    ) +
+    theme_minimal() +
+    theme(panel.grid = element_blank())
+
+  return(plot_milestones)
+}
+```
+  
+```{r example-gl_get_milestones_progress, eval=FALSE}
+#' \dontrun{
+gl_get_milestones_progress(
+  project_id = "<get_your_id_project>",
+  private_token = Sys.getenv("GITLAB_TOKEN")
+)
+#' }
+```
+  
+```{r tests-gl_get_milestones_progress}
+## 04-05-2023 On skip pour des raisons d'auth sur le CI
+skip_on_ci()
+
+test_that("gl_get_milestones_progress works", {
+  expect_true(inherits(gl_get_milestones_progress, "function"))
+  
+  gitlab_url <-
+    Sys.getenv("GITLAB_URL", unset = "https://gitlab.com")
+  
+  the_token <- Sys.getenv("GITLAB_TOKEN")
+  
+  # GitLab con
+  my_gitlab <- gl_connection(gitlab_url = gitlab_url,
+                             private_token = the_token)
+  
+  # Set the connection for the session
+  set_gitlab_connection(my_gitlab)
+  
+  # Get user infos
+  user_info <- gitlab(req = paste0("user"), verb = httr::GET)
+  user_name <- user_info %>% pull(username)
+  
+  project_name <- "lozenexemplemilestones"
+  
+  # Get user namespace (= group_id)
+  # namespace_id <- gitlabr::gitlab(req = "namespaces", search = user_name)[["id"]]
+  group_url <- user_info[["web_url"]]
+  
+  # create_group_project ----
+  project_id <-
+    create_group_project(project_name, namespace_id = NULL)
+  
+  expect_message(
+    progress_milestones_not_ok <- gl_get_milestones_progress(
+      project_id = project_id,
+      private_token = Sys.getenv("GITLAB_TOKEN")
+    ),
+    "No milestones recorded for this repository"
+  )
+  
+  # create a milestone
+  url <- paste0("projects/", project_id, "/milestones")
+  
+  gitlab(url,
+         title = "milestone_test",
+         verb = httr::POST)
+  
+  # add an issue in this milestone
+  
+  milestones_list <-   gitlab(url,
+                              verb = httr::GET)
+  gitlab(
+    paste0("projects/", project_id, "/issues"),
+    title = "milestone_issue",
+    verb = httr::POST,
+    milestone_id = milestones_list$id
+  )
+  
+  progress_milestones_test <- gl_get_milestones_progress(project_id = project_id,
+                                                         private_token = Sys.getenv("GITLAB_TOKEN"))
+  expect_true(inherits(progress_milestones_test, c("gg", "ggplot")))
+  
+    gitlabr::gitlab(req = paste0("projects/", project_id),
+                  verb = httr::DELETE)
+  
+})
+```
+  
+
+```{r development-inflate, eval=FALSE}
+# Run but keep eval=FALSE to avoid infinite loop
+# Execute in the console directly
+fusen::inflate(
+  flat_file = "dev/flat_create_weekly.Rmd",
+  vignette_name = "ac - Create Weekly with GitHub or GitLab",
+  overwrite = TRUE,
+  check = FALSE,
+  document = FALSE,
+  open_vignette = FALSE
+)
+# Executer la doc avec la bonne ligne de code
+rstudioapi::navigateToFile("dev/dev_history_package.Rmd", line = 211)
+```

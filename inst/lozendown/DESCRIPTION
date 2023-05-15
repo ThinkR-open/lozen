@@ -1,0 +1,21 @@
+Type: Compendium
+Package: valid.package.name.goes.here
+Title: What the Package Does (One Line, Title Case)
+Version: 0.0.0.9000
+Authors@R: 
+    person("First", "Last", , "first.last@example.com", role = c("aut", "cre"),
+           comment = c(ORCID = "YOUR-ORCID-ID"))
+Description: What the package does (one paragraph).
+License: file LICENSE
+Imports: 
+    bookdown,
+    dplyr,
+    ggplot2,
+    knitr,
+    pagedown,
+    tidyr,
+    pagedown
+Encoding: UTF-8
+LazyData: true
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.1.1

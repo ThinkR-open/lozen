@@ -1,0 +1,49 @@
+---
+title: "Titre de la note"
+subtitle: "Mon sous-titre"
+date: '`r Sys.Date()`'
+site: bookdown::bookdown_site
+toc-title: Contenu
+link-citations: yes
+description: "la description si nécessaire"
+knit: pagedown::chrome_print
+main-color: "#41b9ab"
+secondary-color: "#284d73"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Vue d'ensemble {.ensemble .unnumbered}
+
+> Notez dans le fichier source qu'il y a une classe spéciale pour la "Vue d'ensemble": `# Vue d'ensemble {.ensemble .unnumbered}`.
+> Conservez cette identification pour avoir le formattage spécifique à cette section.
+
+## [Titre d'ensemble]
+
+> Mettre le titre de cette section en niveau 2, comme `## Compte-rednu de réunion`.
+
+### [Titre de section d'ensemble]
+
+Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+Sed non risus.
+Suspendisse lectus tortor, dignissim sit amet, adipiscing nec, ultricies sed, dolor.
+Cras elementum ultrices diam.
+Maecenas ligula massa, varius a, semper congue, euismod non, mi.
+
+### [Titre de section d'ensemble]
+
+Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+Sed non risus.
+Suspendisse lectus tortor, dignissim sit amet, adipiscing nec, ultricies sed, dolor.
+Cras elementum ultrices diam.
+Maecenas ligula massa, varius a, semper congue, euismod non, mi.
+
+### [Titre de section d'ensemble]
+
+Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+Sed non risus.
+Suspendisse lectus tortor, dignissim sit amet, adipiscing nec, ultricies sed, dolor.
+Cras elementum ultrices diam.
+Maecenas ligula massa, varius a, semper congue, euismod non, mi.

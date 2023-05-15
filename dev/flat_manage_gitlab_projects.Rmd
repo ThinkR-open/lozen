@@ -1,0 +1,585 @@
+---
+title: "flat_manage_gitlab_projects.Rmd empty"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r development, include=FALSE}
+library(testthat)
+```
+
+<!--
+ You need to run the 'description' chunk in the '0-dev_history.Rmd' file before continuing your code there.
+-->
+
+```{r development-load}
+# Load already included functions if relevant
+pkgload::load_all(export_all = FALSE)
+```
+
+# Create the project
+
+# `create_group_project()`: Create a new project
+
+Define:
+
+- The name of the project you want to create in `project_name` *(choose it as for package name. No special character, only dot if needed)*
+- The `namespace_id` of the group where you want to create your project
+
+```{r function-create_group_project}
+#' Create new project in a group
+#'
+#' @param project_name name of the project to create
+#' @param namespace_id id of the group in which to add the project
+#' @param gitlab_con Connection credentials to GitLab.
+#'  Better use `set_gitlab_connection()` before this function
+#' @param default_branch Default branch for the project created. Default to "main".
+#'
+#' @return project_id. Side effect: Create a project on GitLab if not exists.
+#' @importFrom gitlabr gitlab
+#' @importFrom dplyr filter pull
+#' @export
+#'
+create_group_project <- function(project_name, namespace_id, gitlab_con = "default", default_branch = "main") {
+
+  if (!is.null(namespace_id)) {
+
+    group_projects <- gitlab(req = paste0("groups/", namespace_id, "/projects"),
+                             verb = httr::GET, gitlab_con = gitlab_con)
+
+    if (project_name %in% group_projects[["name"]]) {
+      project_id <- filter(group_projects, name == project_name)[["id"]]
+
+      message("Project: \'", project_name, "\' already exists in group: ",
+              namespace_id,
+              # filter(all_groups, id == namespace_id)[["name"]],
+              ". ",
+              "Using project_id: ", project_id)
+
+    } else {
+      # Create project
+      my_project <- gitlab(req = "projects", name = project_name,
+                           namespace_id = namespace_id,
+                           default_branch = default_branch,
+                           initialize_with_readme = FALSE,
+                           verb = httr::POST, gitlab_con = gitlab_con)
+      project_id <- my_project$id
+      message("New project created: ", project_id)
+    }
+
+  } else {
+
+    user_id <- gitlab(req = paste0("user"),
+                      verb = httr::GET, gitlab_con = gitlab_con) %>%
+      pull(id)
+
+    user_projects <- gitlab(req = paste0("users/", user_id, "/projects"),
+                            verb = httr::GET, gitlab_con = gitlab_con)
+
+    if (project_name %in% user_projects[["name"]]) {
+      project_id <- filter(user_projects, name == project_name)[["id"]]
+
+      message("Project: \'", project_name, "\' already exists in your personal namespace",
+              # filter(all_groups, id == namespace_id)[["name"]],
+              ". ",
+              "Using project_id: ", project_id)
+
+    } else {
+      # Create project
+      my_project <- gitlab(req = "projects", name = project_name,
+                           namespace_id = NULL,
+                           default_branch = default_branch,
+                           initialize_with_readme = FALSE,
+                           verb = httr::POST, gitlab_con = gitlab_con)
+      project_id <- my_project$id
+      message("New project created: ", project_id)
+    }
+
+  }
+
+  as.numeric(project_id)
+}
+
+```
+  
+```{r example-create_group_project, eval = FALSE}
+#' \dontrun{
+create_group_project(
+  project_name = project_name, 
+  namespace_id = namespace_id, 
+  default_branch = "main"
+)
+#' }
+```
+  
+```{r tests-create_group_project}
+test_that("create_group_project works", {
+
+})
+```
+
+# `protect_branches()`: Protect branches
+
+```{r function-protect_branches}
+#' Protect 'main' and 'production' from push on server
+#'
+#' @param project_id project_id
+#' @param unprotect Logical. Whether to unprotect branches or not.
+#'
+#' @return Side effect: Branches protected from push on server.
+#' @importFrom gitlabr gitlab
+#' @export
+#'
+protect_branches <- function(project_id, unprotect = FALSE) {
+
+  p_branches <- gitlab(req = paste0("projects/", project_id, "/protected_branches"),
+                       verb = httr::GET)
+
+  # Delete master protection if exists
+  if (nrow(p_branches) != 0 && "master" %in% p_branches[["name"]]) {
+    gitlab(req = paste0("projects/", project_id, "/protected_branches/master"),
+           verb = httr::DELETE)
+  }
+
+  # Add master protection
+  protect_master <- gitlab(req = paste0("projects/", project_id, "/protected_branches"),
+                           verb = httr::POST,
+                           name = "master",
+                           push_access_level = ifelse(isTRUE(unprotect), 40, 0),
+                           merge_access_level = 40 # Maintainers
+  )
+  message("\'master\'", ifelse(isTRUE(unprotect), " not ", " "), "protected from Push. Merge allowed for Maintainers")
+
+  # Delete main protection if exists
+  if (nrow(p_branches) != 0 && "main" %in% p_branches[["name"]]) {
+    gitlab(req = paste0("projects/", project_id, "/protected_branches/main"),
+           verb = httr::DELETE)
+  }
+
+  # Add main protection
+  protect_master <- gitlab(req = paste0("projects/", project_id, "/protected_branches"),
+                           verb = httr::POST,
+                           name = "main",
+                           push_access_level = ifelse(isTRUE(unprotect), 40, 0),
+                           merge_access_level = 40 # Maintainers
+  )
+  message("\'main\'", ifelse(isTRUE(unprotect), " not ", " "), "protected from Push. Merge allowed for Maintainers")
+
+  # Delete production protection if exists
+  if (nrow(p_branches) != 0 && "production" %in% p_branches[["name"]]) {
+    gitlab(req = paste0("projects/", project_id, "/protected_branches/production"),
+           verb = httr::DELETE)
+  }
+
+  # Add production protection
+  protect_prod <- gitlab(req = paste0("projects/", project_id, "/protected_branches"),
+                         verb = httr::POST,
+                         name = "production",
+                         push_access_level = ifelse(isTRUE(unprotect), 40, 0), # 0 = No Ones
+                         merge_access_level = 40 # Maintainers
+  )
+  message("\'production\'", ifelse(isTRUE(unprotect), " not ", " "), " protected from Push and from. Merge allowed for Maintainers")
+}
+```
+  
+```{r example-protect_branches, eval=FALSE}
+#' \dontrun{
+protect_branches(
+  project_id = project_id
+)
+# unprotect if wanted
+# protect_branches(project_id, unprotect = TRUE)
+#'}
+```
+  
+```{r tests-protect_branches}
+test_that("protect_branches works", {
+
+})
+```
+  
+# `modify_autoclose_and_coverage()`: No autoclose issue and coverage regex
+
+```{r function-modify_autoclose_and_coverage}
+#' modify_autoclose_and_coverage on GitLab
+#'
+#' @param project_id project_id
+#' @param autoclose Logical. Whether to autoclose issues when merged to main
+#' @param build_coverage_regex Character. regex used to retrieve code coverage in Ci logs.
+#'
+#' @return Side Effect on GitLab
+#' @importFrom gitlabr gitlab
+#' @export
+#'
+modify_autoclose_and_coverage <- function(project_id, autoclose = FALSE,
+                                          build_coverage_regex = "Coverage: \\d+\\.\\d+") {
+  protect_prod <- gitlab(req = paste0("projects/", project_id),
+                         verb = httr::PUT,
+                         autoclose_referenced_issues = autoclose,
+                         build_coverage_regex = build_coverage_regex
+  )
+  message("Issues are set to", ifelse(autoclose, " ", " not ") ,"auto-close when merged in \'main\'")
+  message("build_coverage_regex is set to: ", build_coverage_regex)
+}
+```
+  
+```{r example-modify_autoclose_and_coverage, eval=FALSE}
+#' \dontrun{
+modify_autoclose_and_coverage(
+  project_id = project_id
+)
+#' }
+```
+  
+```{r tests-modify_autoclose_and_coverage}
+test_that("modify_autoclose_and_coverage works", {
+
+})
+```
+  
+  
+# `project_options()`: Define project status for a user
+
+
+```{r function-project_options}
+#' Define project status for a user
+#'
+#' @param project_id project_id
+#' @param level The notification levels among disabled, participating,
+#' watch, global, mention, custom
+#' @return Side Effect on GitLab, allow reception of notifications.
+#' @export
+project_options <- function(project_id, level = "watch") {
+  level <- match.arg(level, c("disabled", "participating",
+                              "watch", "global", "mention", "custom"))
+
+  protect_notif <- gitlab(req = c("projects", project_id, "notification_settings"),
+                         verb = httr::PUT,
+                         level = level
+  )
+
+  message("Notification setting set for you only: ", protect_notif$level)
+}
+
+```
+  
+```{r example-project_options, eval = FALSE}
+#' \dontrun{
+project_options(project_id,
+                level = "watch")
+#' }
+```
+  
+```{r tests-project_options}
+test_that("project_options works", {
+
+})
+```
+  
+
+
+# Create the board
+
+## `add_labels()`: Add labels
+
+This will add labels "Prêt", "En cours", etc. in your project.
+
+
+```{r function-add_labels}
+#' Add labels to project
+#'
+#' @param project_id project_id
+#' @param lg by default, fr to get labels in french. Use en for english
+#'
+#' @return Table of added labels. Side effect: labels added on GitLab.
+#' @importFrom gitlabr gitlab
+#' @importFrom dplyr tribble filter
+#' @export
+#'
+add_labels <- function(project_id, lg = "fr") {
+  # Get labels
+  labels_already <- gitlab(req = paste0("projects/", project_id, "/labels"),
+                           verb = httr::GET)
+
+  # Create missing labels
+  if(lg == "fr"){
+    labels <- tribble(
+      ~name, ~color, ~description,
+      "A valider", "#D10069", "Validation client pour mise en ligne",
+      "Pr\u00e9-validation", "#F5F5DC", "Validation des tickets par le lead dev avant validation client",
+      "Bloqu\u00e9", "#7F8C8D", "N\u00e9cessite des infos compl\u00e9mentaires pour \u00eatre trait\u00e9",
+      "En cours", "#428BCA", "En cours de traitement",
+      "Pr\u00eat", "#69D100", "Pr\u00eat \u00e0 \u00eatre trait\u00e9",
+      # "En attente", "#A8D695", "A ce qu\'il faut pour \u00eatre trait\u00e9e, mais il y a trop de choses dans \'Pr\u00eat\'",
+      "R\u00e9vision", "#F0AD4E", "A r\u00e9viser avant int\u00e9gration dans 'main'"
+    )
+  }else{
+    message("English by default")
+    labels <- tribble(
+      ~name, ~color, ~description,
+      "To be validated", "#D10069", "Customer validation to go online",
+      "Pre-validation", "#F5F5DC", "Validation of tickets by lead dev before customer validation",
+      "Blocked", "#7F8C8D", "Requires additional information to be processed",
+      "In progress", "#428BCA", "In progress",
+      "Ready", "#69D100", "Pending treatment",
+      # "Waiting", "#A8D695", "For what it takes to be treated, but there are too many things in Ready",
+      "Review", "#F0AD4E", "To be reviewed before integration into 'main'"
+    )
+  }
+  
+
+  if(nrow(labels_already) !=0){
+    labels_to_add <- labels %>%
+    filter(!name %in% labels_already$name)
+  }else{
+    labels_to_add <- labels
+  }
+  
+
+  if (nrow(labels_to_add) > 0) {
+    for (i in 1:nrow(labels_to_add)) {
+      gitlab(req = paste0("projects/", project_id, "/labels"),
+             verb = httr::POST,
+             name = labels_to_add$name[i],
+             color = labels_to_add$color[i],
+             description = labels_to_add$description[i])
+    }
+    message("Labels manquants ajout\u00e9s")
+  } else {
+    message("No new labels to add.")
+  }
+
+  labels_to_add
+}
+
+```
+  
+```{r example-add_labels, eval=FALSE}
+#' \dontrun{
+add_labels(
+  project_id = project_id
+)
+#'}
+```
+  
+```{r tests-add_labels}
+test_that("add_labels works", {
+
+})
+```
+  
+
+## `add_board()`: Create the board
+
+This code prepares the _board_ for the _issues_: Issues > Board > Add List
+
+```{r function-add_board}
+#' Add board in the correct order
+#'
+#' @param project_id project_id
+#' @param name Name of the Board
+#' @param labels_order Name of the labels already existing in the project
+#' @param lg language of the board, "fr" or "en"
+#'
+#' @importFrom gitlabr gitlab
+#' @importFrom tibble tibble
+#' @importFrom dplyr left_join filter
+#' @export
+add_board <- function(
+    project_id,
+    name = "Development",
+    labels_order = c("Bloqu\u00e9", "Pr\u00eat", "En cours", "R\u00e9vision", "Pr\u00e9-validation", "A valider"),
+    lg = "fr"
+) {
+
+  add_labels(project_id, lg = lg)
+
+  ## Checking if the board already exists
+  check_if_board_exists <-
+    gitlab(req = paste0("projects/", project_id, "/boards"),
+           verb = httr::GET,
+           name = name)
+
+  if(nrow(check_if_board_exists) == 0) {
+
+    board <- gitlab(req = paste0("projects/", project_id, "/boards"),
+                    verb = httr::POST,
+                    name = name)
+
+    message("Created a new board")
+
+  } else {
+    
+    message("The board already exists")
+    
+  }
+
+  # get existing list of labels
+  all_labels <- gitlab(
+    req = c("projects", project_id, "labels"),
+    verb = httr::GET)
+
+  # get those for a list in the correct order
+  all_labels_lists <- tibble(name = labels_order) %>%
+    left_join(all_labels, by = "name") %>%
+    filter(!is.na(id))
+
+  # Create lists in the board
+  for (label_list in all_labels_lists[["id"]]) {
+    gitlab(
+      req = c("projects", project_id, "boards", board[["id"]][1], "lists"),
+      verb = httr::POST,
+      label_id = label_list)
+  }
+
+  board <- gitlab(req = paste0("projects/", project_id, "/boards"),
+                  verb = httr::GET)
+
+  return(board)
+}
+```
+  
+```{r example-add_board, eval = FALSE}
+#' \dontrun{
+add_board(
+  project_id = project_id
+)
+#'}
+```
+  
+```{r tests-add_board}
+test_that("add_board works", {
+
+})
+```
+  
+
+
+# Create the Wiki
+
+## `add_wikis()`: Create the wiki pages
+
+This will create some pages in the wiki of your project:
+
+- Home
+- Comptes-rendus
+- Key dates
+
+```{r function-add_wikis}
+#' Add Wiki
+#'
+#' @param project_id project_id
+#' @param project_name project_name
+#' @param group_url group_url
+#' @param group group
+#' @param type type
+#'
+#' @details
+#' Types:
+#' - home: Home Page
+#' - cr: Comptes-rendus
+#' - keys: Key dates of the project
+#'
+#' @return Tibble with wikis and GitLab infos.
+#'
+#' @importFrom gitlabr gitlab
+#' @export
+add_wikis <- function(project_id, project_name, group_url, group = basename(group_url), type = c("home", "cr", "keys")) {
+
+  existing_wiki <- gitlab(req = paste0("projects/", project_id, "/wikis"),
+                          verb = httr::GET)
+
+  type <- match.arg(type, several.ok = TRUE)
+
+  if (nrow(existing_wiki) == 0 | "home" %in% type) {
+    # Always home
+    wiki <- readLines(system.file("gitlab", "wiki_home.md", package = "lozen"))
+    # Changer {mon_projet}
+    wiki <- gsub(pattern = "\\{mon_projet\\}", replacement = project_name, x = wiki)
+    # Changer {group}
+    wiki <- gsub(pattern = "\\{group\\}", replacement = group, x = wiki)
+    # Changer {url}
+    wiki <- gsub(pattern = "\\{url\\}", replacement = group_url, x = wiki)
+
+    # Home
+    wiki_home <- gitlab(req = paste0("projects/", project_id, "/wikis"),
+                        verb = httr::POST,
+                        content = paste(wiki, collapse = "\n"),
+                        title = "home",
+                        format = "markdown")
+
+    message("Wiki home page added")
+  }
+
+  if ("cr" %in% type) {
+    # Comptes-rendus
+    wiki2 <- readLines(system.file("gitlab", "wiki_cr.md", package = "lozen"))
+    # Changer {mon_projet}
+    wiki2 <- gsub(pattern = "\\{date\\}", replacement = Sys.Date(), x = wiki2)
+
+    wiki_cr <- gitlab(req = paste0("projects/", project_id, "/wikis"),
+                      verb = httr::POST,
+                      content = paste(wiki2, collapse = "\n"),
+                      title = "Comptes-rendus",
+                      format = "markdown")
+
+    message("Wiki Comptes-rendus page added")
+  }
+
+  if ("keys" %in% type) {
+    # Comptes-rendus
+    wiki3 <- readLines(system.file("gitlab", "wiki_keys.md", package = "lozen"))
+    # Changer {mon_projet}
+    wiki3 <- gsub(pattern = "\\{date\\}", replacement = Sys.Date(), x = wiki3)
+
+    wiki_keys <- gitlab(req = paste0("projects/", project_id, "/wikis"),
+                      verb = httr::POST,
+                      content = paste(wiki3, collapse = "\n"),
+                      title = "Key dates",
+                      format = "markdown")
+
+    message("Wiki \'Key dates\' page added")
+  }
+
+  gitlab(req = paste0("projects/", project_id, "/wikis"),
+         verb = httr::GET)
+}
+
+```
+  
+```{r example-add_wikis, eval=FALSE}
+#' \dontrun{
+add_wikis(
+  project_id = project_id, 
+  project_name = project_name, 
+  group_url = group_url, 
+  group = basename(group_url)
+)
+}
+```
+  
+```{r tests-add_wikis}
+test_that("add_wikis works", {
+
+})
+```
+  
+
+```{r development-inflate, eval=FALSE}
+# Run but keep eval=FALSE to avoid infinite loop
+# Execute in the console directly
+fusen::inflate(
+  flat_file = "dev/flat_manage_gitlab_projects.Rmd", 
+  vignette_name = "bc - Manage GitLab projects",
+  overwrite = TRUE,
+  check = FALSE, 
+  document = FALSE, 
+  open_vignette = FALSE
+)
+
+rstudioapi::navigateToFile( # Go to the dev_history_package.Rmd to inflate all flat files 
+  "dev/dev_history_package.Rmd", 
+  line = 170
+)
+```

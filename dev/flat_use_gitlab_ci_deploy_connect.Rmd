@@ -1,0 +1,291 @@
+---
+title: "flat_use_gitlab_ci_deploy_connect.Rmd empty"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r development, include=FALSE}
+library(testthat)
+```
+
+```{r development-load}
+# Load already included functions if relevant
+pkgload::load_all(export_all = FALSE)
+```
+
+# use_gitlab_ci_deploy_connect
+
+```{r function-use_gitlab_ci_deploy_connect}
+#' Add a job to deploy a something on Connect
+#'
+#' This function creates a file .gitlab-ci.yml
+#' that will deploy something on Connect using a `lozen::deploy_connect_*` functions.
+#'
+#' Before using it, please follow these steps :
+#'
+#' - Ask the Mission Lead Dev for their deployment token on Connect, this is the one you will need to use.
+#'
+#' - Add the environment variables in the private variable hidden in the GitLab repository:
+#' Settings > CI/CD > Variables > Expand > Add variable /!\ if you check "Protected" when you create the variable, then it will be active only for protected branches
+#'
+#'   + Add `CONNECT_USER` with username.
+#'   + Add `CONNECT_TOKEN` with the token.
+#'
+#' If you want to deploy an app
+#' Be sure to have an app.R to deploy at the root of the folder, (if needed: use [golem::add_rstudioconnect_file()])
+#'
+#' NB: The environment variable `CONNECT_URL` is already defined generically on forge (only for group "thinkr").
+#'
+#' @return used for side effects
+#'
+#' @param image  Docker image to use
+#' @param dir Directory to deploy
+#' @param append append the file .gitlab-ci.yml if it already exists
+#' @param file_name Name of the yaml file
+#' @param stage_name name of the CI stage (need to be unique in the .gitlab-ci.yml file)
+#' @param deploy_function string caracter name of the `deploy_connect_*` functions to use.
+#' @param ... param to pass to  deploy_function
+#'
+#' @importFrom yaml write_yaml
+#' @importFrom glue glue
+#'
+#' @export
+#' @examples
+use_gitlab_ci_deploy_connect <- function(deploy_function = c("deploy_connect_shiny", "deploy_connect_pkgdown"),
+                                         stage_name = "deploy_connect",
+                                         image = "rocker/verse:latest",
+                                         dir = ".",
+                                         append = TRUE,
+                                         file_name = ".gitlab-ci.yml",
+                                         ...) {
+  deploy_function <- match.arg(deploy_function) # un peu overkill
+
+  path_to_yaml <- check_if_yaml_exists(
+    dir = dir,
+    file_name = file_name,
+    append = append
+  )
+
+
+  connect_ci_list <- create_deploy_ci_stage(
+    image = image,
+    stage_name = stage_name,
+    deploy_function = deploy_function,
+    ...
+  )
+
+
+
+  amend_yaml(
+    path_to_yaml = path_to_yaml,
+    connect_ci_list = connect_ci_list
+  )
+
+  path_to_yaml
+}
+```
+
+```{r examples-use_gitlab_ci_deploy_connect}
+#
+```
+
+```{r tests-use_gitlab_ci_deploy_connect}
+test_that("use_gitlab_ci_deploy_connect works", {
+  expect_true(inherits(use_gitlab_ci_deploy_connect, "function"))
+})
+```
+
+
+## `use_gitlab_ci_deploy_connect_shiny()`: Add a job to deploy a shiny app on Connect
+    
+```{r function-use_gitlab_ci_deploy_connect_shiny}
+#' @export
+#' @rdname use_gitlab_ci_deploy_connect
+
+use_gitlab_ci_deploy_connect_shiny <- function(...) {
+  use_gitlab_ci_deploy_connect(
+    stage_name = "deploy_connect_shiny",
+    deploy_function = "deploy_connect_shiny",
+    ...
+  )
+}
+```
+  
+```{r example-use_gitlab_ci_deploy_connect_shiny, eval = FALSE}
+deployed_shiny <- tempfile(pattern = "shiny")
+dir.create(deployed_shiny)
+# rstudioapi::filesPaneNavigate(deployed_shiny)
+# Exemple avec shiny
+withr::with_dir(deployed_shiny, {
+  use_gitlab_ci(type = "check-coverage-pkgdown")
+  use_gitlab_ci_deploy_connect_shiny()
+})
+```
+  
+```{r tests-use_gitlab_ci_deploy_connect_shiny}
+test_that("use_gitlab_ci_deploy_connect_shiny works", {
+  expect_true(inherits(use_gitlab_ci_deploy_connect_shiny, "function"))
+
+  # TODO - Remove ; allow test to pass on CI
+  skip_on_ci()
+
+  # Test on Gitlab : Create a golem and test the CI
+
+  # Pour un template CI "golem"
+
+
+  if (Sys.getenv("ALLOW_CI_TESTS_ON_GITLAB", unset = "FALSE") == "TRUE") {
+    output_golem <- with_gitlab_project(
+      gitlab_url = Sys.getenv("GITLAB_URL", unset = "https://gitlab.com"),
+      namespace_id = NULL,
+      private_token = Sys.getenv("GITLAB_TOKEN"),
+      project_name = "golem.test.project",
+      exp = {
+        lozen::create_r_project(project_path = getwd(), type = "golem", name_licence = "test", type_licence = usethis::use_mit_license)
+        golem::add_rstudioconnect_file(open = FALSE)
+        lozen::use_gitlab_ci(type = "check-coverage-pkgdown")
+        lozen::use_gitlab_ci_deploy_connect_shiny(append = TRUE)
+      }
+    )
+
+    expect_equal(
+      object = output_golem$status,
+      expected = "success"
+    )
+
+    expect_equal(
+      object = output_golem$connect,
+      expected = 200
+    )
+  }
+  if (Sys.getenv("ALLOW_CI_TESTS_ON_GITLAB", unset = "FALSE") == "TRUE") {
+    # Pour un template CI "golem"
+    output_shiny <- with_gitlab_project(
+      gitlab_url = Sys.getenv("GITLAB_URL", unset = "https://gitlab.com"),
+      namespace_id = NULL,
+      private_token = Sys.getenv("GITLAB_TOKEN"),
+      project_name = "shinytestproject",
+      exp = {
+        cat('library(shiny);
+
+            ui <- fluidPage(
+                  h1("Coucou"));
+
+            server <- function(input, output, session) {
+            }
+            shinyApp(ui, server)',
+          file = "app.R"
+        )
+
+        # shiny::shinyAppTemplate(path = ".",
+        #                  examples = "app",
+        #                  dryrun = FALSE)
+        # lozen::use_gitlab_ci(type = "check-coverage-pkgdown")
+        lozen::use_gitlab_ci_deploy_connect_shiny()
+      }
+    )
+
+    expect_equal(
+      object = output_shiny$status,
+      expected = "success"
+    )
+
+    expect_equal(
+      object = output_shiny$connect,
+      expected = 200
+    )
+  }
+})
+```
+  
+  
+  
+## `use_gitlab_ci_deploy_connect_pkgdown()`: Add a job to deploy a pkgdown on Connect
+    
+```{r function-use_gitlab_ci_deploy_connect_pkgdown}
+#' @export
+#' @rdname use_gitlab_ci_deploy_connect
+
+use_gitlab_ci_deploy_connect_pkgdown <- function(...) {
+  use_gitlab_ci_deploy_connect(
+    stage_name = "deploy_connect_pkgdown",
+    deploy_function = "deploy_connect_pkgdown"
+  )
+}
+```
+  
+```{r example-use_gitlab_ci_deploy_connect_pkgdown, eval = FALSE}
+# Exemple avec pkgdown
+deployed_pkgdown <- tempfile(pattern = "pkgdown")
+dir.create(deployed_pkgdown)
+# rstudioapi::filesPaneNavigate(deployed_pkgdown)
+withr::with_dir(deployed_pkgdown, {
+  use_gitlab_ci(type = "check-coverage-pkgdown")
+  use_gitlab_ci_deploy_connect_pkgdown()
+})
+```
+  
+```{r tests-use_gitlab_ci_deploy_connect_pkgdown}
+test_that("use_gitlab_ci_deploy_connect_pkgdown works", {
+  expect_true(inherits(use_gitlab_ci_deploy_connect_pkgdown, "function"))
+
+  # TODO - Remove ; allow test to pass on CI
+  skip_on_ci()
+
+  # Test on Gitlab : Create a golem and test the CI
+
+  # Pour un template CI "golem"
+
+
+  if (Sys.getenv("ALLOW_CI_TESTS_ON_GITLAB", unset = "FALSE") == "TRUE") {
+    output_pkgdown <- with_gitlab_project(
+      gitlab_url = Sys.getenv("GITLAB_URL", unset = "https://gitlab.com"),
+      namespace_id = NULL,
+      private_token = Sys.getenv("GITLAB_TOKEN"),
+      project_name = "pkgdown.test.project",
+      exp = {
+        lozen::create_r_project(type = "package", project_path = getwd(), name_licence = "test", type_licence = usethis::use_mit_license)
+        unlink(x = "_pkgdown.yml", force = TRUE)
+        withr::with_dir(getwd(), {
+          attachment::att_amend_desc(extra.suggests = c("pkgdown"))
+          desc_to_pimp <- desc::desc("DESCRIPTION")
+          attachment::set_remotes_to_desc()
+          desc_to_pimp$write()
+          usethis::use_r("dummy")
+          pkgdown::build_site(override = list(destination = "inst/site")) # non ce n'est pas ce qu'il faut deployer
+        })
+
+        lozen::use_gitlab_ci(type = "check-coverage-pkgdown")
+        lozen::use_gitlab_ci_deploy_connect_pkgdown(append = TRUE)
+      }
+    )
+
+    expect_equal(
+      object = output_pkgdown$status,
+      expected = "success"
+    )
+
+    expect_equal(
+      object = output_pkgdown$connect,
+      expected = 200
+    )
+  }
+})
+```
+  
+```{r development-inflate, eval=FALSE}
+# Run but keep eval=FALSE to avoid infinite loop
+# Execute in the console directly
+fusen::inflate(
+  flat_file = "dev/flat_use_gitlab_ci_deploy_connect.Rmd",
+  vignette_name = "bh - Deploy on Connect through GitLab CI",
+  overwrite = TRUE,
+  check = FALSE,
+  document = FALSE,
+  open_vignette = FALSE
+)
+# Executer la doc avec la bonne ligne de code
+rstudioapi::navigateToFile("dev/dev_history_package.Rmd", line = 211)
+```
+

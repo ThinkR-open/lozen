@@ -1,0 +1,30 @@
+lozendown::paged_template:
+  toc: true
+  toc_depth: 2
+  self_contained: true
+  number_sections: false
+bookdown::bs4_book:
+  config:
+    toc:
+      before: |
+        <li><a href="./">Les guides</a></li>
+      after: |
+        <ul>
+        <li><a href="https://github.com/rstudio/bookdown" target="blank">Published with bookdown</a></li>
+        </ul>
+      collapse: section
+    collapse: section
+    download: ["pdf"]
+  split_by: "chapter"
+# bookdown::pdf_book:
+#   latex_engine: xelatex
+#   citation_package: natbib
+#   fig_caption: yes
+#   highlight: tango
+#   keep_tex: no
+#   number_sections: yes
+#   toc: yes
+# pagedown::html_paged:
+#   toc: true
+#   toc_depth: 1
+#   self_contained: true

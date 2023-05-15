@@ -1,0 +1,135 @@
+---
+title: "Dev history - Book"
+output: 
+  html_document:
+    toc: true
+    toc_depth: 1
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE,
+  eval = FALSE
+  )
+```
+
+In this document, you will find the useful steps/commands to insert a book in your package (creation, render,...).
+
+# Create DESCRIPTION file if it does not exist
+
+```{r}
+usethis::use_description()
+usethis::use_git_ignore(".Rproj.user")
+```
+
+# Vaccinate for MacOS
+```{r}
+usethis::git_vaccinate()
+usethis::use_git_ignore(c(".DS_Store", ".Rproj.user", ".Rdata", ".Rhistory", ".httr-oauth"))
+```
+
+
+# bookdown Imports are in Rmds
+Lister les dépendances dans le fichier DESCRIPTION
+
+```{r}
+# remotes::install_github("ThinkR-open/attachment")
+```
+
+## Find dependencies
+```{r}
+imports <- unique(c(
+  "bookdown", "emo",
+  # Calls in `r code`
+  "knitr",
+  attachment::att_from_rmds(".", recursive = FALSE))
+)
+```
+
+
+## update DESCRIPTION file
+```{r}
+attachment::att_to_desc_from_is(path.d = "DESCRIPTION", imports = imports)
+usethis::use_proprietary_license("ThinkR")
+```
+
+
+
+## Create a book
+
+```{r}
+# remotes::install_github(repo = "ThinkR-open/papillon")
+papillon::create_book("inst/report", clean = TRUE)
+papillon::open_guide_function()
+devtools::document()
+papillon::build_book(clean_rmd = TRUE, clean = TRUE)
+# pkg::open_guide()
+```
+
+
+# Test compilation
+
+```{r}
+# remotes::install_github("rstudio/bookdown", upgrade = "never")
+# remotes::install_github("rstudio/bslib", upgrade = "never")
+# remotes::install_github("r-lib/downlit", upgrade = "never")
+usethis::use_git_ignore("_book/")
+usethis::use_git_ignore("*_files/")
+usethis::use_git_ignore("*.log")
+usethis::use_git_ignore("_main.tex")
+```
+
+## Render
+```{r}
+usethis::use_git_ignore("gitbook.*")
+# rmarkdown::render("index.Rmd", output_format = "bookdown::pdf_book")
+# tinytex::install_tinytex()
+bookdown::render_book("index.Rmd", output_format = "bookdown::pdf_book", clean = TRUE, output_dir = "_book")
+# bookdown::render_book('index.Rmd', output_dir = '_book', output_format = 'bookdown::pdf_book')
+# browseURL("_book/index.pdf")
+
+bookdown::render_book('index.Rmd', output_dir = '_book', output_format = 'pagedown::html_paged')
+browseURL("gitbook.html")
+pagedown::chrome_print("gitbook.html", "workflow.pdf", wait = 240, timeout = 240)
+webshot::webshot("gitbook.html", "workflow.pdf")
+
+# for (f in list.files('.', '[.]Rmd$')) {
+#   rmarkdown::render(f, output_dir = '_book', output_format = 'pagedown::html_paged')
+# }
+# browseURL("_book/index.html")
+
+# bookdown::render_book('index.Rmd', output_dir = '_book', output_format = 'pagedown::thesis_paged')
+# # file.rename("_bookdown_files", "gitbook_files")
+# unlink("gitbook_files", recursive = TRUE)
+# # dir.create("gitbook_files")
+# file.copy("_bookdown_files/gitbook_files",
+#           ".", recursive = TRUE)
+# browseURL("gitbook.html")
+# pagedown::chrome_print("gitbook.html", "workflow.pdf", wait = 120, timeout = 120)
+# bookdown::render_book('index.Rmd', output_dir = '_book', output_format = 'bookdown::html_document2')
+# file.remove("gitbook.log", "gitbook.tex")
+# pagedown::chrome_print("gitbook.html", "workflow.pdf")
+# webshot::webshot("gitbook.html", "workflow_web.pdf")
+# usethis::use_git_ignore("gitbook.html")
+# usethis::use_git_ignore("workflow.pdf")
+
+bookdown::render_book('index.Rmd', output_dir = '_book', output_format = 'bookdown::gitbook')
+# bookdown::render_book('index.Rmd', output_dir = '_book', output_format = 'bookdown::bs4_book')
+browseURL("_book/index.html")
+```
+
+# Manifest
+
+```{r}
+all_rmd_files <- c(list.files(full.names = FALSE, pattern = ".Rmd"),
+                   "./knit_pdf.R", "_bookdown.yml", "DESCRIPTION",
+                   list.files("images", recursive = TRUE, full.names = TRUE))
+
+rmdFiles <- grep("^[^/\\\\]+\\.rmd$", all_rmd_files, ignore.case = TRUE, perl = TRUE, value = TRUE)
+
+rsconnect::writeManifest(appFiles = all_rmd_files,
+                         appPrimaryDoc = "index.Rmd",
+                         contentCategory = "site")
+```
+

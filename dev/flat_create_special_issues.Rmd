@@ -1,0 +1,1601 @@
+---
+title: "flat_create_special_issues.Rmd empty"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r development, include=FALSE}
+library(testthat)
+library(gitlabr)
+library(dplyr)
+library(glue)
+library(gh)
+```
+
+```{r development-load}
+# Load already included functions if relevant
+pkgload::load_all(export_all = FALSE)
+```
+
+# Configure gitlab connection
+
+The first step is to configure the connection to the gitlab. Make sure the environment variable GITLAB_TOKEN exists.
+
+```{r, eval=FALSE}
+library(gitlabr)
+
+gitlab_url <- "https://gitlab.com/"
+
+# create gitlab connection
+private_token <- Sys.getenv("GITLAB_TOKEN")
+
+my_gitlab <- gl_connection(
+  gitlab_url = gitlab_url,
+  private_token = private_token
+)
+
+# Set the connection for the session
+set_gitlab_connection(gitlab_con = my_gitlab)
+
+# Create a project
+project_id <- create_group_project(
+  "examplesissues", 
+  namespace_id = NULL
+)
+```
+
+# `add_issue_clients()`: create the welcome issue for client side (gitlab)
+
+The function `add_issue_clients()` creates an issue targeted to the client summarizing the main steps of the project follow-up (project hosted on gitlab).
+Please note that testing this function up to gitlab issue creation using {gitlabr}, you must set the environment variable `ALLOW_PUBLISHING_ON_GITLAB` to `TRUE`.
+
+```{r function-add_issue_clients}
+#' Add First issue client for GitLab
+#'
+#' @param project_id project_id
+#' @param project_name project_name
+#' @param group_url group_url
+#'
+#' @importFrom gitlabr gl_new_issue
+#'
+#' @return A tibble with the issue added and GitLab infos
+#'
+#' @filename create_special_issues
+#' @export
+add_issue_clients <- function(project_id, project_name, group_url) {
+  # create issue text
+  issue_client <- create_issue_content_clients(project_name = project_name, group_url = group_url)
+
+  # Create issue
+  issue_client_id <- gl_new_issue(
+    title = "Bienvenue sur le suivi de projet GitLab",
+    project = project_id,
+    description = paste(issue_client, collapse = "\n"),
+    labels = c("Bloqu\u00e9")
+  )
+
+  message("Issue Client cr\u00e9\u00e9e : ", issue_client_id[["id"]])
+  return(issue_client_id)
+}
+```
+
+```{r example-add_issue_clients, eval = FALSE}
+#' \dontrun{
+add_issue_clients(
+  project_id = "<get_your_id_project>",
+  project_name = "<get_your_project_name>",
+  group_url = "<group_url_repo>" # should looks like "https://gitlab.com/cervan.girard/"
+)
+#' }
+```
+
+```{r tests-add_issue_clients}
+## 04-05-2023 On skip pour des raisons d'auth sur le CI
+skip_on_ci()
+
+test_that("add_issue_clients works", {
+  expect_true(inherits(add_issue_clients, "function"))
+
+  gitlab_url <- Sys.getenv("GITLAB_URL", unset = "https://gitlab.com")
+
+  the_token <- Sys.getenv("GITLAB_TOKEN")
+
+  options(
+    remotes.git_credentials =
+      git2r::cred_user_pass("gitlab-ci-token", the_token)
+  )
+
+  # GitLab con
+  my_gitlab <- gl_connection(
+    gitlab_url = gitlab_url,
+    private_token = the_token
+  )
+
+  # Set the connection for the session
+  set_gitlab_connection(my_gitlab)
+
+  # Get user infos
+  user_info <- gitlab(req = paste0("user"), verb = httr::GET)
+  user_name <- user_info %>% pull(username)
+
+  project_name <- "lozenexempleissues5"
+
+  # Get user namespace (= group_id)
+  # namespace_id <- gitlabr::gitlab(req = "namespaces", search = user_name)[["id"]]
+  group_url <- user_info[["web_url"]]
+
+
+  # create_group_project ----
+  project_id <- create_group_project(project_name, namespace_id = NULL)
+
+
+  # create issue text and send to gitlab
+  issue_client_id <- add_issue_clients(
+    project_id = project_id,
+    project_name = project_name,
+    group_url = gitlab_url
+  )
+
+  issues_open <- gl_list_issues(
+    project = project_id,
+    state = "opened",
+    max_pages = 1
+  )
+
+  expect_equal(
+    object = issues_open[["title"]][1],
+    expected = "Bienvenue sur le suivi de projet GitLab"
+  )
+
+  expect_equal(
+    object = issues_open[["labels"]][1],
+    expected = "Bloqu\u00e9"
+  )
+
+  # suppress issue once check is passed
+  gitlabr::gl_delete_issue(
+    project = project_id,
+    issue_id = issue_client_id$iid
+  )
+
+  # Clean GitLab => Remove the project
+  gitlabr::gitlab(
+    req = paste0("projects/", project_id),
+    verb = httr::DELETE
+  )
+})
+```
+
+## Subfunction: `create_issue_content_clients()`
+
+This function will generate the text needed to make the first project issue aimed at guiding the client through the board.
+
+```{r function-create_issue_content_clients}
+#' Create issue content for client
+#'
+#' Generate text for client first issue in gitlab
+#'
+#' @param project_name name of the project
+#' @param group_url url to gitlab website
+#'
+#' @return character vector of the issue content
+#'
+#' @filename create_special_issues
+#' @export
+create_issue_content_clients <- function(project_name, group_url) {
+  # gl_list_issues(project_id)
+  issue_client <-
+    readLines(system.file("gitlab", "first_issue_client.md", package = "lozen"))
+
+  # Changer {mon_projet}
+  issue_client <-
+    gsub(
+      pattern = "\\{mon_projet\\}",
+      replacement = project_name,
+      x = issue_client
+    )
+
+  # Changer {url}
+  issue_client <-
+    gsub(
+      pattern = "\\{url\\}",
+      replacement = group_url,
+      x = issue_client
+    )
+
+  return(issue_client)
+}
+```
+
+```{r example-create_issue_content_clients, eval = FALSE}
+#' \dontrun{
+create_issue_content_clients(
+  project_name = "<get_your_project_name>",
+  group_url = "<group_url_repo>" # should looks like "https://gitlab.com/cervan.girard/"
+)
+#' }
+```
+
+```{r tests-create_issue_content_clients}
+test_that("create_issue_content_clients works", {
+  expect_true(inherits(create_issue_content_clients, "function"))
+
+  project_name <- "testprojectname"
+  group_url <- "https://gitlab.com/test/"
+
+
+  object_to_test <- create_issue_content_clients(
+    project_name = project_name,
+    group_url = group_url
+  )
+
+  #' @description Testing that project_name is inside the content text
+  expect_match(object = object_to_test, regexp = project_name, all = FALSE)
+  #' @description Testing that group_url is inside the content text
+  expect_match(object = object_to_test, regexp = group_url, all = FALSE)
+})
+```
+
+# `add_issue_dev()`: create the to-do issue for dev side (gitlab)
+
+The function `add_issue_dev()` creates an issue targeted to the dev team summarizing the main steps of the project initiation (project hosted on gitlab).
+Please note that testing this function up to gitlab issue creation using {gitlabr}, you must set the environment variable `ALLOW_PUBLISHING_ON_GITLAB` to `TRUE`.
+
+```{r function-add_issue_dev}
+#' Create issue for developers to initiate the project
+#'
+#' @param project_id project_id
+#' @param project_name project_name
+#' @param group_url group_url
+#'
+#' @importFrom gitlabr gl_new_issue
+#'
+#' @return Side effect: new issue on GitLab
+#'
+#' @filename create_special_issues
+#' @export
+add_issue_dev <- function(project_id, project_name, group_url) {
+  # create issue text
+  issue_dev <- create_issue_content_dev(
+    project_id = project_id,
+    group_url = group_url,
+    project_name = project_name
+  )
+
+  # Create issue
+  issue_dev_id <- gl_new_issue(
+    title = "[dev] Checklist mise en place",
+    project = project_id,
+    description = paste(issue_dev, collapse = "\n"),
+    labels = c("Bloqu\u00e9")
+  )
+
+  message("Rdv dans votre premi\u00e8re issue pour finaliser : ", issue_dev_id[["web_url"]])
+
+  return(issue_dev_id)
+}
+```
+
+```{r example-add_issue_dev, eval = FALSE}
+# exemple nécessite des opérations sur gitlab : à voir
+#' \dontrun{
+add_issue_dev(
+  project_id = "<get_your_id_project>",
+  project_name = "<get_your_project_name>",
+  group_url = "<group_url_repo>" # should looks like "https://gitlab.com/cervan.girard/"
+)
+#' }
+```
+
+```{r tests-add_issue_dev}
+## 04-05-2023 On skip pour des raisons d'auth sur le CI
+skip_on_ci()
+
+test_that("add_issue_dev works", {
+  expect_true(inherits(add_issue_dev, "function"))
+
+  gitlab_url <- Sys.getenv("GITLAB_URL", unset = "https://gitlab.com")
+
+  the_token <- Sys.getenv("GITLAB_TOKEN")
+
+  # GitLab con
+  my_gitlab <- gl_connection(
+    gitlab_url = gitlab_url,
+    private_token = the_token
+  )
+
+  # Set the connection for the session
+  set_gitlab_connection(my_gitlab)
+
+  # Get user infos
+  user_info <- gitlab(req = paste0("user"), verb = httr::GET)
+  user_name <- user_info %>% pull(username)
+
+  project_name <- "lozenexempleissues2"
+
+  # Get user namespace (= group_id)
+  # namespace_id <- gitlabr::gitlab(req = "namespaces", search = user_name)[["id"]]
+  group_url <- user_info[["web_url"]]
+
+
+  # create_group_project ----
+  project_id <- create_group_project(project_name, namespace_id = NULL)
+
+
+  issue_dev <- add_issue_dev(
+    project_id = project_id,
+    group_url = group_url,
+    project_name = project_name
+  )
+
+  expect_equal(
+    object = issue_dev[["title"]][1],
+    expected = "[dev] Checklist mise en place"
+  )
+
+  expect_equal(
+    object = issue_dev[["labels"]][1],
+    expected = "Bloqu\u00e9"
+  )
+
+  # suppress issue once check is passed
+  gitlabr::gl_delete_issue(
+    project = project_id,
+    issue_id = issue_dev$iid
+  )
+
+  # Clean GitLab => Remove the project
+  gitlab(
+    req = paste0("projects/", project_id),
+    verb = httr::DELETE
+  )
+})
+```
+
+## Subfunction: `create_issue_content_dev()`
+
+This function will generate the text needed to make the first project issue aimed at guiding the developers through the project initiation.
+
+```{r function-create_issue_content_dev}
+#' Create issue content for devs
+#'
+#' Generate text for devs first issue in gitlab
+#'
+#' @param project_id project_id
+#' @param group_url group_url
+#' @param project_name project_name
+#'
+#' @importFrom gitlabr gl_list_issues
+#'
+#' @return character vector of the issue content
+#'
+#' @filename create_special_issues
+#' @export
+create_issue_content_dev <- function(project_id, group_url, project_name) {
+  issues_list <- gl_list_issues(project = project_id)
+  is_bienvenue <- grepl("Bienvenue", issues_list[["title"]])
+
+  if (isTRUE(any(is_bienvenue))) {
+    url_issue_client <- issues_list[is_bienvenue, ][1, ][["web_url"]]
+  } else {
+    url_issue_client <- NA
+  }
+
+  issue_dev <- paste(
+    "## Mise en place de la plateforme de dev",
+    "Il faut anticiper les demandes pour le d\u00e9veloppement de ce projet :",
+    "Ce projet sera d\u00e9velopp\u00e9 sur [[ A REMPLIR]]. Il faut anticiper les demandes pour la plateforme de d\u00e9veloppement de ce projet :",
+    "- [ ] R\u00e9fl\u00e9chir \u00e0 l\'infra n\u00e9cessaire. Faut-il une version sp\u00e9cifique de R ? Une version du CRAN sp\u00e9cifique ?",
+    "- [ ] R\u00e9fl\u00e9chir aux sessions des users qui auront acc\u00e8s \u00e0 la plateforme. Quels users (les devs, les client.e.s) ?",
+    "## Finalisation du board",
+    "- [ ] Ajouter les colonnes des issues dans le board dans l'ordre : Bloqu\u00e9, Pr\u00eat, En cours, R\u00e9vision, A valider. Les autres sont en bonus.",
+    "## Calendrier",
+    "- [ ] Remplir les Key Dates - _e.g. dates de livraisons interm\u00e9diaires, date range des phases du projet_",
+    "- [ ] Remplir le calendrier pr\u00e9visionnel",
+    "## Gestion des compte-rendus",
+    paste0(
+      "- [ ] Choisir la m\u00e9thode de partage de comptes-rendus (Wiki ou projet s\u00e9par\u00e9) et l'indiquer dans la pr\u00e9sentation du projet (= Wiki Home) : ",
+      group_url, "/", project_name, "/-/wikis/home"
+    ),
+    paste0("- [ ] Indiquer aussi la m\u00e9thode de partage de CR dans l'issue de Bienvenue du Client : ", url_issue_client),
+    "## Acc\u00e8s au projet (si n\u00e9cessaire)",
+    "- [ ] Cr\u00e9er un groupe d\u00e9di\u00e9 - _Menu > Groups > Create group_",
+    "- [ ] Inviter les clients sur le groupe - _Menu > Admin puis dans Users > New user (mettre Projects limit \u00e0 0 et d\u00e9cocher Can create group)_",
+    '- [ ] Ajouter chaque utilisateur au groupe d\u00e9di\u00e9 en tant que \"Guest\"',
+    '- [ ] Ajouter le groupe en tant que \"Guest\" dans le d\u00e9p\u00f4t cr\u00e9\u00e9 pour le projet (Ils pourront voir le Kanban, mais pas le code)',
+    paste0(
+      "- [ ] Notifier chaque utilisateur en les mentionnant dans un commentaire de l'issue : ", url_issue_client,
+      " avec le texte suivant : \n```\nMerci de bien vouloir lire et valider le contenu de cette page.\n",
+      "Si vous lisez ce message dans un email, vous pouvez cliquer sur le lien suivant pour acc\u00e9der \u00e0 la page :\n",
+      url_issue_client,
+      "\n@mention, @mention, ...\n```\n"
+    ),
+    '- [ ] Pr\u00e9venir les chefs de projets de monter le niveau de Notification \u00e0 \"Watch\" sur la page d\'acceuil du projet pour recevoir toutes les notifications',
+    sep = "\n"
+  )
+
+  return(issue_dev)
+}
+```
+
+```{r example-create_issue_content_dev, eval = FALSE}
+#' \dontrun{
+create_issue_content_dev(
+  project_id = "<get_your_id_project>",
+  project_name = "<get_your_project_name>",
+  group_url = "<group_url_repo>" # should looks like "https://gitlab.com/cervan.girard/"
+)
+#' }
+```
+
+```{r tests-create_issue_content_dev}
+## 04-05-2023 On skip pour des raisons d'auth sur le CI
+skip_on_ci()
+
+test_that("create_issue_content_dev works", {
+  expect_true(inherits(create_issue_content_dev, "function"))
+
+  gitlab_url <- Sys.getenv("GITLAB_URL", unset = "https://gitlab.com")
+
+  the_token <- Sys.getenv("GITLAB_TOKEN")
+
+  # GitLab con
+  my_gitlab <- gl_connection(
+    gitlab_url = gitlab_url,
+    private_token = the_token
+  )
+
+  # Set the connection for the session
+  set_gitlab_connection(my_gitlab)
+
+  # Get user infos
+  user_info <- gitlab(req = paste0("user"), verb = httr::GET)
+  user_name <- user_info %>% pull(username)
+
+  project_name <- "lozenexempleissues3"
+
+  # Get user namespace (= group_id)
+  # namespace_id <- gitlabr::gitlab(req = "namespaces", search = user_name)[["id"]]
+  group_url <- user_info[["web_url"]]
+
+
+  # create_group_project ----
+  project_id <- create_group_project(project_name, namespace_id = NULL)
+
+
+  object_to_test <- create_issue_content_dev(project_id = project_id, group_url = group_url, project_name = project_name)
+
+
+  #' @description Testing that project_name is inside the content text
+  expect_match(object = object_to_test, regexp = project_name, all = FALSE)
+  #' @description Testing that group_url is inside the content text
+  expect_match(object = object_to_test, regexp = group_url, all = FALSE)
+  #' @description Testing that if is the first issue then we find NA inside the content text
+  expect_match(object = object_to_test, regexp = "NA", all = FALSE)
+
+  # Clean GitLab => Remove the project
+  gitlabr::gitlab(
+    req = paste0("projects/", project_id),
+    verb = httr::DELETE
+  )
+})
+```
+
+
+# `add_issue_kickoff()`
+
+This function will add a new issue on GitLab with the information for the kickoff meeting.
+
+```{r function-add_issue_kickoff}
+#' Add Kickoff issue client for GitLab
+#'
+#' @param project_id project_id
+#'
+#' @importFrom gitlabr gl_new_issue gl_list_issues
+#' @importFrom dplyr filter
+#'
+#' @return A tibble with the issue added and GitLab infos
+#'
+#' @filename create_special_issues
+#' @export
+add_issue_kickoff <- function(project_id) {
+  kickoff_title <- "ETQ client, j\'ai compris le fonctionnement de la validation des tickets"
+
+  project_issues <- gl_list_issues(project = project_id)
+
+  # fetch issue in project
+  if (nrow(project_issues) != 0) {
+    project_kickoff_issue <- project_issues %>%
+      filter(title == kickoff_title)
+
+    # check issue already exists
+    if (!isTRUE(nrow(project_kickoff_issue) == 0)) {
+      message("Kickoff issue already exists in this project.")
+      return(project_kickoff_issue)
+    }
+  }
+
+
+  # create issue text
+  issue_kickoff <- create_issue_content_kickoff()
+
+  # Create issue
+  issue_kickoff_id <- gl_new_issue(
+    title = kickoff_title,
+    project = project_id,
+    description = paste(issue_kickoff, collapse = "\n"),
+    labels = c("Pr\u00eat")
+  )
+
+  message("Issue Kickoff cr\u00e9\u00e9e : ", issue_kickoff_id[["id"]])
+  return(issue_kickoff_id)
+}
+```
+
+```{r example-add_issue_kickoff, eval = FALSE}
+#' \dontrun{
+add_issue_kickoff(project_id = "<get_your_id_project>")
+#' }
+```
+
+```{r tests-add_issue_kickoff}
+## 04-05-2023 On skip pour des raisons d'auth sur le CI
+skip_on_ci()
+
+test_that("add_issue_kickoff works", {
+  gitlab_url <- Sys.getenv("GITLAB_URL", unset = "https://gitlab.com")
+
+  the_token <- Sys.getenv("GITLAB_TOKEN")
+
+  # GitLab con
+  my_gitlab <- gl_connection(
+    gitlab_url = gitlab_url,
+    private_token = the_token
+  )
+
+  # Set the connection for the session
+  set_gitlab_connection(my_gitlab)
+
+  # Get user infos
+  user_info <- gitlab(req = paste0("user"), verb = httr::GET)
+  user_name <- user_info %>% pull(username)
+
+  project_name <- "lozenexempleissues4"
+
+  # Get user namespace (= group_id)
+  # namespace_id <- gitlabr::gitlab(req = "namespaces", search = user_name)[["id"]]
+  group_url <- user_info[["web_url"]]
+
+
+  # create_group_project ----
+  project_id <- create_group_project(project_name, namespace_id = NULL)
+
+
+  # make kickoff issue
+  expect_message(
+    kickoff_output <- add_issue_kickoff(project_id = project_id),
+    regexp = "Issue Kickoff cr\u00e9\u00e9e",
+    all = FALSE
+  )
+
+  # check the issue exists and has the correct title
+  expect_true(nrow(kickoff_output) == 1)
+  expect_match(
+    object = kickoff_output[["title"]],
+    regexp = "ETQ client, j\'ai compris le fonctionnement de la validation des tickets"
+  )
+
+  # check issue is not open when already present
+  expect_message(
+    object = add_issue_kickoff(project_id = project_id),
+    regexp = "Kickoff issue already exists in this project."
+  )
+
+  # delete kickoff issue
+  gitlabr::gl_delete_issue(
+    project = project_id, 
+    issue_id = kickoff_output[["iid"]]
+  )
+
+  # Clean GitLab => Remove the project
+  gitlabr::gitlab(
+    req = paste0("projects/", project_id),
+    verb = httr::DELETE
+  )
+})
+```
+
+
+## Subfunction: `create_issue_content_kickoff()`
+
+This function fetch the content of the kickoff issue from a markdown file and adjust parameter for the `create_weekly()` run.
+
+```{r function-create_issue_content_kickoff}
+#' Create issue content for kickoff
+#'
+#' Generate text for kickoff issue
+#'
+#' @return character vector of the issue content
+#'
+#' @filename create_special_issues
+#' @export
+create_issue_content_kickoff <- function() {
+  # get content from md file
+  issue_kickoff <-
+    readLines(system.file("gitlab", "kickoff_issue_client.md", package = "lozen"))
+
+  return(issue_kickoff)
+}
+```
+
+```{r example-create_issue_content_kickoff}
+create_issue_content_kickoff()
+```
+
+```{r tests-create_issue_content_kickoff}
+## 04-05-2023 On skip pour des raisons d'auth sur le CI
+skip_on_ci()
+
+test_that("create_issue_content_kickoff works", {
+  expect_equal(
+    object = create_issue_content_kickoff(),
+    expected = c(
+      "## Validation (Pour les clients)", "", "- [ ] Je comprend qu\'un ticket est divis\u00e9 en 3 parties: le titre (besoin), les crit\u00e8res de validation et une partie technique",
+      "- [ ] Je comprend que la partie validation est celle qui me concerne en tant client et que toutes les informations pour valider le ticket y sont pr\u00e9sentes",
+      "- [ ] J\'ai \u00e9t\u00e9 inform\u00e9 que la partie validation est auto-portante: toutes les informations permettant de valider seront pr\u00e9sentes et compl\u00e9t\u00e9e avec des captures d\'\u00e9cran ou url \u00e0 explorer",
+      "- [ ] Je comprend que la partie technique ne concernent que les personnes qui d\u00e9veloppent",
+      "- [ ] Je comprend que pour valider ce ticket, je dois ajouter un commentaire ci-dessous pour indiquer que je valide la totalit\u00e9 du ticket et qu\'il peut \u00eatre ferm\u00e9. Le cas \u00e9ch\u00e9ant, j\'indique les corrections \u00e0 apporter",
+      "", "## Technique (Pour les devs)", "", "+ [ ] Ajouter un lien vers le site {pkgdown} du projet dans le crit\u00e8re 3 (auto-portant)",
+      "+ [ ] Mettre ce ticket dans la colonne validation", "+ [ ] Faire en sorte que ce ticket soit valid\u00e9 en KickOff avec le client"
+    )
+  )
+})
+```
+
+
+
+# `add_issue_clients_github()`: create the welcome issue for client side (github)
+
+This function will create a welcome issue for clients on github if not present and open already. If not, it will create it or reopen it and update the text content.
+Please note that testing this function up to github issue creation using {gh}, you must set the environment variable `ALLOW_PUBLISHING_ON_GITHUB` to `TRUE`.
+
+```{r function-add_issue_clients_github}
+#' Add First issue client for GitHub
+#'
+#' @param owner GitHub owner (username or organisation)
+#' @param repo Name of the repository
+#'
+#' @importFrom gh gh
+#' @importFrom dplyr filter pull
+#' @importFrom gitlabr multilist_to_tibble
+#'
+#' @return A tibble with the issue added and GitLab infos
+#'
+#' @filename create_special_issues
+#' @export
+add_issue_clients_github <- function(owner, repo) {
+  # Fetch text
+
+  issue_client <- create_issue_content_clients_github(
+    owner = owner,
+    repo = repo
+  )
+
+  # Fetch current issues
+  issue_listing <- gh("GET /repos/{owner}/{repo}/issues",
+    owner = owner,
+    repo = repo,
+    state = "all"
+  )
+  issue_listing_tbl <- multilist_to_tibble(issue_listing)
+
+  # Check issue exists
+  issue_title <- "Bienvenue sur le suivi de projet GitHub"
+  issue_is_in_list <- issue_title %in% issue_listing_tbl[["title"]]
+
+  if (isTRUE(issue_is_in_list)) { # if the issue already exists
+
+    issue_client_id <- issue_listing_tbl %>% filter(title == issue_title)
+    issue_status <- issue_client_id %>% pull(state)
+    issue_number <- issue_client_id %>% pull(number)
+
+    # Reopen issue if closed
+    if (isTRUE(issue_status == "closed")) {
+      issue_client_id <- gh("PATCH /repos/{owner}/{repo}/issues/{issue_number}",
+        owner = owner,
+        repo = repo,
+        issue_number = issue_number,
+        state = "open"
+      )
+
+      message("The issue dedicated to the client is open again: ", issue_client_id[["id"]])
+
+      # json to tibble
+      issue_client_id <- multilist_to_tibble(issue_client_id)
+    } else {
+      message("The issue dedicated to the client is open : ", issue_client_id[["id"]])
+    }
+  } else {
+    # Create new issue
+    issue_client_id <- gh("POST /repos/{owner}/{repo}/issues",
+      owner = owner,
+      repo = repo,
+      title = issue_title,
+      body = paste(issue_client, collapse = "\n"),
+      labels = list("Bloqu\u00e9")
+    )
+    # json to tibble
+    issue_client_id <- multilist_to_tibble(issue_client_id)
+
+    message("The issue dedicated to the client has been created : ", issue_client_id[["id"]])
+  }
+  return(issue_client_id)
+}
+```
+
+
+```{r example-add_issue_clients_github, eval = FALSE}
+#' \dontrun{
+add_issue_clients_github(
+  owner = "owner",
+  repo = "repo"
+)
+#' }
+```
+
+
+```{r tests-add_issue_clients_github}
+## 04-05-2023 On skip pour des raisons d'auth sur le CI
+skip_on_ci()
+
+test_that("add_issue_clients_github works", {
+  expect_true(inherits(add_issue_clients_github, "function"))
+
+
+
+  user <- gh::gh("GET /user")
+  owner <- user$login
+  repo_name <- "my-new-repo-for-gh-testing"
+
+  on.exit({
+    # admin access (delete_repo scope)
+    gh::gh(paste0("DELETE /repos/", owner, "/", repo_name))
+  })
+
+  gh::gh("POST /user/repos", name = repo_name)
+
+  issue_client <-
+    add_issue_clients_github(owner = owner, repo = repo_name)
+
+  expect_gt(nrow(issue_client), 0)
+
+  expect_match(
+    object = issue_client[["title"]],
+    regexp = "Bienvenue sur le suivi de projet GitHub"
+  )
+
+  expect_match(
+    object = issue_client[["state"]],
+    regexp = "open"
+  )
+})
+```
+
+## Subfunction: `create_issue_content_clients_github()`
+
+This function will generate the text needed to make the first project issue aimed at guiding the client through the board on github.
+
+```{r function-create_issue_content_clients_github}
+#' Create issue content for client
+#'
+#' Generate text for client first issue in github
+#'
+#' @param owner owner of the project
+#' @param repo name of the project
+#'
+#' @return character vector of the issue content
+#'
+#' @filename create_special_issues
+#' @export
+create_issue_content_clients_github <- function(owner, repo) {
+  # get text from md file
+  issue_client <- readLines(
+    system.file("github", "first_issue_client.md",
+      package = "lozen"
+    )
+  )
+
+  # Changer {mon_projet}
+  issue_client <- gsub(
+    pattern = "\\{mon_projet\\}",
+    replacement = repo,
+    x = issue_client
+  )
+
+  # Changer {url}
+  issue_client <- gsub(
+    pattern = "\\{url\\}",
+    replacement = paste0("https://github.com/", owner, "/", repo),
+    x = issue_client
+  )
+
+  return(issue_client)
+}
+```
+
+```{r example-create_issue_content_clients_github, eval = FALSE}
+#' \dontrun{
+create_issue_content_clients_github(
+  owner = "owner",
+  repo = "repo"
+)
+#' }
+```
+
+```{r tests-create_issue_content_clients_github}
+test_that("create_issue_content_clients_github works", {
+  expect_true(inherits(create_issue_content_clients_github, "function"))
+
+  expect_equal(
+    object = create_issue_content_clients_github(owner = "ThinkR-open", repo = "example-weekly"),
+    expected = c(
+      "# Bonjour et bienvenue sur notre outil de suivi de projet.",
+      "", "_Si vous lisez ce message depuis vos emails, merci de cliquer sur le lien en bas \"View it on GitHub\" ou \"Lire sur GitHub\"._",
+      "", "Ce site web est l\'outil de d\u00e9veloppement GitHub. Il nous permet de versionner notre code (conserver l\'historique des modifications) et de communiquer sur les fonctionnalit\u00e9s en cours de d\u00e9veloppement.",
+      "", "Le message que vous lisez actuellement est un ticket de suivi (aussi appel\u00e9 \"issue\"). C\'est sous ce format que nous listons toutes les fonctionnalit\u00e9s demand\u00e9es et bugs divis\u00e9s en unit\u00e9s de d\u00e9veloppement. C\'est aussi sous ce format que la totalit\u00e9 de nos \u00e9changes devront \u00eatre stock\u00e9s. Nous \u00e9vitons les Emails pour conserver l\'historique des \u00e9changes, rang\u00e9s dans les tickets d\u00e9di\u00e9s, pour ne rien perdre de vos besoins et demandes.",
+      "", "## Au cours du d\u00e9veloppement, nous vous demanderons de :",
+      "", "- **r\u00e9pondre \u00e0 nos points de blocage**. Pour cela, comme pour le pr\u00e9sent ticket, vous serez notifi\u00e9s par un Email qui contient un lien pour venir sur l\'interface. Nous vous donnerons le plus d\'informations possibles sur le probl\u00e8me. Pour nous r\u00e9pondre, vous pouvez \u00e9crire un message dans la partie d\u00e9di\u00e9e ci-dessous, quand vous avez le temps de le faire. *Nous vous demandons d\'ailleurs de bien vouloir \u00e9crire un message d\u00e8s \u00e0 pr\u00e9sent et de le valider. Merci.*",
+      "- **suivre l\'avancement du projet** dans le Kanban d\u00e9di\u00e9. Ce Kanban se trouve \u00e0 l\'adresse suivante que vous pouvez ouvrir d\u00e8s \u00e0 pr\u00e9sent dans un nouvel onglet : <https://github.com/ThinkR-open/example-weekly/projects/1>",
+      "    + Vous verrez que le ticket que vous \u00eates en train de lire se trouve dans la colonne *\"Bloqu\u00e9\"*. Cette colonne de tickets vous est adress\u00e9e. Tous les tickets qui s\'y trouvent n\u00e9cessitent des informations compl\u00e9mentaires pour \u00eatre trait\u00e9s. En th\u00e9orie, vous aurez re\u00e7u un email pour chacun d\'entre eux, mais s\'il y en a trop, vous savez maintenant o\u00f9 les retrouver.",
+      "- **valider les tickets termin\u00e9s**. Dans le Kanban, vous avez une colonne en fin de Kanban nomm\u00e9e *A valider*. Il s\'agit des tickets que nous consid\u00e9rons avoir impl\u00e9ment\u00e9s et qui n\u00e9cessitent validation de votre part.",
+      "  + Lorsque vous pouvez faire la validation sans assistance de notre part, nous vous donnerons toutes les instructions pour savoir comment valider. Vous pourrez \u00e9crire un message du type : \"Je valide la fermeture de ce ticket.\"",
+      "  + En cas de ticket plus complexe ou plus technique, nous le validerons ensemble lors d\'un point d\'avancement en direct. Auquel cas, nous validerons la fermeture dans le compte-rendu de r\u00e9union.",
+      "", "## Comment valider les tickets ?", "", "La validation se fait par les commanditaires, sur les tickets ajout\u00e9s \u00e0 la colonne \"Validation\" du Projet: <https://github.com/ThinkR-open/example-weekly/projects/1>  ",
+      "Vous verrez dans nos tickets qu\'il y a au moins trois parties:",
+      "", "- ETQ (En tant que)", "- Crit\u00e8res de validation", "- Comment technique",
+      "", "Ces parties s\'adressent en premier aux d\u00e9veloppeureuses pour savoir quoi et comment traiter le besoin.  ",
+      "Lors de la validation, vous verrez la partie \"Crit\u00e8res de validation\" \u00e9voluer avec les consignes ou les captures d\'\u00e9cran qui vous permettent de valider le ticket. Nous vous demandons: ",
+      "", "- De cocher les cases de chacun de ces crit\u00e8res si vous les valider",
+      "- D\'ajouter un message dans le fil des commenaitres de l\'issue pour nous indiquer si vous le validez compl\u00e8tement, ou s\'il y a des corrections \u00e0 apporter.",
+      "", "Ensuite, nous nous occupons de fermer le ticket et de r\u00e9-ouvrir tous ceux qui seraient n\u00e9cessaires.  ",
+      "", "## Comptes-rendus", "", "Notez que nos \u00e9changes lors de r\u00e9unions en direct seront r\u00e9dig\u00e9s et accessibles pour vous dans :",
+      "", "- [ ] Le Wiki de ce projet : <https://github.com/ThinkR-open/example-weekly/wiki>",
+      "", "", "## Comment valider ce ticket ?", "", "Ce ticket est particulier, sa validation se fait par chaque nouvelle personne qui entre sur le projet.  ",
+      "", "Merci de bien vouloir nous indiquer que vous avez lu et approuv\u00e9 \u00e0 la date d\'aujourd\'hui ce mode de fonctionnement en \u00e9crivant : \"lu et approuv\u00e9, le {date du jour}\" (Mettre la date du jour) dans un message ci-dessous (Emplacement \"Write\" ou \"Ecrire\") et valider l\'envoi du message en cliquant sur le bouton vert \"Comment\" ou \"Envoyer\".",
+      "Suite \u00e0 quoi, nous nous chargerons de fermer ce ticket."
+    )
+  )
+})
+```
+
+# `add_issue_dev_github()`: create the to-do issue for dev (github)
+
+This function will create a to-do issue for dev on github if not present and open already. If not, it will create it or reopen it and update the text content.
+Please note that testing this function up to github issue creation using {gh}, you must set the environment variable `ALLOW_PUBLISHING_ON_GITHUB` to `TRUE`.
+
+```{r function-add_issue_dev_github}
+#' Create issue for dev on github
+#'
+#' Create dev first issue in github
+#'
+#' @param owner owner of the project
+#' @param repo name of the project
+#'
+#' @importFrom gh gh
+#' @importFrom gitlabr multilist_to_tibble
+#'
+#' @filename create_special_issues
+#'
+#' @return tibble with github issue info
+#'
+#' @export
+add_issue_dev_github <- function(owner, repo) {
+  # Fetch content
+  issue_dev <- create_issue_content_dev_github(
+    owner = owner,
+    repo = repo
+  )
+
+  # Fetch current issues
+  issue_listing <- gh("GET /repos/{owner}/{repo}/issues",
+    owner = owner,
+    repo = repo,
+    state = "all"
+  )
+  issue_listing_tbl <- multilist_to_tibble(issue_listing)
+
+  # Check issue exists
+  issue_title <- "[dev] Checklist mise en place"
+  issue_is_in_list <- issue_title %in% issue_listing_tbl[["title"]]
+
+  if (isTRUE(issue_is_in_list)) { # if the issue already exists
+
+    issue_client_id <- issue_listing_tbl %>% filter(title == issue_title)
+    issue_status <- issue_client_id %>% pull(state)
+    issue_number <- issue_client_id %>% pull(number)
+
+    # Reopen issue if closed
+    if (isTRUE(issue_status == "closed")) {
+      issue_client_id <- gh("PATCH /repos/{owner}/{repo}/issues/{issue_number}",
+        owner = owner,
+        repo = repo,
+        issue_number = issue_number,
+        state = "open"
+      )
+
+      message("The issue dedicated to the dev is open again: ", issue_client_id[["id"]])
+
+      # json to tibble
+      issue_client_id <- multilist_to_tibble(issue_client_id)
+    } else {
+      message("The issue dedicated to the dev is open : ", issue_client_id[["id"]])
+    }
+  } else {
+    # Create new issue
+    issue_client_id <- gh("POST /repos/{owner}/{repo}/issues",
+      owner = owner,
+      repo = repo,
+      title = issue_title,
+      body = paste(issue_dev, collapse = "\n"),
+      labels = list("Bloqu\u00e9")
+    )
+    # json to tibble
+    issue_client_id <- multilist_to_tibble(issue_client_id)
+
+    message("Rdv dans votre premi\u00e8re issue pour finaliser : ", issue_client_id[["url"]])
+  }
+  return(issue_client_id)
+}
+```
+
+```{r example-add_issue_dev_github, eval = FALSE}
+#' \dontrun{
+add_issue_dev_github(
+  owner = "owner",
+  repo = "repo"
+)
+#' }
+```
+
+```{r tests-add_issue_dev_github}
+## 04-05-2023 On skip pour des raisons d'auth sur le CI
+skip_on_ci()
+
+test_that("add_issue_dev_github works", {
+  expect_true(inherits(add_issue_dev_github, "function"))
+
+  user <- gh::gh("GET /user")
+  owner <- user$login
+  repo_name <- "my-new-repo-for-gh-testing"
+
+  on.exit({
+    # admin access (delete_repo scope)
+    gh::gh(paste0("DELETE /repos/", owner, "/", repo_name))
+  })
+
+  gh::gh("POST /user/repos", name = repo_name)
+
+  issue_client <-
+    add_issue_dev_github(owner = owner, repo = repo_name)
+
+  expect_gt(nrow(issue_client), 0)
+
+  expect_match(
+    object = issue_client[["title"]],
+    regexp = "\\[dev\\] Checklist mise en place"
+  )
+
+  expect_match(
+    object = issue_client[["state"]],
+    regexp = "open"
+  )
+})
+```
+
+## Subfunction: `create_issue_content_dev_github()`
+
+```{r function-create_issue_content_dev_github}
+#' Create issue content for dev
+#'
+#' Generate text for dev first issue in github
+#'
+#' @param owner owner of the project
+#' @param repo name of the project
+#'
+#' @importFrom glue glue
+#' @importFrom gh gh
+#' @importFrom gitlabr multilist_to_tibble
+#'
+#' @return character vector of the issue content
+#'
+#' @filename create_special_issues
+#'
+#' @export
+create_issue_content_dev_github <- function(owner, repo) {
+  # Get Bienvenue issue
+  issues <- gh("GET /repos/{owner}/{repo}/issues",
+    owner = owner,
+    repo = repo,
+    state = "all"
+  )
+  issues_list <- multilist_to_tibble(issues)
+
+  is_bienvenue <- grepl("Bienvenue", issues_list[["title"]])
+  if (isTRUE(any(is_bienvenue))) {
+    url_issue_client <- issues_list[is_bienvenue, ][1, ][["html_url"]]
+  } else {
+    url_issue_client <- NA
+  }
+
+  issue_dev <- paste(
+    "- [ ] Remplir les Key Dates et le calendrier pr\u00e9visionnel",
+    '- [ ] Ajouter chaque utilisateur au projet en tant que \"Guest\"',
+    '- [ ] Pr\u00e9venir les chefs de projets de monter le niveau de Notification \u00e0 \"Watch\" sur la page d\'acceuil du projet pour recevoir toutes les notifications',
+    paste0("- [ ] S'assurer que le Board est pret:", glue("https://github.com/{owner}/{repo}/projects/1")),
+    paste0("- [ ] S'assurer que le Wiki Home est pret:", glue("https://github.com/{owner}/{repo}/wiki/Home")),
+    paste0("- [ ] Indiquer aussi la m\u00e9thode de partage de CR dans l'issue de Bienvenue du Client : ", url_issue_client),
+    paste0(
+      "- [ ] Notifier chaque utilisateur en les mentionnant dans un commentaire de l'issue : ", url_issue_client,
+      " avec le texte suivant : \n```\nMerci de bien vouloir lire et valider le contenu de cette page.\n",
+      "Si vous lisez ce message dans un email, vous pouvez cliquer sur le lien suivant pour acc\u00e9der \u00e0 la page :\n",
+      url_issue_client,
+      "\n@mention, @mention, ...\n```\n"
+    ),
+    '- [ ] Mettre en place {renv} en suivant \"dev/dev_history_renv.R\"',
+    '- [ ] Si n\u00e9cessaires, ex\u00e9cuter les \u00e9tapes de \"dev/dev_history.R\". La plupart sont d\u00e9ja faites.',
+    sep = "\n"
+  )
+
+  return(issue_dev)
+}
+```
+
+```{r example-create_issue_content_dev_github, eval = FALSE}
+#' \dontrun{
+create_issue_content_dev_github(
+  owner = "owner",
+  repo = "repo"
+)
+#' }
+```
+
+```{r tests-create_issue_content_dev_github}
+## 04-05-2023 On skip pour des raisons d'auth sur le CI
+skip_on_ci()
+
+test_that("create_issue_content_dev_github works", {
+  expect_true(inherits(create_issue_content_dev_github, "function"))
+
+  user <- gh::gh("GET /user")
+  owner <- user$login
+  repo_name <- "my-new-repo-for-gh-testing"
+
+
+  on.exit({
+    # admin access (delete_repo scope)
+    gh::gh(paste0("DELETE /repos/", owner, "/", repo_name))
+  })
+
+  gh::gh("POST /user/repos", name = repo_name)
+
+  cible <- create_issue_content_dev_github(
+    owner = owner,
+    repo = repo_name
+  )
+
+  expect_match(
+    object = cible,
+    regexp = owner,
+    all = FALSE
+  )
+
+  expect_match(
+    object = cible,
+    regexp = repo_name,
+    all = FALSE
+  )
+})
+```
+
+# `add_issue_kickoff_github()`
+
+This function will add a new issue to GitHub to be completed and validated during the kickoff. Note that after closing this issue with the client, you should produce a weekly.
+
+```{r function-add_issue_kickoff_github}
+#' Add Kickoff issue for GitHub
+#'
+#' @param owner GitHub owner (username or organisation)
+#' @param repo Name of the repository
+#'
+#' @importFrom gh gh
+#' @importFrom dplyr filter pull
+#' @importFrom gitlabr multilist_to_tibble
+#'
+#' @return A tibble with the issue added and GitHub infos
+#'
+#' @filename create_special_issues
+#' @export
+add_issue_kickoff_github <- function(owner, repo) {
+  # Fetch issue text and title
+  kickoff_title <-
+    "ETQ client, j\'ai compris le fonctionnement de la validation des tickets"
+  issue_kickoff <- create_issue_content_kickoff()
+
+  # Fetch current issues
+  issue_listing <- gh(
+    "GET /repos/{owner}/{repo}/issues",
+    owner = owner,
+    repo = repo,
+    state = "all"
+  )
+  issue_listing_tbl <- multilist_to_tibble(issue_listing)
+
+  # Check issue exists
+  issue_is_in_list <- kickoff_title %in% issue_listing_tbl[["title"]]
+
+  if (isTRUE(issue_is_in_list)) { # if the issue already exists
+
+    issue_kkoff_id <- issue_listing_tbl %>% filter(title == kickoff_title)
+    issue_status <- issue_kkoff_id %>% pull(state)
+    issue_number <- issue_kkoff_id %>% pull(number)
+
+    # Reopen issue if closed
+    if (isTRUE(issue_status == "closed")) {
+      issue_kkoff_id <-
+        gh(
+          "PATCH /repos/{owner}/{repo}/issues/{issue_number}",
+          owner = owner,
+          repo = repo,
+          issue_number = issue_number,
+          state = "open"
+        )
+
+      # json to tibble
+      issue_kkoff_id <- multilist_to_tibble(issue_kkoff_id)
+
+      message("The Kickoff issue is re-opened : ", issue_kkoff_id[["id"]])
+    } else {
+      message("The Kickoff issue is already open : ", issue_kkoff_id[["id"]])
+    }
+  } else {
+    # Create new issue
+    issue_kkoff_id <- gh(
+      "POST /repos/{owner}/{repo}/issues",
+      owner = owner,
+      repo = repo,
+      title = kickoff_title,
+      body = paste(issue_kickoff, collapse = "\n")
+    )
+
+    # json to tibble
+    issue_kkoff_id <- multilist_to_tibble(issue_kkoff_id)
+
+    message("Kickoff issue created : ", issue_kkoff_id[["id"]])
+  }
+  return(issue_kkoff_id)
+}
+```
+
+```{r example-add_issue_kickoff_github, eval = FALSE}
+#' \dontrun{
+add_issue_kickoff_github(
+  owner = "owner",
+  repo = "repo"
+)
+#' }
+```
+
+```{r tests-add_issue_kickoff_github}
+## 04-05-2023 On skip pour des raisons d'auth sur le CI
+skip_on_ci()
+
+test_that("add_issue_kickoff_github works", {
+  # run depending on env variable value
+  user <- gh::gh("GET /user")
+  owner <- user$login
+  repo_name <- "my-new-repo-for-gh-testing"
+
+  on.exit({
+    # admin access (delete_repo scope)
+    gh::gh(paste0("DELETE /repos/", owner, "/", repo_name))
+  })
+
+  gh::gh("POST /user/repos", name = repo_name)
+
+
+  issue_kkoff <- add_issue_kickoff_github(owner = owner, repo = repo_name)
+
+  expect_gt(
+    nrow(issue_kkoff), 0
+  )
+
+  expect_match(
+    object = issue_kkoff[["title"]],
+    regexp = "ETQ client, j\'ai compris le fonctionnement de la validation des tickets"
+  )
+
+  expect_match(
+    object = issue_kkoff[["state"]],
+    regexp = "open"
+  )
+
+  # check nothing is done is issue is already open
+  expect_message(
+    object = add_issue_kickoff_github(
+      owner = owner,
+      repo = repo_name
+    ),
+    regexp = "The Kickoff issue is already open"
+  )
+
+  # close issue
+  issue_number <- issue_kkoff[["number"]]
+  gh(
+    "PATCH /repos/{owner}/{repo}/issues/{issue_number}",
+    owner = owner,
+    repo = repo_name,
+    issue_number = issue_number,
+    state = "closed"
+  )
+})
+```
+
+# Define templates (normal issues, delivery issues)
+
+## `gl_add_template_issue()`: create the template for standard issue on gitlab
+
+The function `gl_add_template_issue()` adds a template in gitlab for all the issues. This template follows the standards of ThinkR. You can choose the language (fr/en) and the verbosity (light/full).
+
+```{r function-gl_add_template_issue}
+#' Create the template for standard issue on gitlab
+#'
+#' @param project_path Path to the project
+#' @param language Language. Should be one of 'fr' or 'en'
+#' @param type Verbosity of comments in the template. Should be 'full' or 'light'.
+#'
+#' @importFrom glue glue
+#'
+#' @return Side effect: create the template
+#' @export
+gl_add_template_issue <- function(project_path = ".",
+                                  language = c("fr", "en"),
+                                  type = c("full", "light")) {
+  old <- setwd(project_path)
+  on.exit(setwd(old))
+
+  language <- match.arg(language, several.ok = FALSE)
+  type <- match.arg(type, several.ok = FALSE)
+
+  gitlab_path <- file.path(project_path, ".gitlab")
+
+  if (!dir.exists(gitlab_path)) {
+    dir.create(gitlab_path)
+    add_build_ignore(".gitlab")
+    add_git_ignore("!.gitlab/*/*")
+  }
+
+  if (!dir.exists(file.path(gitlab_path, "issue_templates"))) {
+    dir.create(file.path(gitlab_path, "issue_templates"))
+  }
+
+  # Find the name of the file
+  name_file <- glue("template_issues_{type}_{language}.md")
+
+  # Define template name
+  if (type == "light") {
+    name_template_in_gl <- glue("Light template issue.md")
+  } else if (type == "full") {
+    name_template_in_gl <- glue("Template issue.md")
+  }
+
+  # Add the template
+  file.copy(
+    system.file("gitlab", "issue_templates", name_file, package = "lozen"),
+    file.path(gitlab_path, "issue_templates", name_template_in_gl),
+    overwrite = TRUE,
+    recursive = FALSE
+  )
+
+  message("Issue template added, find it when creating a new issue on the graphical interface")
+}
+```
+
+```{r example-gl_add_template_issue}
+# Try with a temp project
+## Create temp dir and file
+project_path <- tempfile("myproject")
+dir.create(project_path)
+
+## Add the template in full french
+gl_add_template_issue(project_path, language = "fr", type = "full")
+
+## Add the template in full english
+gl_add_template_issue(project_path, language = "en", type = "full")
+
+## Add the template in light french
+gl_add_template_issue(project_path, language = "fr", type = "light")
+
+## Add the template in light english
+gl_add_template_issue(project_path, language = "en", type = "light")
+
+# Suppress tmp folder
+unlink(project_path, recursive = TRUE)
+```
+
+```{r tests-gl_add_template_issue}
+withr::with_tempdir({
+  test_that("gl_add_template_issue works", {
+    project_path <- getwd()
+
+    # check full french template works
+    expect_message(
+      gl_add_template_issue(project_path, language = "fr", type = "full"),
+      "Issue template added"
+    )
+
+    expect_true(object = file.exists(
+      file.path(
+        project_path,
+        ".gitlab",
+        "issue_templates",
+        "Template issue.md"
+      )
+    ))
+
+    # check full english template works
+    expect_message(
+      gl_add_template_issue(project_path, language = "en", type = "full"),
+      "Issue template added"
+    )
+
+    expect_true(object = file.exists(
+      file.path(
+        project_path,
+        ".gitlab",
+        "issue_templates",
+        "Template issue.md"
+      )
+    ))
+
+    # check light french template works
+    expect_message(
+      gl_add_template_issue(project_path, language = "fr", type = "light"),
+      "Issue template added"
+    )
+
+    expect_true(object = file.exists(
+      file.path(
+        project_path,
+        ".gitlab",
+        "issue_templates",
+        "Light template issue.md"
+      )
+    ))
+
+    # check light english template works
+    expect_message(
+      gl_add_template_issue(project_path, language = "en", type = "light"),
+      "Issue template added"
+    )
+
+    expect_true(object = file.exists(
+      file.path(
+        project_path,
+        ".gitlab",
+        "issue_templates",
+        "Light template issue.md"
+      )
+    ))
+
+
+    # Suppress tmp folder
+    # unlink(project_path, recursive = TRUE)
+  })
+})
+```
+
+
+## `gh_add_template_issue()`: create the template for standard issue on github
+
+The function `gh_add_template_issue()` adds a template in github for all the issues. This template follows the standards of ThinkR. You can choose the language (fr/en) and the verbosity (light/full).
+
+```{r function-gh_add_template_issue}
+#' Create the template for standard issue on gitlab
+#'
+#' @param project_path Path to the project
+#' @param language Language. Should be one of 'fr' or 'en'
+#' @param type Verbosity of comments in the template. Should be 'full' or 'light'.
+#'
+#' @importFrom glue glue
+#'
+#' @return Side effect: create the template
+#' @export
+gh_add_template_issue <- function(project_path = ".",
+                                  language = c("fr", "en"),
+                                  type = c("full", "light")) {
+  old <- setwd(project_path)
+  on.exit(setwd(old))
+
+  language <- match.arg(language, several.ok = FALSE)
+  type <- match.arg(type, several.ok = FALSE)
+
+  github_path <- file.path(project_path, ".github")
+
+  if (!dir.exists(github_path)) {
+    dir.create(github_path)
+    add_build_ignore(".github")
+    add_git_ignore("!.github/*/*")
+  }
+
+  if (!dir.exists(file.path(github_path, "ISSUE_TEMPLATE"))) {
+    dir.create(file.path(github_path, "ISSUE_TEMPLATE"))
+  }
+
+  # Find the name of the file
+  name_file <- glue("template_issues_{type}_{language}.md")
+
+  # Define template name
+  if (type == "light") {
+    name_template_in_gh <- glue("Light template issue.md")
+  } else if (type == "full") {
+    name_template_in_gh <- glue("Template issue.md")
+  }
+
+  # Add the template
+  file.copy(
+    system.file("github", "issue_templates", name_file, package = "lozen"),
+    file.path(github_path, "ISSUE_TEMPLATE", name_template_in_gh),
+    overwrite = TRUE,
+    recursive = FALSE
+  )
+
+  message("Issue template added, find it when creating a new issue on the graphical interface")
+}
+```
+
+```{r example-gh_add_template_issue}
+# Try with a temp project
+## Create temp dir and file
+project_path <- tempfile("myproject")
+dir.create(project_path)
+
+## Add the full template in french
+gh_add_template_issue(project_path, language = "fr", type = "full")
+
+## Add the full template in english
+gh_add_template_issue(project_path, language = "en", type = "full")
+
+## Add the light template in french
+gh_add_template_issue(project_path, language = "fr", type = "light")
+
+## Add the light template in english
+gh_add_template_issue(project_path, language = "en", type = "light")
+
+# suppress tmp folder
+unlink(project_path, recursive = TRUE)
+```
+
+```{r tests-gh_add_template_issue}
+# project_path <- tempfile("myproject")
+# dir.create(project_path)
+
+withr::with_tempdir({
+  test_that("gh_add_template_issue works", {
+    project_path <- getwd()
+
+    # create temp dir and file
+    # check full french template works
+    expect_message(
+      gh_add_template_issue(project_path, language = "fr", type = "full"),
+      "Issue template added"
+    )
+
+    expect_true(object = file.exists(
+      file.path(
+        project_path,
+        ".github",
+        "ISSUE_TEMPLATE",
+        "Template issue.md"
+      )
+    ))
+
+    # check full english template works
+    expect_message(
+      gh_add_template_issue(project_path, language = "en"),
+      "Issue template added"
+    )
+
+    expect_true(object = file.exists(
+      file.path(
+        project_path,
+        ".github",
+        "ISSUE_TEMPLATE",
+        "Template issue.md"
+      )
+    ))
+
+    # check light french template works
+    expect_message(
+      gh_add_template_issue(project_path, language = "fr", type = "light"),
+      "Issue template added"
+    )
+
+    expect_true(object = file.exists(
+      file.path(
+        project_path,
+        ".github",
+        "ISSUE_TEMPLATE",
+        "Light template issue.md"
+      )
+    ))
+
+    # check full english template works
+    expect_message(
+      gh_add_template_issue(project_path, language = "en", type = "light"),
+      "Issue template added"
+    )
+
+    expect_true(object = file.exists(
+      file.path(
+        project_path,
+        ".github",
+        "ISSUE_TEMPLATE",
+        "Light template issue.md"
+      )
+    ))
+
+    # unlink(project_path, recursive = TRUE)
+  })
+})
+```
+
+
+
+
+
+
+
+
+```{r development-inflate, eval=FALSE}
+# Run but keep eval=FALSE to avoid infinite loop
+# Execute in the console directly
+fusen::inflate(
+  flat_file = "dev/flat_create_special_issues.Rmd",
+  vignette_name = "bf - Create special issues",
+  overwrite = TRUE,
+  check = FALSE,
+  document = FALSE,
+  open_vignette = FALSE
+)
+
+rstudioapi::navigateToFile( # Go to the dev_history_package.Rmd to inflate all flat files
+  "dev/dev_history_package.Rmd",
+  line = 170
+)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

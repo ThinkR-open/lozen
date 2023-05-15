@@ -1,0 +1,410 @@
+---
+title: "flat_move_issues_from_gitlab_to_github.Rmd empty"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r development, include=FALSE}
+library(testthat)
+library(gitlabr)
+library(lozen)
+library(dplyr)
+library(glue)
+library(gh)
+```
+
+```{r development-load}
+# Load already included functions if relevant
+pkgload::load_all(export_all = FALSE)
+```
+
+# move_issues_from_gitlab_to_github
+
+Before moving issues, you will need to clone your project.
+
+- Use GitHub tool for the transfer: New repository > Click on the link "Import a repository"
+- Then, you can use `move_issues_from_gitlab_to_github()` to retrieve your issues in the correct order, and add them to your new GitHub project 
+
+_Note that you may be banned from GitHub, in which case you will need to start over after the ban period. There is a parameter named `issue_start_over` for that case._  
+_Note that it will not retrieve images_  
+
+```{r function-move_issues_from_gitlab_to_github}
+#' Move Issues from GitLab to GitHub
+#'
+#' @param gitlab_url GitLab instance URL
+#' @param github_url GitHub URL, default to <github.com>
+#' @param gitlab_group group name. Can be sub-group with "group/sub-group" format
+#' @param gitlab_repo Repo name on GitLab
+#' @param gitlab_project_id Repo ID on GitLab
+#' @param github_owner Owner of the project on GitHub
+#' @param github_repo Repo name of the project on GitHub. It should already exists.
+#' @param gitlab_private_token GitLab Token with API permissions
+#' @param github_token GitHub token. If NULL, will search for `GITHUB_PAT` in your env. variables
+#' @param sleep_time Time in second to wait between each set of 5 issues. This is to reduce risk of being banned by GitHub. If you have time, Set to 60s by default.
+#' @param issue_start_over For debug. Number of the issue in GitLab to start over with in case of temporary ban by GitHub.
+#' @param max_page Maximum number of pages of issues to retrieve from GitLab.
+#' @param force Whether to force writing issue to GitHub, even if issue numbers mismatch with GitLab.
+#'
+#' @importFrom dplyr arrange filter select starts_with
+#' @importFrom gh gh
+#' @importFrom gitlabr set_gitlab_connection gl_project_connection gl_list_issues multilist_to_tibble gitlab unset_gitlab_connection
+#' @importFrom glue glue
+#' @importFrom stats na.omit
+#'
+#' @return Used for side effects. Issues are dowloaded and copied to GitHub
+#' @export
+move_issues_from_gitlab_to_github <- function(gitlab_url = "https://gitlab.com/",
+                                              github_url = "https://github.com/",
+                                              gitlab_group,
+                                              gitlab_repo,
+                                              gitlab_project_id,
+                                              github_owner,
+                                              github_repo,
+                                              gitlab_private_token = Sys.getenv("GITLAB_TOKEN"),
+                                              github_token = NULL,
+                                              sleep_time = 60,
+                                              issue_start_over = 1,
+                                              max_page = 10,
+                                              force = FALSE) {
+  # Change body to get correct URL and avoid notifying all users
+  change_body <- function(body,
+                          gitlab = file.path(gitlab_url, gitlab_group, gitlab_repo, fsep = "/"),
+                          github = file.path(github_url, github_owner, github_repo)) {
+    # Change users
+    body <- gsub("@", "[at]", body)
+    # Change URL
+    body <- gsub(
+      file.path(gitlab, "-/issues/", fsep = "/"),
+      file.path(github, "issues/", fsep = "/"),
+      body
+    )
+    body <- gsub(
+      gitlab,
+      github,
+      body
+    )
+    body
+  }
+
+  # Get Gitlab issues ----
+  set_gitlab_connection(
+    gitlab_url = gitlab_url,
+    private_token = gitlab_private_token
+  )
+  my_project_issues <- gl_list_issues(project = gitlab_project_id, max_page = max_page)
+  my_project_issues <- my_project_issues %>% arrange(as.numeric(iid))
+  project_id <- gitlab_project_id
+
+
+  # GitHub
+  owner <- github_owner
+  repo <- github_repo
+  for (w.issue in issue_start_over:nrow(my_project_issues)) {
+    if (w.issue %in% seq(1, nrow(my_project_issues), by = 5)) {
+      message(paste("> Please wait for", sleep_time, "seconds"))
+      Sys.sleep(sleep_time)
+    }
+
+    message(paste("---- issue", w.issue, "/", nrow(my_project_issues), "----"))
+
+    # Test if issue exists
+    exists_issue <- try(gh(glue("GET /repos/{owner}/{repo}/issues/{w.issue}",
+      owner = owner,
+      repo = repo,
+      w.issue = w.issue
+    )), silent = TRUE)
+    # If error, then does not exists
+    if (!inherits(exists_issue, "try-error")) {
+      if (!isTRUE(force)) {
+        answer <- utils::askYesNo(msg = paste(
+          "Issue ", w.issue, "already exists.\n",
+          "If you continue, the process will add a new issue on GitHub\n",
+          "with a different issue number than the original on GitLab.\n",
+          "Do you want to proceed?"
+        ))
+        if (!isTRUE(answer)) {
+          message("You stopped the process")
+          return(NULL)
+        } else {
+          message("You allowed mismatch between GitLab and GitHub issue numbers")
+        }
+      } else {
+        message("With force = TRUE, you allowed mismatch between GitLab and GitHub issue numbers. There will be one from this issue.")
+      }
+    } else {
+      if (!(grepl("URL not found", exists_issue) | grepl("This issue was deleted", exists_issue))) {
+        # Show error only if it is not URL not found
+        stop(exists_issue)
+      }
+    }
+
+    # w.issue <- 1
+    the_issue <- my_project_issues[w.issue, ]
+    # Create new issue
+    message(paste("Create from GitLab issue", w.issue))
+
+    all_labels <- the_issue %>%
+      select(starts_with("label")) %>%
+      as.character() %>%
+      na.omit() %>%
+      as.character()
+
+    the_body <- paste0(
+      "_Issue retrieved from another repository_.\n",
+      "_Originally created on: ", as.Date(the_issue$created_at), "_\n",
+      "_Originally posted by: ", the_issue$author.name, "_\n\n",
+      change_body(the_issue$description)
+    )
+
+    if (length(all_labels) != 0) {
+      issue_client_id <- gh("POST /repos/{owner}/{repo}/issues",
+        owner = owner,
+        repo = repo,
+        title = the_issue$title,
+        body = the_body,
+        labels = as.list(all_labels)
+      )
+    } else {
+      issue_client_id <- gh("POST /repos/{owner}/{repo}/issues",
+        owner = owner,
+        repo = repo,
+        title = the_issue$title,
+        body = the_body
+      )
+    }
+
+    issue_client_id_tbl <- multilist_to_tibble(issue_client_id)
+    the_gh_id <- issue_client_id_tbl$number
+    message(paste("GitLab issue", the_issue$iid, "is GitHub issue", the_gh_id))
+
+    # Add comments ----
+    message(paste("Get comments for issue", w.issue))
+    comments <- gitlab(glue("/projects/{project_id}/issues/{the_issue$iid}/notes"))
+    if (nrow(comments) != 0) {
+      comments <- comments %>%
+        filter(system == FALSE) %>%
+        arrange(as.numeric(id))
+    }
+    if (nrow(comments) != 0) {
+      message(paste("Post comments for issue", w.issue))
+      for (w.comment in 1:nrow(comments)) { # w.comment <- 1
+        message(paste("> issue", w.issue, "; comment ", w.comment, "/", nrow(comments)))
+        the_comment <- comments[w.comment, ]
+        the_comment$body
+        # Change body
+        the_com_body <- paste0(
+          "_Comment retrieved from another repository_.\n",
+          "_Originally created on: ", as.Date(the_comment$created_at), "_\n",
+          "_Originally posted by: ", the_comment$author.name, "_\n\n",
+          change_body(the_comment$body)
+        )
+
+        issue_client_id <- gh("POST /repos/{owner}/{repo}/issues/{the_gh_id}/comments",
+          owner = owner,
+          repo = repo,
+          the_gh_id = the_gh_id,
+          body = the_com_body
+        )
+      }
+    }
+
+
+    # Close issue if it was closed ----
+    if (the_issue$state == "closed") {
+      message(paste("Close issue", w.issue))
+      issue_client_id <- gh("POST /repos/{owner}/{repo}/issues/{the_gh_id}",
+        owner = owner,
+        repo = repo,
+        the_gh_id = the_gh_id,
+        state = "closed"
+      )
+    }
+  }
+  unset_gitlab_connection()
+  message(paste("End of issue", w.issue))
+}
+```
+
+```{r examples-move_issues_from_gitlab_to_github, eval=FALSE}
+#' \dontrun{
+move_issues_from_gitlab_to_github(
+  gitlab_url = "https://gitlab.com/",
+  github_url = "https://github.com/",
+  gitlab_group = "thinkr-open",
+  gitlab_repo = "example-weekly",
+  gitlab_project_id = 37585948,
+  github_owner = "ThinkR-open",
+  github_repo = "example.mirror.issues.gl.gh",
+  gitlab_private_token = Sys.getenv("GITLAB_TOKEN"),
+  github_token = Sys.getenv("GITHUB_PAT"),
+  sleep_time = 60,
+  issue_start_over = 1,
+  max_page = 10,
+  force = FALSE
+)
+#' }
+```
+
+```{r tests-move_issues_from_gitlab_to_github}
+## 04-05-2023 On skip pour des raisons d'auth sur le CI
+skip_on_ci()
+
+test_that("move_issues_from_gitlab_to_github works", {
+  on.exit({
+    # admin access (delete_repo scope)
+    gh::gh(paste0("DELETE /repos/", owner, "/", repo_name))
+    # delete gitlab repo
+
+    gitlabr::gitlab(
+      req = paste0("projects/", project_id),
+      verb = httr::DELETE
+    )
+  })
+
+
+  gitlab_url <-
+    Sys.getenv("GITLAB_URL", unset = "https://gitlab.com")
+
+  gitlab_token <- Sys.getenv("GITLAB_TOKEN")
+
+  # GitLab con
+  my_gitlab <- gl_connection(
+    gitlab_url = gitlab_url,
+    private_token = gitlab_token
+  )
+
+  # Set the connection for the session
+  set_gitlab_connection(my_gitlab)
+
+  # Get user infos
+  user_info <- gitlab(req = paste0("user"), verb = httr::GET)
+  user_name <- user_info %>% pull(username)
+
+  project_name <- "lozentransferGLGH"
+
+  # Get user namespace (= group_id)
+  # namespace_id <- gitlabr::gitlab(req = "namespaces", search = user_name)[["id"]]
+  group_url <- user_info[["web_url"]]
+
+
+  # create_group_project ----
+  project_id <-
+    create_group_project(project_name, namespace_id = NULL)
+
+  ### List of issues
+  issues_need <- list(
+    test1 = list(created_at = Sys.Date()),
+    test2 = list(created_at = Sys.Date()),
+    test3 = list(created_at = Sys.Date()),
+    test4 = list(created_at = Sys.Date()),
+    test5 = list(created_at = Sys.Date())
+  )
+
+  url <- paste0("/projects/", project_id, "/", "issues")
+
+  # Open issues
+  purrr::iwalk(issues_need, ~ {
+    gitlab(
+      url,
+      title = .y,
+      verb = httr::POST,
+      created_at = as.character(.x[["created_at"]])
+    )
+  })
+
+
+  gl_list_issues <- gl_list_issues(
+    project = project_id,
+    max_page = 10
+  )
+
+
+  # let's open the github repo
+  github_token <- Sys.getenv("GITHUB_PAT")
+  github_url <- "https://github.com/"
+
+  user <- gh::gh("GET /user")
+  owner <- user$login
+  repo_name <- "my-new-repo-for-gh-testing"
+
+  gh::gh("POST /user/repos", name = repo_name)
+
+
+  # let's copy the issues from GL to GH
+  moving_issues <- try(move_issues_from_gitlab_to_github(
+    gitlab_url = gitlab_url,
+    github_url = github_url,
+    gitlab_group = user_name,
+    gitlab_repo = project_name,
+    gitlab_project_id = project_id,
+    github_owner = owner,
+    github_repo = repo_name,
+    gitlab_private_token = gitlab_token,
+    github_token = github_token,
+    sleep_time = 30,
+    issue_start_over = 1,
+    max_page = 10,
+    force = FALSE
+  ))
+
+  # listing the issues present on the gitlab repo
+  gh_list_issues <-
+    gh(
+      "/repos/{github_owner}/{github_repo}/issues",
+      state = "all",
+      github_owner = owner,
+      github_repo = repo_name
+    ) %>%
+    multilist_to_tibble()
+
+  gl_list_cleaned <- gl_list_issues %>%
+    dplyr::select(title, state) %>%
+    dplyr::arrange(title) %>%
+    dplyr::mutate(title = as.character(title))
+
+  gh_list_cleaned <- gh_list_issues %>%
+    dplyr::select(title, state, node_id) %>%
+    dplyr::arrange(title) %>%
+    dplyr::mutate(state = ifelse(state == "open", "opened", state)) %>%
+    dplyr::mutate(title = as.character(title))
+
+  expect_true(all.equal(
+    as.character(gl_list_cleaned$title),
+    as.character(gh_list_cleaned$title)
+  ))
+  expect_true(all.equal(
+    as.character(gl_list_cleaned$state),
+    as.character(gh_list_cleaned$state)
+  ))
+
+
+
+  # Clean GitLab => Remove the project
+  # GitLab con
+  my_gitlab <- gl_connection(
+    gitlab_url = gitlab_url,
+    private_token = gitlab_token
+  )
+
+  # Set the connection for the session
+  set_gitlab_connection(my_gitlab)
+})
+```
+
+
+```{r development-inflate, eval=FALSE}
+# Run but keep eval=FALSE to avoid infinite loop
+# Execute in the console directly
+fusen::inflate(
+  flat_file = "dev/flat_move_issues_from_gitlab_to_github.Rmd",
+  vignette_name = "bi - Move from GitLab to GitHub",
+  overwrite = TRUE,
+  check = FALSE,
+  document = FALSE,
+  open_vignette = FALSE
+)
+# Executer la doc avec la bonne ligne de code
+rstudioapi::navigateToFile("dev/dev_history_package.Rmd", line = 211)
+```
+

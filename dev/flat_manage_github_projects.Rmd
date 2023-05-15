@@ -1,0 +1,300 @@
+---
+title: "Manipulate a GitHub project"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r development, include=FALSE}
+library(testthat)
+library(glue)
+library(gh)
+library(yesno)
+library(gert)
+library(dplyr)
+library(gitlabr)
+```
+
+```{r development-load}
+# Load already included functions if relevant
+pkgload::load_all(export_all = FALSE)
+```
+
+# Create the project
+
+## `create_group_project_github()`: Create a new project on GitHub
+
+Create a new project on GitHub if it does not already exist.
+
+```{r function-create_group_project_github}
+#' Create new project on GitHub
+#'
+#' @param repo name of the project to create
+#' @param owner Owner of the repo
+#'
+#' @importFrom gh gh
+#' @importFrom glue glue
+#' @importFrom yesno yesno
+#'
+#' @return project_id. Side effect: Create a project on GitHub if not exists.
+#'
+#' @export
+#'
+create_group_project_github <- function(repo, owner) {
+  repo_exists <- try(gh(glue("/repos/{owner}/{repo}")), silent = TRUE)
+
+  if (!inherits(repo_exists, "try-error")) {
+    message("Project: '", repo, "' already exists in group: ", owner)
+  } else {
+    # Create project
+    # my_project <- gh(glue("POST /repos/{owner}/{repo}"))
+    # project_id <- my_project$id
+    # message("New project created: ", project_id)
+    yesno::yesno(glue("You need to create the repository yourself. Did you created {owner}/{repo} ?"))
+  }
+
+  glue("{owner}/{repo}")
+  # as.numeric(project_id)
+}
+```
+
+```{r examples-create_group_project_github, eval = FALSE}
+#' \dontrun{
+create_group_project_github(
+  repo = "areponame",
+  owner = "ghowner"
+)
+#' }
+```
+
+```{r tests-create_group_project_github}
+test_that("create_group_project_github works", {
+  expect_true(inherits(create_group_project_github, "function"))
+})
+```
+
+
+# Create the board
+
+## `add_board_github()`: Add a Board to the GitHub project
+
+Add a Board to the GitHub project with the default columns :
+
+- Open
+- Blocked
+- Meta
+- Ready
+- In Progress
+- Review
+- Validation
+
+```{r function-add_board_github}
+#' add_board_github
+#'
+#' @param owner Owner of the repository
+#' @param repo Repository name
+#' @param columns Names of columns to create in the Board
+#'
+#' @importFrom gh gh
+#' @importFrom gitlabr multilist_to_tibble
+#' @importFrom glue glue
+#'
+#' @export
+add_board_github <- function(owner,
+                             repo,
+                             columns = c("Open", "Blocked", "Meta", "Ready", "In Progress", "Review", "Validation")) {
+  board <- gh::gh(glue("POST /repos/{owner}/{repo}/projects"),
+    name = "Development"
+  )
+
+  board <- multilist_to_tibble(board)
+  project_id <- board[["id"]]
+
+  # Add columns
+  for (the_col in columns) {
+    gh::gh(glue("POST /projects/{project_id}/columns"),
+      name = the_col
+    )
+    message(glue("Column '{the_col}' created"))
+  }
+}
+```
+
+```{r example-add_board_github, eval = FALSE}
+#' \dontrun{
+add_board_github(
+  owner = "ghowner",
+  repo = "areponame"
+)
+#' }
+```
+
+```{r tests-add_board_github}
+test_that("add_board_github works", {
+  expect_true(inherits(add_board_github, "function"))
+})
+```
+
+
+# Create the Wiki
+
+## `add_wikis_github()`: Add the Wikis
+
+Add wiki pages to the project. You can select multiple pages with the `type` parameter among `home`, `cr`, `keys` and `weekly`.
+    
+```{r function-add_wikis_github}
+#' add_wikis_github
+#'
+#' @param owner Owner of the repository
+#' @param repo Repository name
+#' @param type Wiki type to add
+#'
+#' @importFrom glue glue
+#' @importFrom yesno yesno
+#' @importFrom gert git_clone git_pull git_add git_commit git_push
+#'
+#'
+#' @export
+add_wikis_github <- function(owner,
+                             repo, type = c("home", "cr", "keys", "weekly")) {
+  type <- match.arg(type, several.ok = TRUE)
+
+  tempwiki <- tempfile(pattern = "wiki")
+  wikigit <- glue("https://github.com/{owner}/{repo}.wiki.git")
+
+  wiki_clone <- try(gert::git_clone(url = wikigit, path = tempwiki), silent = TRUE)
+
+  if (!inherits(wiki_clone, "try-error")) {
+    message("There already are some wikis")
+    # existing wiki are cloned
+    # existing_wiki <- gh(req = paste0("projects/", project_id, "/wikis"),
+    #                     verb = httr::GET)
+  } else {
+    yesno::yesno("You need to create a Wiki Home Page on GitHub.com first. Is it done now?")
+
+    wiki_clone <- try(gert::git_clone(url = wikigit, path = tempwiki), silent = TRUE)
+
+    existing_wiki <- list.files(wiki_clone)
+    #
+    # existing_wiki <- tibble(name = character(0))
+    # usethis::create_project(tempwiki, open = FALSE)
+    # usethis::with_project(path = tempwiki, {
+    #   usethis::use_git()
+    #   usethis::use_git_remote(url = wikigit)
+    # })
+  }
+
+  if ( # "home.md" %in% tolower(existing_wiki) &
+    "home" %in% type) {
+    gert::git_pull(repo = tempwiki)
+
+    # Always home
+    wiki <- readLines(system.file("github", "wiki_home.md", package = "lozen"))
+    # Changer {repo}
+    wiki <- gsub(pattern = "\\{repo\\}", replacement = repo, x = wiki)
+    # Changer {owner}
+    wiki <- gsub(pattern = "\\{owner\\}", replacement = owner, x = wiki)
+
+    # Home
+    writeLines(wiki, file.path(tempwiki, "Home.md"))
+    # rstudioapi::openProject(path = tempwiki, newSession = TRUE)
+    gert::git_add(files = c("Home.md", "*.Rproj"), repo = tempwiki)
+    gert::git_commit(message = "Update Home wiki", repo = tempwiki)
+
+    gert::git_push(repo = tempwiki)
+
+    message("Wiki home page added")
+  }
+
+  if ("cr" %in% type) {
+    gert::git_pull(repo = tempwiki)
+
+    # Comptes-rendus
+    wiki2 <- readLines(system.file("github", "wiki_cr.md", package = "lozen"))
+
+    # Changer {date}
+    wiki2 <- gsub(pattern = "\\{date\\}", replacement = Sys.Date(), x = wiki2)
+
+    # Home
+    writeLines(wiki2, file.path(tempwiki, "comptes-rendus.md"))
+    # rstudioapi::openProject(path = tempwiki, newSession = TRUE)
+    gert::git_add(files = c("comptes-rendus.md", "*.Rproj"), repo = tempwiki)
+    gert::git_commit(message = "Add comptes-rendus wiki", repo = tempwiki)
+
+    gert::git_push(repo = tempwiki)
+
+    message("Wiki Comptes-rendus page added")
+  }
+
+  if ("keys" %in% type) {
+    gert::git_pull(repo = tempwiki)
+
+    # Comptes-rendus
+    wiki3 <- readLines(system.file("github", "wiki_keys.md", package = "lozen"))
+    # Changer {mon_projet}
+    wiki3 <- gsub(pattern = "\\{date\\}", replacement = Sys.Date(), x = wiki3)
+
+    writeLines(wiki3, file.path(tempwiki, "Key_Dates.md"))
+    # rstudioapi::openProject(path = tempwiki, newSession = TRUE)
+    gert::git_add(files = c("Key_Dates.md", "*.Rproj"), repo = tempwiki)
+    gert::git_commit(message = "Add Key Dates wiki", repo = tempwiki)
+
+    gert::git_push(repo = tempwiki)
+
+    message("Wiki 'Key dates' page added")
+  }
+
+  if ("weekly" %in% type) {
+    gert::git_pull(repo = tempwiki)
+
+    # Comptes-rendus
+    # wiki3 <- readLines(system.file("github", "wiki_keys.md", package = "lozen"))
+    # Changer {mon_projet}
+    # wiki3 <- gsub(pattern = "\\{date\\}", replacement = Sys.Date(), x = wiki3)
+
+    cat("# Weekly", file = file.path(tempwiki, "Weekly.md"))
+    # writeLines(wiki3, file.path(tempwiki, "Key_Dates.md"))
+    # rstudioapi::openProject(path = tempwiki, newSession = TRUE)
+    gert::git_add(files = c("Weekly.md", "*.Rproj"), repo = tempwiki)
+    gert::git_commit(message = "Add Weekly wiki", repo = tempwiki)
+
+    gert::git_push(repo = tempwiki)
+
+    message("Wiki 'Key dates' page added")
+  }
+}
+```
+  
+```{r example-add_wikis_github, eval = FALSE}
+#' \dontrun{
+add_wikis_github(
+  owner = "ghowner",
+  repo = "areponame"
+)
+#' }
+```
+
+```{r tests-add_wikis_github}
+test_that("add_wikis_github works", {
+  expect_true(inherits(add_wikis_github, "function"))
+})
+```
+
+
+```{r development-inflate, eval=FALSE}
+# Run but keep eval=FALSE to avoid infinite loop
+# Execute in the console directly
+fusen::inflate(
+  flat_file = "dev/flat_manage_github_projects.Rmd",
+  vignette_name = "bd - Manage GitHub Projects",
+  overwrite = TRUE,
+  check = FALSE,
+  document = FALSE,
+  open_vignette = FALSE
+)
+
+rstudioapi::navigateToFile( # Go to the dev_history_package.Rmd to inflate all flat files
+  "dev/dev_history_package.Rmd",
+  line = 170
+)
+```

@@ -1,0 +1,244 @@
+---
+title: "Kit de développement"
+author: "Sébastien Rochette"
+date: "23/09/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Le premier lancement
+
+Vous venez de créer un projet de livre numérique.
+Vous allez bientôt pouvoir commencer la rédaction.
+Il y a quelques étapes à réaliser pour versionner ce livre dans de bonnes conditions.  
+Vous pouvez cocher les cases pour vous aider.
+
+*Sur GitLab*
+- [ ] Créer un nouveau projet totalement vide sur GitLab
+  + Choisir le groupe dans lequel le créer dans le menu déroulant
+  + Surtout **ne pas** cocher "Initier avec un Readme"
+  + Récupérer l'url du projet GitLab
+    + Vous pouvez la noter ici pour plus tard
+- [ ] Créer un token nommé `PROJECT_ACCESS_TOKEN` sur GitLab dans votre projet dans "Settings > Access Token" avec les accès "Read/Write repository"
+  + Copier le token ici, il ne sera visible qu'une fois
+  + En savoir plus : https://github.com/statnmap/GitLab-Pages-Deploy#publish-one-site-for-each-branch
+- [ ] Créer une variable d'environnement pour le CI
+  + Aller à : Settings > CI/CD > Variables
+  + Cliquer sur "Expand"
+  - Add variable
+  - Remplir "key" avec `PROJECT_ACCESS_TOKEN`
+  - Remplir le token avec celui que vous avez sauvé ci-dessus
+  - Cocher la case 'Mask variable', et décocher la case 'Protected'
+  - Cliquer sur "Add variable"
+  - Supprimer le token si vous l'avez copié dans le fichier actuel au-dessus
+    + Il n'est plus nécessaire
+
+  
+*Dans ce projet sur R*
+- [ ] Si vous ne savez pas si git est installé sur votre ordinateur
+  + [ ] Vérifier que git est bien installé en tapant dans le *Terminal*: `git version`
+  + [ ] Sinon installer git en suivant la procédure: https://thinkr.fr/procedure.html (menu git)
+
+- [ ] Si c'est la toute première fois que vous utilisez git sur votre ordinateur
+  + Dites-lui qui vous êtes 
+
+```{r}
+usethis::use_git_config(
+    scope = "user", # ne pas changer
+    user.name = "username",
+    user.email = "vous@mail.fr"
+)
+```
+
+
+- [ ] Versionner le présent projet avec les commandes suivantes
+  + Relier au projet GitLab en changeant l'url avec `XXXX` ci-dessous
+
+```{r}
+# Activer git et effectuer le premier commit
+usethis::use_git()
+# Relier au projet. Définir votre url à vous.
+usethis::use_git_remote(url = "https://xxx/XXXXXX")
+# Définir la branche main par défaut ({usethis} >= 2.1.3)
+# usethis::git_default_branch_rename() # ça peut ne pas marcher, ce n'est pas grave
+```
+
+- [ ] Redémarrer votre RStudio
+  
+- [ ] Changer la branche "master" par "main" si besoin
+    + Dans le *Terminal* : 
+```
+git branch -m master main
+```
+- [ ] Envoyer une première fois sur le serveur
+    + Dans le *Terminal* : 
+```
+git push -u origin main
+```
+
+- L'intégration continue se met en place directement.  
+- [ ] Trouver l'url de déploiement du livre numérique dans le projet sur GitLab
+  + Settings > Pages
+  + Ouvrir pour voir s'il y a bien le livre numérique
+    + Il faut attendre que l'intégration continue soit finie : Menu CI/CD
+- [ ] Ajouter l'url dans le README de ce projet
+  + Pour cela, rechercher toutes les mentions à `url-pages` et les remplacer par l'url des Pages de votre projet
+    + "Ctrl + Shift + F" sur RStudio
+  + Notez qu'après création des branches _validation_ et _production_, il y aura un nouveau book en ligne
+    + <url-pages/validation>
+    + <url-pages/production>
+  + Vous avez aussi accès à la version odt
+    + <url-pages/main/rapport.odt>
+
+
+*Sur GitLab*  
+
+Processus de fusion: Branche -> main -> validation -> production
+
+- [ ] Créer une branche _validation_ depuis le _main_
+- [ ] Créer une Merge request en mode "Draft" **depuis** _main_ vers _validation_
+- [ ] Créer une branche _production_ depuis le _main_
+- [ ] Créer une Merge request en mode "Draft" **depuis** _main_ vers _production_
+- [ ] Vérifier la compilation du book dans `url-pages/validation`
+- [ ] Vérifier la compilation du book dans `url-pages/production`
+- [ ] Protéger l'envoi de "push" vers le _main_
+  + Cela empêche d'envoyer des "commit" directement dans cette branche, seules les MR permettent d'écire dedans
+  + Menu "Settings" > "Repository" > "Protected Branches"
+  + Modifier pour la branche _main_, choisir
+    + "Allowed to Merge": "Maintainers"
+    + "Allowed to Push": "No one"
+- [ ] Ajouter des Labels pour les tickets : "Project Information" > "Labels"
+  + Pret, Bloqué, En cours, Révision, Validation, Production
+- [ ] Préparer le Board avec une colonne pour chaque label
+  + Issues > Boards > Create List
+- [ ] Ouvrir les tickets nécessaires au suivi de l'avancement du projet
+
+*Dans ce projet*
+
+Définir la mise en place de l'intégration continue avec Connect
+
+/!\ => La premiere fois, laisser executer le CI en commentant le parametre "appID"
+Les fois suivantes, décommenter "appID" pour mettre le numéro de l'app sur Connect
+Choisir les paramètres ci-dessous en fonction de votre besoin
+
+Définir les droits de lecture de l'app sur Connect avec des individus et pas des groupes.
+Seuls les devs du projet et le client contact y ont accès
+
+Changer `mypackage` par le nom de votre package dans ce fichier
+
+Après le premier envoi du CI, définissez une url sur Connect directement pour avoir accès au site web - Ajuster les droits de lecture aussi
+Ensuite, mettez à jour le README pour dire où est le book et ses versions
+
+- version main : https://url_de_connect/my-book/main
+- version production : https://url_de_connect/my-book/production
+
+Aller dans la branche "gh-pages" et y mettre un script R nommé "dev_history_connect.R" avec le contenu suivant.  
+
+- Modifier le nom de l'app
+- Après le premier envoi sur connect, récupérer le AppID et le mettre à jour dans cette branche "gh-pages"
+
+```{r, eval=FALSE}
+
+# Deps
+install.packages("rsconnect")
+
+## deploy shinyapp
+# orgiwd <- setwd(".") # Uncomment here and below
+## deploy pkgdown
+# pkgdown::build_site()
+if (dir.exists("public")) {
+  origwd <- setwd("public")
+} else {
+  origwd <- setwd("docs")
+}
+print(paste("--", getwd(), "--"))
+
+rsconnect::addServer("https://url_de_connect/__api__", name = "connect")
+rsconnect::connectApiUser(account = Sys.getenv("CONNECT_USER"),
+                          server = "connect", apiKey = Sys.getenv("CONNECT_TOKEN"))
+
+# S'il y a {renv} dans votre projet, vous devrez probablement cacher quelques dossiers, par exemple
+appFiles <- list.files(".", recursive = TRUE)
+appFiles <- appFiles[!grepl(".Rprofile|renv|rstudio_|deliverables|dev|data-raw|docker", appFiles)]
+
+rsconnect::deployApp(
+  ".",                          # the directory containing the content
+  appName = "book-auto-ci",
+  appFiles = appFiles,          # the list of files to include as dependencies (all of them)
+  appPrimaryDoc = "index.html", # the primary file for pkgdown
+  # appPrimaryDoc = "app.R", # the primary file for shinyapp # Uncomment here
+  # appId = 000, # Define when known
+  account = Sys.getenv("CONNECT_USER"),
+  server  = "connect",
+  forceUpdate = FALSE
+)
+
+setwd(origwd)
+
+```
+
+
+## Processus de contribution
+
+- Créer un ticket sur GitLab pour dire ce que vous allez faire
+- Créer une Merge Request (MR) à partir de ce ticket
+  + Laisser en mode "Draft:"
+  + Cela créé aussi une branche
+- Lorsque vous prenez en charge le ticket, déplacer le ticket dans la bonne colonne du Board 
+- Récupérer sa branche sur votre RStudio
+- Faites vos modifications dans la branche
+  + Commit, Push
+- Vérifier que le CI passe sur GitLab
+- Enlever le mode Draft de la MR
+- Demander la révision à un⋅e collaborateur⋅rice
+  + Placer le ticket dans la colonne "Révision"
+
+
+=> **Penser à récupérer les modifications ajoutées dans _validation_ et _production_ vers le _main_**
+
+
+## Package depuis GitHub
+
+Si vous avez fait appel à des packages sur GitHub, le CI peut nécessiter l'ajout d'un token GitHub pour pouvoir télécharger des packages R depuis GitHub.
+Dans ce cas, une personne avec un compte GitHub peut créer un token dédié à ce projet en particulier depuis cette page : https://github.com/settings/tokens
+Ce token doit être ajouté au projet :  
+
+- Depuis l'interface GitLab
+    + Settings > CI/CD > Variables 
+    + Ajouter une variable nommée `GITHUB_PAT` avec la valeur du token GitHub
+    + Cocher la case "Masked variable"
+    + Ne pas cocher "Protected variable"
+
+# Les fichiers de configuration à gérer
+
+- README.md : ce que fait le projet, les infos sur la page d'acceuil de GitLab
+- index.Rmd : La première page avec le chapitre de "Vue d'ensemble"
+  + Modifier le YAML avec les informations nécessaires.
+  
+# Gérer les dépendances du projet
+
+Créer un fichier DESCRIPTION permet de lister les packages nécessaire à la bonne compilation du livre
+
+*Executer ces lignes de code si vous ajoutez du code R dans vos fichiers*
+```{r}
+if (!requireNamespace("git2r")) {install.packages("git2r")}
+if (!requireNamespace("usethis")) {install.packages("usethis")}
+if (!requireNamespace("remotes")) {install.packages("remotes")}
+if (!requireNamespace("attachment")) {install.packages("attachment")}
+
+if (!file.exists("DESCRIPTION")) {usethis::use_description()}
+
+# Find dependencies
+imports <- unique(c(
+  "pagedown", "bookdown", "emo",
+  # Calls in `r code`
+  "knitr",
+  attachment::att_from_rmds(".", recursive = FALSE),
+  attachment::att_from_rscripts("R", recursive = FALSE)
+))
+# update DESCRIPTION file
+attachment::att_to_desc_from_is(path.d = "DESCRIPTION", imports = imports)
+```

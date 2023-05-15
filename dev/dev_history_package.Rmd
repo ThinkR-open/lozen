@@ -1,0 +1,243 @@
+---
+title: "Dev history - Package"
+output: 
+  html_document:
+    toc: true
+    toc_depth: 1
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE,
+  eval = FALSE
+  )
+```
+
+In this document, you will find the useful steps/commands to start the development of a package (structure, documentation, ...)
+
+# At the beggining of the developments
+## Set the dev tools
+
+### Add git templates
+
+```{r}
+# GitLab MR and git commit templates
+lozen::add_git_templates()
+```
+
+### Hide some files in .Rbuildignore and .gitignore
+
+```{r}
+usethis::use_build_ignore("dev")
+usethis::use_build_ignore("ci/lib")
+usethis::use_build_ignore("rsconnect")
+
+usethis::use_git_ignore("docs/")
+usethis::use_git_ignore("rsconnect/")
+usethis::git_vaccinate()
+usethis::use_git_ignore(c(".DS_Store", ".Rproj.user", ".Rdata", ".Rhistory", ".httr-oauth"))
+```
+
+### Add some required packages
+
+```{r}
+# Pipe ----
+usethis::use_pipe()
+# _Tests ----
+usethis::use_testthat()
+```
+
+### Set the CI
+
+```{r}
+# _CI (cf {gitlabr} templates) ----
+lozen::use_gitlab_ci(image = "rocker/verse",
+                              gitlab_url = Sys.getenv("GITLAB_URL",unset = "https://gitlab.com"),
+                              repo_name = "https://packagemanager.rstudio.com/all/__linux__/focal/latest",
+                              type = "check-coverage-pkgdown")
+```
+
+## Add general information/documentation about the package
+
+### Update DESCRIPTION
+
+```{r}
+library(desc)
+unlink("DESCRIPTION")
+
+my_desc <- description$new("!new")
+my_desc$set_version("0.0.0.9000")
+my_desc$set(Package = "deeptools")
+my_desc$set(Title = "Tools to analyze video images")
+my_desc$set(Description = "Images were analyzed in a game. This package explores the results of the game.")
+my_desc$set(
+  "Authors@R",
+  'c(
+  person("Sebastien", "Rochette", email = "sebastien@thinkr.fr", role = c("aut", "cre"), comment = c(ORCID = "0000-0002-1565-9313")),
+  person("Colin", "Fay", email = "colin@thinkr.fr", role = c("aut"), comment = c(ORCID = "0000-0001-7343-1846")),
+  person("Vincent", "Guyader", email = "vincent@thinkr.fr", role = c("aut"), comment = c(ORCID = "0000-0003-0671-9270")),
+  person(given = "ThinkR", role = "cph")
+)'
+)
+my_desc$set("VignetteBuilder", "knitr")
+my_desc$del("Maintainer")
+my_desc$del("URL")
+my_desc$del("BugReports")
+my_desc$write(file = "DESCRIPTION")
+```
+
+### Licence
+
+```{r}
+usethis::use_proprietary_license("ThinkR")
+# usethis::use_mit_license("ThinkR")
+```
+
+### README
+
+```{r}
+usethis::use_readme_rmd()
+papillon::generate_readme_rmd()
+papillon::generate_readme_rmd(parts = "description")
+
+# _Badges GitLab
+usethis::use_badge(badge_name = "pipeline status",
+                    href = "https://gitlab.com/<group>/<project>/-/commits/main",
+                    src = "https://gitlab.com/<group>/<project>/badges/main/pipeline.svg")
+usethis::use_badge(badge_name = "coverage report",
+                   href = "http://<group>.pages.gitlab.com/<project>/coverage.html",
+                    src = "https://gitlab.com/<group>/<project>/badges/main/coverage.svg")
+```
+
+### NEWS
+
+```{r}
+usethis::use_news_md()
+```
+
+### Code of conduct
+
+```{r}
+usethis::use_code_of_conduct(contact = "contact@think.fr")
+```
+
+### Contributing guide
+
+```{r}
+usethis::use_tidy_contributing()
+```
+
+### Package-level documentation
+
+```{r}
+usethis::use_package_doc()
+```
+
+### Add a css for the vignettes
+
+```{r}
+file.copy(system.file("templates/html/header_hide.html", package = "lozen"),
+          "vignettes")
+lozen::add_thinkr_css(path = "../vignettes/")
+```
+
+### Description and Bibliography
+
+```{r}
+papillon::create_pkg_desc_file(out.dir = "inst", source = c("archive"), to = "html")
+lozen::create_pkg_biblio_file_thinkr()
+```
+
+## Tools to help to resolve issues
+
+```{r}
+# Get global variables
+checkhelper::print_globals()
+# Hexadecimal translation of an accent - if there are notes about non ASCII characters
+stringi::stri_trans_general("é", "hex")
+```
+
+
+
+# Each time, before pushing to the server
+
+## Inflate all flat files to be up-to-date
+
+Be sure to inflate all flat files before to update the documentation and run the check.
+
+```{r}
+library(magrittr)
+style_and_inflate_a_given_flat <- function(name_flat_rmd) {
+
+  styler::style_file(path = file.path("dev", name_flat_rmd))
+  
+  flat_in_line <- readLines(file.path("dev", name_flat_rmd))
+
+  start_inflate <- which(stringr::str_detect(flat_in_line, "fusen::inflate\\("))
+  
+  if (isTRUE(any(stringr::str_detect(flat_in_line, "rstudioapi::navigateToFile"))))  {
+    end_inflate <- which(stringr::str_detect(flat_in_line, "rstudioapi::navigateToFile")) - 1
+  } else {
+    end_inflate <- length(flat_in_line) - 1
+  }
+  
+  if (end_inflate < start_inflate) {
+    message(glue::glue("inflate_a_given_flat impossible pour le fichier {name_flat_rmd} car il y a surement un rstudioapi::navigateToFile avant le inflate"))
+  }
+  
+  inflate_code <- flat_in_line[start_inflate : end_inflate] %>% stringr::str_c(collapse = "")
+  
+  inflate_code <- stringr::str_replace_all(inflate_code, pattern = "check = TRUE", replacement = "check = FALSE")
+
+  eval(parse(text = inflate_code))
+
+  return(message(glue::glue("{name_flat_rmd} inflate ok")))
+
+}
+vec_flat_files <- list.files("dev")[list.files("dev") %>% stringr::str_detect("^flat")]
+vec_flat_files <- vec_flat_files[!stringr::str_detect(vec_flat_files, "flat_userproject")]
+vec_flat_files %>%
+  purrr::walk(style_and_inflate_a_given_flat)
+# pense a lancer le chunk du dessous aussi 
+```
+
+## Update the documentation with `{attachment}`
+
+```{r}
+# install.packages("attachment", 
+#                  repos = "https://thinkr-open.r-universe.dev/")
+
+suggests <- c("bookdown", "renv", "remotes",
+                     "covr", "gitdown", "testdown",
+                     "thinkrtemplate",
+                     "devtools",
+                     "git2r",
+                     "DT", "htmltools", "markdown",
+              "fusen")
+attachment::att_amend_desc(
+  pkg_ignore = suggests,
+  extra.suggests = suggests
+)
+attachment::set_remotes_to_desc()
+
+desc::desc_bump_version(which = "dev")
+```
+
+## Check the package
+
+```{r}
+# devtools::test()
+# devtools::check()
+# devtools::check(args = c("--no-examples", "--no-vignettes", "--no-tests"),
+#                 build_args = "--no-build-vignettes")
+devtools::check(args = c("--no-vignettes"),
+                 build_args = "--no-build-vignettes")
+check_n_covr <- function() {
+  res <- devtools::check(args = c("--no-tests"))
+  print(res)
+  covr::package_coverage(type = "tests", quiet = TRUE)
+}
+check_n_covr()
+```
