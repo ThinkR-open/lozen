@@ -19,3 +19,4 @@ vignettes/*.R$
 ^ci/lib$
 ^\.gitlab$
 ^CODE_OF_CONDUCT\.md$
+^\.github$
