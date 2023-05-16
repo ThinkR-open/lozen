@@ -1,0 +1,489 @@
+---
+title: "exploration_graphql"
+output: html_document
+date: "2023-05-15"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(gh)
+library(glue)
+library(purrr)
+
+```
+
+## Anciens boards
+
+```{r}
+user <- gh::gh("GET /user")
+owner <- user$login
+repo_name <- "my-new-repo-for-gh-testing_old_board"
+  
+on.exit({
+  # admin access (delete_repo scope)
+  gh::gh(paste0("DELETE /repos/", owner, "/", repo_name))
+})
+  
+my_project <- create_group_project_github(owner = owner, repo = repo_name)
+ 
+## Récupération du login
+login_query <- gh_gql("query { viewer { login }}")
+login <- login_query$data$viewer$login
+  
+## Récupération du username et userid
+userid_query <-
+  gh_gql(glue::glue(
+    'query { user(login: "$_login_$") { id, name } }',
+    .open = "$_",
+    .close = "_$"
+  ))
+userid <- userid_query$data$user$id
+username <- userid_query$data$user$name
+  
+  
+## Récupération de la liste des projects old board
+userprojects <-
+  gh_gql(
+    glue::glue(
+      'query { user(login: "$_login_$") { projects(first: 100) { edges { node { id, name } } } } }',
+      .open = "$_",
+      .close = "_$"
+    ),
+    .send_headers = c("X-Github-Next-Global-ID"= 1)
+  )
+edges <- userprojects$data$user$projects$edges
+
+userprojects <- purrr::map(edges, "node") %>% 
+  purrr::map_chr(., "id")
+
+# on supprime tout
+sapply(userprojects, function(project) {
+  # browser()
+  gh_gql(
+    glue::glue(
+    'mutation {deleteProject(input: {projectId: "$_project_$"}) { owner { id } }}',
+      .open = "$_",
+      .close = "_$"
+    ),
+    .send_headers = c("X-Github-Next-Global-ID"= 1)
+  )
+})
+
+  # Récupération de l'id d'un repo
+repository_id <-
+  gh_gql(
+    glue(
+      'query {repository(owner: "ymansiaux", name: "$_repo_name_$") {
+  id
+}}',
+.open = "$_",
+.close = "_$"
+    )
+  )
+repository_id <- repository_id$data$repository$id
+
+project_name <- "gh_classic_board"
+
+create_old_project <- gh_gql(
+  glue::glue(
+    'mutation { createProject(input: { ownerId: "$_userid_$", name: "$_project_name_$", template: BASIC_KANBAN,  repositoryIds: "$_repository_id_$"}) { project { id } }}',
+    .open = "$_",
+    .close = "_$"
+  )
+)              
+
+userprojects <-
+  gh_gql(
+    glue::glue(
+      'query { user(login: "$_login_$") { projects(first: 100) { edges { node { id, name } } } } }',
+      .open = "$_",
+      .close = "_$"
+    ),
+    .send_headers = c("X-Github-Next-Global-ID"= 1)
+  )
+  
+edges <- userprojects$data$user$projects$edges
+project_names <- purrr::map(edges, "node") %>% 
+  purrr::map_chr(., "name")
+
+index_good_project <- which(project_names == project_name)
+project_id <- purrr::map(edges, "node") %>% 
+  purrr::map_chr(., "id") %>% 
+  .[index_good_project]
+  
+# création d'une issue et affiliation au projet
+issue_title <- "toy_issue"
+issue_id <- gh_gql(
+  glue::glue(
+    'mutation {createIssue(input: {repositoryId: "$_repository_id_$", title: "$_issue_title_$", projectIds:"$_project_id_$"}) {issue {
+      id
+    }}}',
+    .open = "$_",
+    .close = "_$"
+  )
+)
+ 
+
+# ajouter une colonne au kanban
+colonne_name <- "Test_colonne"
+          
+colonne_ajout <- gh_gql(
+  glue::glue(
+    'mutation {addProjectColumn(input: {name: "$_colonne_name_$", projectId:"$_project_id_$"}) {project {
+      id
+    }}}',
+    .open = "$_",
+    .close = "_$"
+  )
+)
+ 
+# savoir quelle issue est dans quelle colonne
+gh_gql('query {
+  repository(owner: "ymansiaux", name: "my-new-repo-for-gh-testing_old_board") {
+    issue(number: 1) {
+      projectCards {
+        nodes {
+          databaseId,
+          title,
+          id
+        }
+      }
+    }
+  }
+}')
+
+#il me manque un create card 
+
+# https://stackoverflow.com/questions/70084682/using-the-github-api-how-can-i-find-the-card-id-that-is-linked-to-a-specific-iss
+
+# https://docs.github.com/en/rest/projects/cards?apiVersion=2022-11-28
+user <- gh::gh("GET /user")
+owner <- user$login
+repo_name <- "my-new-repo-for-gh-testing_old_board"
+
+my_project <- create_group_project_github(owner = owner, repo = repo_name)
+ 
+list_projets <- gh("GET /users/ymansiaux/projects")
+
+see_proj <- gh("GET /projects/14706714")
+
+# marche pas
+# create_projet <- gh("POST /repos/ymansiaux/my-new-repo-for-gh-testing_old_board/projects", name = "projet2")
+
+# list project columns
+gh("GET /projects/14706714/columns")
+
+# list issue
+gh("GET /repos/ymansiaux/my-new-repo-for-gh-testing_old_board/issues")
+
+# create a project card
+gh("POST /projects/columns/19473293/cards", note = "inii", content_type = "Issue", content_id = 1709696964)
+
+
+# create a project card
+gh("GET /projects/columns/19473293/cards")
+
+          gh("POST /repos/ymansiaux/my-new-repo-for-gh-testing_old_board/projects", name = "projet3")
+
+# 
+create_projet <- gh("POST /user/projects", name = "projet2")
+# 14706721
+
+create_projet <- gh("POST /user/projects", name = "projet3")
+# 14706731
+
+
+
+# ajouter des colonnes
+gh("POST /projects/14706731/columns", name = "colonne1")
+gh("POST /projects/14706731/columns", name = "colonne2")
+
+# list project columns
+gh("GET /projects/14706731/columns")
+
+# create a project card
+gh("POST /projects/columns/14706731/cards", note = "inii", content_type = "Issue", content_id = 1709696964)
+
+gh("PUT /repos/ymansiaux/my-new-repo-for-gh-testing_old_board/projects/collaborators/ymansiaux?permission=admin")
+
+gh("GET /repos/{owner}/{repo}/collaborators", owner = "ymansiaux", repo = "my-new-repo-for-gh-testing_old_board")
+
+# voir comment ajouter une issue dans une colonne
+
+# pour partir d'un board propre voir delete project column
+
+# voir comment récupérer les colonnes du board
+```
+
+
+## New boards
+
+```{r}
+user <- gh::gh("GET /user")
+owner <- user$login
+repo_name <- "my-new-repo-for-gh-testing_new_board"
+  
+on.exit({
+  # admin access (delete_repo scope)
+  gh::gh(paste0("DELETE /repos/", owner, "/", repo_name))
+})
+  
+my_project <- create_group_project_github(owner = owner, repo = repo_name)
+ 
+## Récupération du login
+login_query <- gh_gql("query { viewer { login }}")
+login <- login_query$data$viewer$login
+  
+## Récupération du username et userid
+userid_query <-
+  gh_gql(glue::glue(
+    'query { user(login: "$_login_$") { id, name } }',
+    .open = "$_",
+    .close = "_$"
+  ))
+userid <- userid_query$data$user$id
+username <- userid_query$data$user$name
+  
+  
+## Récupération de la liste des projects old board
+userprojects <-
+  gh_gql(
+    glue::glue(
+      'query { user(login: "$_login_$") { projectsV2(first: 100) { edges { node { id, title } } } } }',
+      .open = "$_",
+      .close = "_$"
+    ),
+    .send_headers = c("X-Github-Next-Global-ID"= 1)
+  )
+edges <- userprojects$data$user$projects$edges
+
+userprojects <- purrr::map(edges, "node") %>% 
+  purrr::map_chr(., "id")
+
+# on supprime tout
+sapply(userprojects, function(project) {
+  # browser()
+  gh_gql(
+    glue::glue(
+    'mutation {deleteProjectV2(input: {projectId: "$_project_$"}) { projectV2 { id } }}',
+      .open = "$_",
+      .close = "_$"
+    ),
+    .send_headers = c("X-Github-Next-Global-ID"= 1)
+  )
+})
+
+
+# Récupération de l'id d'un repo
+repository_id <-
+  gh_gql(
+    glue('query {repository(owner: "$_owner_$", name: "$_repo_name_$") {
+  id
+}}',
+.open = "$_",
+.close = "_$"
+    )
+  )
+  
+repository_id <- repository_id$data$repository$id
+  
+## Création d'un project et affiliation du repo
+project_title <- "projet_new_board"
+create_project <-
+  gh_gql(
+    glue::glue(
+      'mutation { createProjectV2(input: { ownerId: "$_userid_$", title: "$_project_title_$", repositoryId: "$_repository_id_$"}) { projectV2 { id, databaseId } }}',
+      .open = "$_",
+      .close = "_$"
+    )
+  )
+
+userprojects <-
+  gh_gql(
+    glue::glue(
+      'query { user(login: "$_login_$") { projectsV2(first: 100) { edges { node { id, title, number } } } } }',
+      .open = "$_",
+      .close = "_$"
+    ),
+    .send_headers = c("X-Github-Next-Global-ID"= 1)
+  )
+  
+edges <- userprojects$data$user$projects$edges
+project_names <- purrr::map(edges, "node") %>% 
+  purrr::map_chr(., "title")
+
+index_good_project <- which(project_names == project_title)
+project_id <- purrr::map(edges, "node") %>% 
+  purrr::map_chr(., "id") %>% 
+  .[index_good_project]
+  
+issue_title <- "toy_issue"
+
+creer_issue <-   gh_gql(
+  glue::glue(
+    'mutation {createIssue(input: {repositoryId: "$_repository_id_$", title: "$_issue_title_$"}) {issue {
+      id
+    }}}',
+    .open = "$_",
+    .close = "_$"
+  )
+)
+          
+issueid <- creer_issue$data$createIssue$issue$id
+               
+itemid <- gh_gql(
+  glue::glue(
+    'mutation {  addProjectV2ItemById(input: {projectId: "$_project_id_$", contentId: "$_issueid_$"}) {
+    item {
+      id
+    }
+  }
+}',
+.open = "$_",
+.close = "_$"
+  )
+)
+
+id_des_status <- gh_gql(glue('query{
+  user(login: "ymansiaux") {
+    projectV2(number: 29) {
+       id
+                  fields(first:20) {
+                    nodes {
+                      ... on ProjectV2SingleSelectField {
+                        id
+                        name
+                        options {
+                          id
+                          name
+                        }
+          }
+        }
+      }
+    }
+  }
+}',
+   .open = "$_",
+    .close = "_$"
+  ))
+
+
+# bouger une issue
+
+gh_gql(glue('mutation {
+              updateProjectV2ItemFieldValue(
+                input: {
+                      projectId:  "$_project_id_$"
+                      itemId: "PVTI_lAHOAu_Iw84AQNdezgGucIo"
+                      fieldId: "PVTSSF_lAHOAu_Iw84AQNdezgKWWwo"
+                      value: { 
+                          singleSelectOptionId :"47fc9ee4"
+                      }
+                      
+                }
+                ) {
+                projectV2Item {
+                  id
+                }
+              }
+            }',
+   .open = "$_",
+    .close = "_$"
+  ))
+
+
+# pour vider le board voir deleteProjectV2Item
+
+
+
+# lister les colonnes
+ # get project board status
+  req_board_infos <- gh_gql(glue('query{
+    node(id: "$_project_id_$") {
+        ... on ProjectV2 {
+          items(first: 100) {
+            nodes{
+              id
+              fieldValues(first: 100) {
+                nodes{
+                  ... on ProjectV2ItemFieldSingleSelectValue {
+                    name
+                    field {
+                      ... on ProjectV2FieldCommon {
+                        name
+                      }
+                    }
+                  }
+                }
+              }
+              content{
+                ...on Issue {
+                  title
+                   url
+                  number
+                  state
+                  createdAt
+                  updatedAt
+                  closedAt
+                }
+              }
+            }
+          }
+        }
+      }
+    }',
+    .open = "$_",
+    .close = "_$"
+  ))
+
+
+
+gh_gql('query {
+ user(login: "ymansiaux") {
+    projectV2(number: 29) {
+      fields(first:100) {
+        edges {
+          node {
+            ... on ProjectV2Field {
+              id
+              name
+            }
+          }
+        }
+      }
+    }
+  }
+}')
+
+userprojects <-
+  gh_gql(
+    glue::glue(
+      'query { user(login: "$_login_$") { projectsV2(first: 100) { edges { node { id, title, number } } } } }',
+      .open = "$_",
+      .close = "_$"
+    ),
+    .send_headers = c("X-Github-Next-Global-ID"= 1)
+  )
+
+gh_gql(
+  glue::glue(
+    'query {user(login: "ymansiaux") {
+    projectV2(number: 23) {
+      items {
+        nodes {
+          fieldValueByName(name: "")
+        }
+      }
+    }
+    }
+}',
+.open = "$_",
+.close = "_$"
+  )
+)
+
+
+
+```
+

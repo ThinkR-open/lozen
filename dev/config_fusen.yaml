@@ -140,6 +140,13 @@ flat_helper_testthat.Rmd:
   - tests/testthat/test-with_gitlab_project.R
   - tests/testthat/test-fetch_connect.R
   vignettes: vignettes/cb-testthat-tools.Rmd
+  inflate:
+    flat_file: dev/flat_helper_testthat.Rmd
+    vignette_name: cb - Testthat tools
+    open_vignette: false
+    check: false
+    document: false
+    overwrite: 'yes'
 flat_init_gitlab_ci.Rmd:
   path: dev/flat_init_gitlab_ci.Rmd
   state: active
@@ -160,6 +167,13 @@ flat_init_gitlab_ci.Rmd:
   - tests/testthat/test-create_deploy_ci_stage.R
   - tests/testthat/test-amend_yaml.R
   vignettes: vignettes/be-initilialise-gitlab-ci.Rmd
+  inflate:
+    flat_file: dev/flat_init_gitlab_ci.Rmd
+    vignette_name: be - Initilialise GitLab CI
+    open_vignette: false
+    check: false
+    document: false
+    overwrite: 'yes'
 flat_manage_git.Rmd:
   path: dev/flat_manage_git.Rmd
   state: active
