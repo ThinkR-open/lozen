@@ -37,6 +37,7 @@ usethis::use_git_config(scope = "user",
     - You have to set up at `TRUE` the env variable `ALLOW_CI_TESTS_ON_GITLAB`
     - Set up a token for connect with `CONNECT_TOKEN`
     - Set up a url for connect with `CONNECT_URL`
+    - Set up your username for connect with `CONNECT_USER`
 
 
 #### GitHub
