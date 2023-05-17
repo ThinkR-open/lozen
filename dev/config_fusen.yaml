@@ -100,15 +100,12 @@ flat_create_weekly.Rmd:
   - R/visualise_commits.R
   tests:
   - tests/testthat/test-gh_create_weekly_old_and_new_boards.R
-  - tests/testthat/test-gh_create_weekly.R
   - tests/testthat/test-graphql_to_tibble.R
-  - tests/testthat/test-gh_create_weekly_new_projects_board.R
   - tests/testthat/test-gl_create_weekly.R
   - tests/testthat/test-visualise_commits.R
   - tests/testthat/test-gl_get_milestones_progress.R
   vignettes: vignettes/ac-create-weekly-with-github-or-gitlab.Rmd
   inflate:
-    pkg: lozen
     flat_file: dev/flat_create_weekly.Rmd
     vignette_name: ac - Create Weekly with GitHub or GitLab
     open_vignette: false
