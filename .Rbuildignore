@@ -20,3 +20,4 @@ vignettes/*.R$
 ^\.gitlab$
 ^CODE_OF_CONDUCT\.md$
 ^\.github$
+^codecov\.yml$
