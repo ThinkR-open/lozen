@@ -121,6 +121,8 @@ usethis::use_git_config(scope = "user",
                         user.email = "user@email.fr")
 ```
 
+Please note that unit tests using `{gert}` might show a prompt asking for your gitlab username and password. For the latter, you must provide your gitlab password, not a token.
+
 #### To perform unit tests on GitHub
 
 - Create a personal access token on GitHub. Please note that if you wish to test the function `gh_create_weekly_old_and_new_boards()` the `read:project` scope must be provided with your token.
