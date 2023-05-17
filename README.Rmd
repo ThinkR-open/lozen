@@ -63,7 +63,82 @@ Access to the pkgdown: https://thinkr-open.github.io/lozen/
 - `bi - Move from GitLab to GitHub`
 - `ca - Tools miscellaneous`
 
-## As developper
 
-Please visit the folder dev, you will find a readme that will explain you how to set up env var to developp {lozen}
+## Tokens and environement variables
+
+### As user
+
+#### GitLab user
+
+- Create a personal access token on GitLab, with the rights: "read_repository", "write_repository", "api", "read_api"
+- Open your `.Renviron` file using `usethis::edit_r_environ()`
+- Save the token in this file under the name `GITLAB_TOKEN`, e.g `GITLAB_TOKEN=somerandomtokengeneratedingitlab`
+- Save the url of your gitlab in this file, if it is not `gitlab.com`, the name `GITLAB_URL`, e.g `GITLAB_URL=https://mygitlaburl.com`
+- Restart your R session
+- Set up your git user email and git user name :
+
+```{r, eval=FALSE}
+usethis::use_git_config(scope = "user",
+                        user.name = "username", 
+                        user.email = "user@email.fr")
+```
+
+#### GitHub user
+
+- Create a personal access token on GitHub. Please note that if you wish to use the function `gh_create_weekly_old_and_new_boards()` the `read:project` scope must be provided with your token.
+- Open your `.Renviron` file using `usethis::edit_r_environ()`
+- Save the token in this file under the name `GITHUB_PAT`, e.g `GITHUB_PAT=somerandomtokengeneratedingithub`
+- Restart your R session
+
+#### Posit Connect user
+
+- If you wish to use functions deploying content on Posit Connect, the following environment variables must be set.
+  + CONNECT_TOKEN: Personal access token of your Posit Connect. Please follow the [official documentation](https://docs.posit.co/connect/user/api-keys/) to create it.
+  + CONNECT_USER: Your username in your Posit Connect
+  + CONNECT_URL : Url of your Posit Connect
+  + CONNECT_NAME: Name of your Posit Connect. To know this information, please use `rsconnect::accounts()$server`
+  
+- Open your `.Renviron` file using `usethis::edit_r_environ()`
+- Set the 4 environment variables in this file
+- Restart your R session
+
+
+### As developer
+
+#### To perform unit tests on GitLab
+
+- Create a personal access token on GitLab, with the rights: "read_repository", "write_repository", "api", "read_api"
+- Open your `.Renviron` file using `usethis::edit_r_environ()`
+- Save the token in this file under the name `GITLAB_TOKEN`, e.g `GITLAB_TOKEN=somerandomtokengeneratedingitlab`
+- Save the url of your gitlab in this file, if it is not `gitlab.com`, the name `GITLAB_URL`, e.g `GITLAB_URL=https://mygitlaburl.com`
+- If you wish to test functions performing actions on your Gitlab CI: please set up to `TRUE` the env variable `ALLOW_CI_TESTS_ON_GITLAB`
+- Restart your R session
+- Set up your git user email and git user name :
+
+```{r, eval=FALSE}
+usethis::use_git_config(scope = "user",
+                        user.name = "username", 
+                        user.email = "user@email.fr")
+```
+
+#### To perform unit tests on GitHub
+
+- Create a personal access token on GitHub. Please note that if you wish to test the function `gh_create_weekly_old_and_new_boards()` the `read:project` scope must be provided with your token.
+- Open your `.Renviron` file using `usethis::edit_r_environ()`
+- Save the token in this file under the name `GITHUB_PAT`, e.g `GITHUB_PAT=somerandomtokengeneratedingithub`
+- Restart your R session
+
+#### To perform unit tests on Posit Connect
+
+- If you wish to test functions deploying content on Posit Connect, the following environment variables must be set.
+  + CONNECT_TOKEN: Personal access token of your Posit Connect. Please follow the [official documentation](https://docs.posit.co/connect/user/api-keys/) to create it.
+  + CONNECT_USER: Your username in your Posit Connect
+  + CONNECT_URL : Url of your Posit Connect
+  + CONNECT_NAME: Name of your Posit Connect. To know this information, please use `rsconnect::accounts()$server`
+  + `ALLOW_TESTS_TO_DEPLOY_ON_CONNECT` must be set up to `TRUE`
+  
+  
+- Open your `.Renviron` file using `usethis::edit_r_environ()`
+- Set the 4 environment variables in this file
+- Restart your R session
 

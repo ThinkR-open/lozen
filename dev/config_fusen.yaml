@@ -127,6 +127,13 @@ flat_deploy_connect.Rmd:
   - tests/testthat/test-deploy_connect_pkgdown.R
   - tests/testthat/test-deploy_connect_bookdown.R
   vignettes: vignettes/bg-deploy-on-connect.Rmd
+  inflate:
+    flat_file: dev/flat_deploy_connect.Rmd
+    vignette_name: bg - Deploy on Connect
+    open_vignette: false
+    check: false
+    document: false
+    overwrite: 'yes'
 flat_helper_testthat.Rmd:
   path: dev/flat_helper_testthat.Rmd
   state: active
