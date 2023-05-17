@@ -154,48 +154,12 @@
 <div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
 </h2>
-<div class="section level3">
-<h3 id="tokens">Tokens<a class="anchor" aria-label="anchor" href="#tokens"></a>
-</h3>
-<div class="section level4">
-<h4 id="gitlab">GitLab<a class="anchor" aria-label="anchor" href="#gitlab"></a>
-</h4>
-<ul>
-<li>Create a personal access token on GitLab, with the rights: “read_repository”, “write_repository”, “api”, “read_api”</li>
-<li>Save the token in your <code>.Renviron</code> under the name <code>GITLAB_TOKEN</code>
-</li>
-<li>Save the url of your gitlab, if it is not <code>gitlab.com</code>, in your <code>.Renviron</code> under the name <code>GITLAB_URL</code>
-</li>
-<li>Set up your git user email and git user name:</li>
-</ul>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu">usethis</span><span class="fu">::</span><span class="fu"><a href="https://usethis.r-lib.org/reference/use_git_config.html" class="external-link">use_git_config</a></span><span class="op">(</span>scope <span class="op">=</span> <span class="st">"user"</span>,</span>
-<span>                        user.name <span class="op">=</span> <span class="st">"username"</span>, </span>
-<span>                        user.email <span class="op">=</span> <span class="st">"user@email.fr"</span><span class="op">)</span></span></code></pre></div>
-</div>
-<div class="section level4">
-<h4 id="github">GitHub<a class="anchor" aria-label="anchor" href="#github"></a>
-</h4>
-<ul>
-<li>Create a personal access token on GitHub</li>
-<li>Save the token in your <code>.Renviron</code> under the name <code>GITHUB_PAT</code>
-</li>
-</ul>
-</div>
-</div>
-<div class="section level3">
-<h3 id="installation-1">Installation<a class="anchor" aria-label="anchor" href="#installation-1"></a>
-</h3>
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">options</a></span><span class="op">(</span>remotes.git_credentials <span class="op">=</span></span>
-<span>          <span class="fu">git2r</span><span class="fu">::</span><span class="fu"><a href="https://docs.ropensci.org/git2r/reference/cred_user_pass.html" class="external-link">cred_user_pass</a></span><span class="op">(</span><span class="st">"gitlab-ci-token"</span>, <span class="fu"><a href="https://rdrr.io/r/base/Sys.getenv.html" class="external-link">Sys.getenv</a></span><span class="op">(</span><span class="st">"GITLAB_TOKEN"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
-<span></span>
-<span><span class="fu">remotes</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_git.html" class="external-link">install_git</a></span><span class="op">(</span></span>
-<span>  url <span class="op">=</span> <span class="st">"https://forge.thinkr.fr/thinkr/thinkrverse/lozen"</span>, </span>
-<span>  ref <span class="op">=</span> <span class="st">"production"</span>,</span>
+<code class="sourceCode R"><span><span class="fu">remotes</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span></span>
+<span>  repo <span class="op">=</span> <span class="st">"ThinkR-open/lozen"</span>,</span>
+<span>  ref <span class="op">=</span> <span class="st">"main"</span>,</span>
 <span>  build_vignettes <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  upgrade <span class="op">=</span> <span class="st">"never"</span><span class="op">)</span></span></code></pre></div>
-</div>
 </div>
 <div class="section level2">
 <h2 id="documentation">Documentation<a class="anchor" aria-label="anchor" href="#documentation"></a>
@@ -203,7 +167,7 @@
 <div class="section level3">
 <h3 id="package-website">Package website<a class="anchor" aria-label="anchor" href="#package-website"></a>
 </h3>
-<p>Access to the pkgdown deployed on Connect: <a href="https://connect2.thinkr.fr/connect/lozen-pkgdown-website/" class="external-link uri">https://connect2.thinkr.fr/connect/lozen-pkgdown-website/</a></p>
+<p>Access to the pkgdown: <a href="https://thinkr-open.github.io/lozen/" class="external-link uri">https://thinkr-open.github.io/lozen/</a></p>
 </div>
 <div class="section level3">
 <h3 id="vignettesarticles">Vignettes/articles<a class="anchor" aria-label="anchor" href="#vignettesarticles"></a>
@@ -278,8 +242,9 @@
 <div class="dev-status">
 <h2 data-toc-skip>Dev status</h2>
 <ul class="list-unstyled">
-<li><a href="https://forge.thinkr.fr/thinkr/thinkrverse/lozen/-/pipelines" class="external-link"><img src="https://forge.thinkr.fr/thinkr/thinkrverse/lozen/badges/main/pipeline.svg" alt="R build status"></a></li>
-<li><a href=""><img src="https://forge.thinkr.fr/thinkr/thinkrverse/lozen/badges/main/coverage.svg" alt="coverage report"></a></li>
+<li><a href="https://github.com/ThinkR-open/lozen/actions/workflows/R-CMD-check.yaml" class="external-link"><img src="https://github.com/ThinkR-open/lozen/actions/workflows/R-CMD-check.yaml/badge.svg" alt="R-CMD-check"></a></li>
+<li><a href="https://github.com/ThinkR-open/lozen/actions/workflows/test-coverage.yaml" class="external-link"><img src="https://github.com/ThinkR-open/lozen/actions/workflows/test-coverage.yaml/badge.svg" alt="coverage report"></a></li>
+<li><a href="https://app.codecov.io/gh/ThinkR-open/lozen?branch=main" class="external-link"><img src="https://codecov.io/gh/ThinkR-open/lozen/branch/main/graph/badge.svg" alt="Codecov test coverage"></a></li>
 </ul>
 </div>
 
