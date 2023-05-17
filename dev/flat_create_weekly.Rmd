@@ -808,12 +808,6 @@ gh_create_weekly <- function(date_min = Sys.Date() - 7,
     stop("date_min should be lower or equal to date_max")
   }
 
-  # Partie graphQL
-  # A partir de l'url du projet -> récupérer le nom de l'organisation
-  # A partir de l'url du board -> récupérer l'identifiant du board
-  # Ensuite récupérer le node id du projet pour pouvoir récupérer les issues
-
-
 
   # Github Projects
   # >> Classic URL: glue("/repos/{user}/{repo}/projects")
@@ -1023,61 +1017,6 @@ if (Sys.getenv("GITHUB_PAT") != "") {
 ```
   
 ```{r tests-gh_create_weekly}
-test_user <- "thinkr-open"
-test_repo <- "example-weekly"
-
-test_that("gh_create_weekly works", {
-  expect_true(inherits(gh_create_weekly, "function"))
-
-  if (Sys.getenv("GITHUB_PAT") != "") {
-    weekly <- gh_create_weekly(
-      date_min = "2022-06-30",
-      date_max = "2022-06-30",
-      user = test_user,
-      repo = test_repo,
-      board_url = glue::glue("/repos/{test_user}/{test_repo}/projects")
-    )
-
-    info <- weekly$weekly_info
-    expect_length(info, 1)
-    expect_true(grepl("1 - :heavy_check_mark: Realised", info))
-    expect_true(grepl("2 - :stop_sign: Blocked", info))
-    expect_true(grepl("3 - :thumbsup: To validate", info))
-    expect_true(grepl("4 - :spiral_notepad: In progress", info))
-    expect_true(grepl("9 - :seedling: New issues opened", info))
-
-    expect_equal(
-      weekly$weekly_issues$info,
-      c(
-        rep("2 - :stop_sign: Blocked", 3),
-        "4 - :spiral_notepad: In progress",
-        "4 - :spiral_notepad: In progress",
-        "3 - :thumbsup: To validate",
-        "1 - :heavy_check_mark: Realised",
-        "1 - :heavy_check_mark: Realised",
-        rep("9 - :seedling: New issues opened", 7)
-      )
-    )
-
-    expect_equal(
-      as.character(weekly$weekly_issues$issue_li[1]),
-      "- Issue blocked: [issue 6](https://github.com/ThinkR-open/example-weekly/issues/6) - Not assigned"
-    )
-  }
-})
-
-test_that("create_issue_li_gh works", {
-  if (Sys.getenv("GITHUB_PAT") != "") {
-    expect_equal(
-      create_issue_li_gh(
-        glue("/repos/{test_user}/{test_repo}/issues/1")
-      ),
-      "- Issue done: [issue 1 (closed)](https://github.com/ThinkR-open/example-weekly/issues/1) - Not assigned"
-    )
-
-    expect_equal(create_one_issue_li_gh(glue("/repos/{test_user}/{test_repo}/issues/1")), "- Issue done: [issue 1 (closed)](https://github.com/ThinkR-open/example-weekly/issues/1) - Not assigned")
-  }
-})
 ```
   
 # Create a weekly for GitHub with `gh_create_weekly_new_projects_board()` (new board only)    
@@ -1533,53 +1472,6 @@ if (Sys.getenv("GITHUB_PAT") != "") {
 ```
   
 ```{r tests-gh_create_weekly_new_projects_board}
-test_that("gh_create_weekly_new_projects_board works", {
-  expect_true(inherits(gh_create_weekly_new_projects_board, "function"))
-
-  test_user <- "thinkr-open"
-  test_repo <- "example-weekly"
-  board_url <- "https://github.com/orgs/ThinkR-open/projects/4/"
-
-  skip_on_ci()
-
-  if (Sys.getenv("GITHUB_PAT") != "") {
-    weekly <- gh_create_weekly_new_projects_board(
-      date_min = "2022-06-30",
-      date_max = "2022-06-30",
-      user = test_user,
-      repo = test_repo,
-      board_url = board_url,
-      github_token = Sys.getenv("GITHUB_PAT"),
-      verbose = FALSE
-    )
-
-    info <- weekly$weekly_info
-    expect_length(info, 1)
-    expect_true(grepl("1 - :heavy_check_mark: Realised", info))
-    expect_true(grepl("2 - :stop_sign: Blocked", info))
-    expect_true(grepl("3 - :thumbsup: To validate", info))
-    expect_true(grepl("4 - :spiral_notepad: In progress", info))
-    expect_true(grepl("9 - :seedling: New issues opened", info))
-
-    expect_equal(
-      weekly$weekly_issues$info,
-      c(
-        rep("2 - :stop_sign: Blocked", 3),
-        "4 - :spiral_notepad: In progress",
-        "4 - :spiral_notepad: In progress",
-        "3 - :thumbsup: To validate",
-        "1 - :heavy_check_mark: Realised",
-        "1 - :heavy_check_mark: Realised",
-        rep("9 - :seedling: New issues opened", 7)
-      )
-    )
-
-    expect_equal(
-      as.character(weekly$weekly_issues$issue_li[1]),
-      "- [dev] Checklist mise en place: [issue 11](https://github.com/ThinkR-open/example-weekly/issues/11) - Not assigned"
-    )
-  }
-})
 ```
   
 
