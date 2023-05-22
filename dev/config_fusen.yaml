@@ -8,9 +8,9 @@ flat_build_pkgdown_with_reports.Rmd:
     pkg: lozen
     flat_file: dev/flat_build_pkgdown_with_reports.Rmd
     vignette_name: ad - Build a pkgdown with reports
-    open_vignette: false
-    check: false
-    document: false
+    open_vignette: no
+    check: no
+    document: no
     overwrite: 'yes'
 flat_create_new_project_github.Rmd:
   path: dev/flat_create_new_project_github.Rmd
@@ -22,9 +22,9 @@ flat_create_new_project_github.Rmd:
     pkg: lozen
     flat_file: dev/flat_create_new_project_github.Rmd
     vignette_name: ab - Create a new project with GitHub
-    open_vignette: false
-    check: false
-    document: false
+    open_vignette: no
+    check: no
+    document: no
     overwrite: 'yes'
 flat_create_new_project_gitlab.Rmd:
   path: dev/flat_create_new_project_gitlab.Rmd
@@ -36,9 +36,9 @@ flat_create_new_project_gitlab.Rmd:
     pkg: lozen
     flat_file: dev/flat_create_new_project_gitlab.Rmd
     vignette_name: aa - Create a new project with GitLab
-    open_vignette: false
-    check: false
-    document: false
+    open_vignette: no
+    check: no
+    document: no
     overwrite: 'yes'
 flat_create_r_project_skeleton.Rmd:
   path: dev/flat_create_r_project_skeleton.Rmd
@@ -64,9 +64,9 @@ flat_create_r_project_skeleton.Rmd:
     pkg: lozen
     flat_file: dev/flat_create_r_project_skeleton.Rmd
     vignette_name: ba - Create the skeleton of the R project (package, app, book)
-    open_vignette: false
-    check: false
-    document: false
+    open_vignette: no
+    check: no
+    document: no
     overwrite: 'yes'
 flat_create_special_issues.Rmd:
   path: dev/flat_create_special_issues.Rmd
@@ -83,9 +83,9 @@ flat_create_special_issues.Rmd:
   inflate:
     flat_file: dev/flat_create_special_issues.Rmd
     vignette_name: bf - Create special issues
-    open_vignette: false
-    check: false
-    document: false
+    open_vignette: no
+    check: no
+    document: no
     overwrite: 'yes'
 flat_create_weekly.Rmd:
   path: dev/flat_create_weekly.Rmd
@@ -108,9 +108,9 @@ flat_create_weekly.Rmd:
   inflate:
     flat_file: dev/flat_create_weekly.Rmd
     vignette_name: ac - Create Weekly with GitHub or GitLab
-    open_vignette: false
-    check: false
-    document: false
+    open_vignette: no
+    check: no
+    document: no
     overwrite: 'yes'
 flat_deploy_connect.Rmd:
   path: dev/flat_deploy_connect.Rmd
@@ -127,6 +127,14 @@ flat_deploy_connect.Rmd:
   - tests/testthat/test-deploy_connect_pkgdown.R
   - tests/testthat/test-deploy_connect_bookdown.R
   vignettes: vignettes/bg-deploy-on-connect.Rmd
+  inflate:
+    pkg: lozen
+    flat_file: dev/flat_deploy_connect.Rmd
+    vignette_name: bg - Deploy on Connect
+    open_vignette: no
+    check: no
+    document: no
+    overwrite: 'yes'
 flat_helper_testthat.Rmd:
   path: dev/flat_helper_testthat.Rmd
   state: active
@@ -140,9 +148,9 @@ flat_helper_testthat.Rmd:
   inflate:
     flat_file: dev/flat_helper_testthat.Rmd
     vignette_name: cb - Testthat tools
-    open_vignette: false
-    check: false
-    document: false
+    open_vignette: no
+    check: no
+    document: no
     overwrite: 'yes'
 flat_init_gitlab_ci.Rmd:
   path: dev/flat_init_gitlab_ci.Rmd
@@ -167,9 +175,9 @@ flat_init_gitlab_ci.Rmd:
   inflate:
     flat_file: dev/flat_init_gitlab_ci.Rmd
     vignette_name: be - Initilialise GitLab CI
-    open_vignette: false
-    check: false
-    document: false
+    open_vignette: no
+    check: no
+    document: no
     overwrite: 'yes'
 flat_manage_git.Rmd:
   path: dev/flat_manage_git.Rmd

@@ -8,10 +8,10 @@ deploy_connect_pkgdown(
   connect_url = Sys.getenv("CONNECT_URL"),
   connect_user = Sys.getenv("CONNECT_USER"),
   connect_api_token = Sys.getenv("CONNECT_TOKEN"),
-  app_name = Sys.getenv("APP_NAME", unset = Sys.getenv("CI_PROJECT_NAME")),
+  app_name = NULL,
   deploy_dir = c(file.path(getwd(), "public"), file.path(getwd(), "docs"),
     file.path(getwd(), "inst/site/"), file.path(getwd(), ".")),
-  connect_name = "connect",
+  connect_name = Sys.getenv("CONNECT_NAME", unset = "connect"),
   file_to_ignore_regex =
     ".Rprofile$|^.Renviron$|renv/|rstudio_.*/|deliverables/|dev/|data-raw/|dockerfiles/",
   forceUpdate = FALSE,
