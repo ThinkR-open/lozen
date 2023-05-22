@@ -19,7 +19,7 @@ test_that("deploy_connect_bookdown works", {
 
     bookdown::render_book(input = project_path)
 
-    deployed_apps <- rsconnect::applications()
+    deployed_apps <- rsconnect::applications(server = connect_name)
 
     if (project_name %in% deployed_apps[["name"]]) {
       try(
@@ -34,7 +34,7 @@ test_that("deploy_connect_bookdown works", {
       deploy_dir = file.path(project_path, "_book")
     )
 
-    deployed_apps <- rsconnect::applications()
+    deployed_apps <- rsconnect::applications(server = connect_name)
 
     bookdown_is_deployed <- project_name %in% deployed_apps[["name"]]
 

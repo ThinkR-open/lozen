@@ -42,10 +42,10 @@ test_that("deploy_connect_pkgdown works", {
         override = list(destination = "inst/site/")
       ))
 
-      if ("tutu" %in% rsconnect::applications()[["name"]]) {
+      if ("tutu" %in% rsconnect::applications(server = connect_name)[["name"]]) {
         try(rsconnect::terminateApp(appName = "tutu"))
       }
-      expect_false("tutu" %in% rsconnect::applications()[["name"]])
+      expect_false("tutu" %in% rsconnect::applications(server = connect_name)[["name"]])
 
       # deploy pkgdown
       deploy_connect_pkgdown(
@@ -53,16 +53,16 @@ test_that("deploy_connect_pkgdown works", {
         deploy_dir = file.path(dummypackage, "inst/site/"),
         launch.browser = FALSE
       )
-      expect_true("tutu" %in% rsconnect::applications()[["name"]])
+      expect_true("tutu" %in% rsconnect::applications(server = connect_name)[["name"]])
 
       # if interactive mode, open the app
       if (interactive()) {
-        browseURL(rsconnect::applications()[["url"]][which(rsconnect::applications()[["name"]] == "tutu")])
+        browseURL(rsconnect::applications(server = connect_name)[["url"]][which(rsconnect::applications(server = connect_name)[["name"]] == "tutu")])
       }
 
       # delete the pkgdown
       try(rsconnect::terminateApp(appName = "tutu"))
-      expect_false("tutu" %in% rsconnect::applications()[["name"]])
+      expect_false("tutu" %in% rsconnect::applications(server = connect_name)[["name"]])
     })
     unlink(dummypackage, recursive = TRUE)
   }
