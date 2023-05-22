@@ -78,7 +78,7 @@ with_gitlab_project <- function(gitlab_url = Sys.getenv("GITLAB_URL", unset = "h
   
   # Create env var into gitlab project
   
-  lapply(c("CONNECT_TOKEN","CONNECT_URL", "CONNECT_USER", "GITHUB_TOKEN"), function(x){
+  lapply(c("CONNECT_TOKEN","CONNECT_URL", "CONNECT_USER"), function(x){
        get_or_create_var_env_gitlab(
          project_id,
          x,

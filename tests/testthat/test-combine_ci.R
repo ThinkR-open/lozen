@@ -98,7 +98,7 @@ test_that("combine_ci works", {
         script = c(
           "echo \"Library path for packages :\" R_LIBS_USER",
           "mkdir -p R_LIBS_USER", "Rscript -e 'install.packages(c(\"git2r\"));install.packages(\"gitlabr\", repos = c(\"https://thinkr-open.r-universe.dev\", \"https://cloud.r-project.org\"))'",
-          "Rscript -e 'options(remotes.git_credentials = git2r::cred_user_pass(\"gitlab-ci-token\", Sys.getenv(\"CI_JOB_TOKEN\")));remotes::install_git(\"https://forge.thinkr.fr/thinkr/thinkrverse/lozen\", build_vignettes = FALSE, ref = Sys.getenv(\"LOZEN_BRANCH\", unset = \"main\"))'",
+          "Rscript -e 'remotes::install_github(\"thinkr-open/lozen\", build_vignettes = FALSE, ref = Sys.getenv(\"LOZEN_BRANCH\", unset = \"main\"))'",
           "Rscript -e 'lozen::deploy_connect_shiny(connect_url = Sys.getenv(\"CONNECT_URL\"),connect_user = Sys.getenv(\"CONNECT_USER\"),connect_api_token = Sys.getenv(\"CONNECT_TOKEN\"),app_name = Sys.getenv(\"APP_NAME\", unset = Sys.getenv(\"CI_PROJECT_NAME\")))'"
         )
       )
