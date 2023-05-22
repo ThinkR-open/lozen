@@ -73,7 +73,7 @@ create_deploy_ci_stage <- function(image,
         "mkdir -p $R_LIBS_USER",
         # Install git2r and pak
         "Rscript -e 'install.packages(c(\"git2r\"));install.packages(\"gitlabr\", repos = c(\"https://thinkr-open.r-universe.dev\", \"https://cloud.r-project.org\"))'",
-        "Rscript -e 'remotes::install_github(\"thinkr-open/lozen\", auth_token = Sys.getenv(\"GITHUB_TOKEN\"), build_vignettes = FALSE, ref = Sys.getenv(\"LOZEN_BRANCH\", unset = \"main\"))'",
+        "Rscript -e 'remotes::install_github(\"thinkr-open/lozen\", build_vignettes = FALSE, ref = Sys.getenv(\"LOZEN_BRANCH\", unset = \"main\"))'",
         le_call
       )
     )
