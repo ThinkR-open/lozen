@@ -145,15 +145,30 @@
 
       </header><div class="row">
   <div class="contents col-md-9">
-<div class="section level1">
+
+<ul>
+<li><a href="#installation" id="toc-installation">Installation</a></li>
+<li>
+<a href="#use-of-the-package-depending-if-you-are-a-user-or-a-developer" id="toc-use-of-the-package-depending-if-you-are-a-user-or-a-developer">Use of the package, depending if you are a user or a developer</a>
+<ul>
+<li><a href="#use-lozen-as-user" id="toc-use-lozen-as-user">Use {lozen} as user</a></li>
+<li><a href="#use-lozen-as-developer" id="toc-use-lozen-as-developer">Use {lozen} as developer</a></li>
+<li><a href="#more-details-about-how-to-create-tokens-and-define-environment-variables" id="toc-more-details-about-how-to-create-tokens-and-define-environment-variables">More details about how to create tokens and define environment variables</a></li>
+</ul>
+</li>
+<li><a href="#documentation" id="toc-documentation">Documentation</a></li>
+</ul>
+<!-- README.md is generated from README.Rmd. Please edit that file --><div class="section level1">
 <div class="page-header"><h1 id="lozen-">{lozen} <img src="reference/figures/logo.png" align="right" alt="" width="120"><a class="anchor" aria-label="anchor" href="#lozen-"></a>
 </h1></div>
 <!-- badges: start -->
 
 <p>The objective of {lozen} is to centralize project management tools for Devs and Lead Devs.</p>
-<div class="section level2">
-<h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
-</h2>
+<p>To use the package, as user or as developer, you will have to define some tokens and environment variables. Go to the dedicated section below “Use {lozen} as user” or “Use {lozen} as developer”.</p>
+</div>
+<div class="section level1">
+<h1 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
+</h1>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">remotes</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span></span>
 <span>  repo <span class="op">=</span> <span class="st">"ThinkR-open/lozen"</span>,</span>
@@ -161,14 +176,83 @@
 <span>  build_vignettes <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  upgrade <span class="op">=</span> <span class="st">"never"</span><span class="op">)</span></span></code></pre></div>
 </div>
+<div class="section level1">
+<h1 id="use-of-the-package-depending-if-you-are-a-user-or-a-developer">Use of the package, depending if you are a user or a developer<a class="anchor" aria-label="anchor" href="#use-of-the-package-depending-if-you-are-a-user-or-a-developer"></a>
+</h1>
 <div class="section level2">
-<h2 id="documentation">Documentation<a class="anchor" aria-label="anchor" href="#documentation"></a>
+<h2 id="use-lozen-as-user">Use {lozen} as user<a class="anchor" aria-label="anchor" href="#use-lozen-as-user"></a>
+</h2>
+<p>You need to use this kind of <code>.Renviron</code> file:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>GITLAB_TOKEN<span class="ot">=</span><span class="st">"my.token.generated.in.gitlab"</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>GITLAB_URL<span class="ot">=</span><span class="st">"my.gitlab.url"</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>GITHUB_PAT<span class="ot">=</span><span class="st">"my.personal.access.token.generated.in.github"</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>CONNECT_URL<span class="ot">=</span><span class="st">"my.connect.url"</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>CONNECT_NAME<span class="ot">=</span><span class="st">"my.connect.server.name"</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>CONNECT_USER<span class="ot">=</span><span class="st">"my.connect.username"</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>CONNECT_TOKEN<span class="ot">=</span><span class="st">"my.api.key.generated.in.connect"</span></span></code></pre></div>
+<p>You can use the command line <code><a href="https://usethis.r-lib.org/reference/edit.html" class="external-link">usethis::edit_r_environ()</a></code> to open a <code>.Renviron</code> file. Save the values inside as mentioned above, and restart your R session.</p>
+<p>Depending on your needs, you will have to set all of them (GitLab, GitHub and Posit Connect), or just some of them. See the details sections below to have more information about how to create them.</p>
+</div>
+<div class="section level2">
+<h2 id="use-lozen-as-developer">Use {lozen} as developer<a class="anchor" aria-label="anchor" href="#use-lozen-as-developer"></a>
+</h2>
+<p><strong>Note that unit tests will create and publish some elements on your own instances (GitLab, GitHub, Posit Connect).</strong> These objects will be automatically deleted at the end of the tests.</p>
+<p>You need to use this kind of <code>.Renviron</code> file:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>GITLAB_TOKEN<span class="ot">=</span><span class="st">"my.token.generated.in.gitlab"</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>GITLAB_URL<span class="ot">=</span><span class="st">"my.gitlab.url"</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>ALLOW_CI_TESTS_ON_GITLAB<span class="ot">=</span><span class="st">"TRUE"</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>GITHUB_PAT<span class="ot">=</span><span class="st">"my.personal.access.token.generated.in.github"</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>CONNECT_URL<span class="ot">=</span><span class="st">"my.connect.url"</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>CONNECT_NAME<span class="ot">=</span><span class="st">"my.connect.server.name"</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>CONNECT_USER<span class="ot">=</span><span class="st">"my.connect.username"</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>CONNECT_TOKEN<span class="ot">=</span><span class="st">"my.api.key.generated.in.connect"</span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>ALLOW_TESTS_TO_DEPLOY_ON_CONNECT<span class="ot">=</span><span class="st">"TRUE"</span></span></code></pre></div>
+<p>You can use the command line <code><a href="https://usethis.r-lib.org/reference/edit.html" class="external-link">usethis::edit_r_environ()</a></code> to open a <code>.Renviron</code> file. Save the values inside as mentioned above, and restart your R session.</p>
+<p>You will have to set all of them (GitLab, GitHub and Posit Connect), to be sure all unit tests can be launched. See the details sections below to have more information about how to create them.</p>
+<p>Please note that unit tests using <a href="https://docs.ropensci.org/gert/" class="external-link">gert</a> might show a prompt asking for your gitlab username and password. For the latter, you must provide your gitlab password, not a token.</p>
+</div>
+<div class="section level2">
+<h2 id="more-details-about-how-to-create-tokens-and-define-environment-variables">More details about how to create tokens and define environment variables<a class="anchor" aria-label="anchor" href="#more-details-about-how-to-create-tokens-and-define-environment-variables"></a>
 </h2>
 <div class="section level3">
-<h3 id="package-website">Package website<a class="anchor" aria-label="anchor" href="#package-website"></a>
+<h3 id="gitlab">GitLab<a class="anchor" aria-label="anchor" href="#gitlab"></a>
 </h3>
-<p>Access to the pkgdown: <a href="https://thinkr-open.github.io/lozen/" class="external-link uri">https://thinkr-open.github.io/lozen/</a></p>
+<ul>
+<li>
+<code>GITLAB_TOKEN</code>: Create a personal access token on GitLab, with the rights: “read_repository”, “write_repository”, “api”, “read_api”</li>
+<li>
+<code>GITLAB_URL</code>: url of your gitlab instance - if this is <code>gitlab.com</code>, you do not have to specify it, because this is the default value used by the package</li>
+</ul>
 </div>
+<div class="section level3">
+<h3 id="github">GitHub<a class="anchor" aria-label="anchor" href="#github"></a>
+</h3>
+<ul>
+<li>
+<code>GITHUB_PAT</code>: Create a personal access token on GitHub - please note that if you wish to use the function <code><a href="reference/gh_create_weekly_old_and_new_boards.html">gh_create_weekly_old_and_new_boards()</a></code> the <code>read:project</code> scope must be provided with your token</li>
+</ul>
+</div>
+<div class="section level3">
+<h3 id="posit-connect">Posit Connect<a class="anchor" aria-label="anchor" href="#posit-connect"></a>
+</h3>
+<ul>
+<li>
+<code>CONNECT_URL</code>: Url of your Posit Connect</li>
+<li>
+<code>CONNECT_NAME</code>: Name of your Posit Connect server - to know this information, please use <code>rsconnect::accounts()$server</code>
+</li>
+<li>
+<code>CONNECT_USER</code>: Your username in your Posit Connect</li>
+<li>
+<code>CONNECT_TOKEN</code>: Personal access token of your Posit Connect - please follow the <a href="https://docs.posit.co/connect/user/api-keys/" class="external-link">official documentation</a> to create it</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="section level1">
+<h1 id="documentation">Documentation<a class="anchor" aria-label="anchor" href="#documentation"></a>
+</h1>
+<p>Access to the pkgdown: <a href="https://thinkr-open.github.io/lozen/" class="external-link uri">https://thinkr-open.github.io/lozen/</a></p>
 <div class="section level3">
 <h3 id="vignettesarticles">Vignettes/articles<a class="anchor" aria-label="anchor" href="#vignettesarticles"></a>
 </h3>
@@ -196,12 +280,7 @@
 </ul>
 </div>
 </div>
-<div class="section level2">
-<h2 id="as-developper">As developper<a class="anchor" aria-label="anchor" href="#as-developper"></a>
-</h2>
-<p>Please visit the folder dev, you will find a readme that will explain you how to set up env var to developp {lozen}</p>
-</div>
-</div>
+
   </div>
 
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
