@@ -115,7 +115,10 @@ your gitlab password, not a token.
 
 - `CONNECT_URL`: Url of your Posit Connect
 - `CONNECT_NAME`: Name of your Posit Connect server - to know this
-  information, please use `rsconnect::accounts()$server`
+  information, please use `rsconnect::accounts()$server`. if this is
+  `connect`, you do not have to specify it, because this is the default
+  value defined by Posit Connect once a first connection has been made
+  to the server
 - `CONNECT_USER`: Your username in your Posit Connect
 - `CONNECT_TOKEN`: Personal access token of your Posit Connect - please
   follow the [official
