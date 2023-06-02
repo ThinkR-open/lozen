@@ -7,7 +7,8 @@ test_that("deploy_connect_bookdown works", {
   if (
     Sys.getenv("CONNECT_URL") != "" &
       Sys.getenv("CONNECT_USER") != "" &
-      Sys.getenv("CONNECT_TOKEN") != ""
+      Sys.getenv("CONNECT_TOKEN") != "" &
+      Sys.getenv("CONNECT_NAME") != ""
   ) {
     project_name <- "lozen-example-bookdown"
 
@@ -19,6 +20,8 @@ test_that("deploy_connect_bookdown works", {
 
     bookdown::render_book(input = project_path)
 
+    connect_name <- Sys.getenv("CONNECT_NAME")
+    
     deployed_apps <- rsconnect::applications(server = connect_name)
 
     if (project_name %in% deployed_apps[["name"]]) {
