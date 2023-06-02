@@ -7,7 +7,8 @@ test_that("deploy_connect_pkgdown works", {
 
   if (Sys.getenv("CONNECT_URL") != "" &
     Sys.getenv("CONNECT_USER") != "" &
-    Sys.getenv("CONNECT_TOKEN") != "") {
+    Sys.getenv("CONNECT_TOKEN") != "" &
+    Sys.getenv("CONNECT_NAME") != "") {
     dummypackage <- tempfile(pattern = "pkgdown")
     dir.create(dummypackage)
     fusen::fill_description(pkg = dummypackage, fields = list(Title = "Dummy Package"))
@@ -41,6 +42,8 @@ test_that("deploy_connect_pkgdown works", {
         pkg = dummypackage,
         override = list(destination = "inst/site/")
       ))
+      
+      connect_name <- Sys.getenv("CONNECT_NAME")
 
       if ("tutu" %in% rsconnect::applications(server = connect_name)[["name"]]) {
         try(rsconnect::terminateApp(appName = "tutu"))

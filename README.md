@@ -49,9 +49,9 @@ remotes::install_github(
 You need to use this kind of `.Renviron` file:
 
     GITLAB_TOKEN="my.token.generated.in.gitlab"
-    GITLAB_URL="my.gitlab.url"
+    GITLAB_URL="https://my.gitlab.url"
     GITHUB_PAT="my.personal.access.token.generated.in.github"
-    CONNECT_URL="my.connect.url"
+    CONNECT_URL="https://my.connect.url"
     CONNECT_NAME="my.connect.server.name"
     CONNECT_USER="my.connect.username"
     CONNECT_TOKEN="my.api.key.generated.in.connect"
@@ -64,6 +64,9 @@ Depending on your needs, you will have to set all of them (GitLab,
 GitHub and Posit Connect), or just some of them. See the details
 sections below to have more information about how to create them.
 
+If you wish to use function related to Posit Connect, you must set your
+Connect account manually within Rstudio.
+
 ## Use {lozen} as developer
 
 **Note that unit tests will create and publish some elements on your own
@@ -73,10 +76,10 @@ automatically deleted at the end of the tests.
 You need to use this kind of `.Renviron` file:
 
     GITLAB_TOKEN="my.token.generated.in.gitlab"
-    GITLAB_URL="my.gitlab.url"
+    GITLAB_URL="https://my.gitlab.url"
     ALLOW_CI_TESTS_ON_GITLAB="TRUE"
     GITHUB_PAT="my.personal.access.token.generated.in.github"
-    CONNECT_URL="my.connect.url"
+    CONNECT_URL="https://my.connect.url"
     CONNECT_NAME="my.connect.server.name"
     CONNECT_USER="my.connect.username"
     CONNECT_TOKEN="my.api.key.generated.in.connect"
@@ -94,6 +97,10 @@ Please note that unit tests using `{gert}` might show a prompt asking
 for your gitlab username and password. For the latter, you must provide
 your gitlab password, not a token.
 
+For tests deploying content on Posit Connect, you must set your Connect
+account manually within Rstudio and must have deployed manually a
+content at least once before being able to run the tests.
+
 ## More details about how to create tokens and define environment variables
 
 ### GitLab
@@ -106,10 +113,9 @@ your gitlab password, not a token.
 
 ### GitHub
 
-- `GITHUB_PAT`: Create a personal access token on GitHub - please note
-  that if you wish to use the function
-  `gh_create_weekly_old_and_new_boards()` the `read:project` scope must
-  be provided with your token
+- `GITHUB_PAT`: Create a personal access token on GitHub - the following
+  scopes must be granted with your token “admin:org”, “delete_repo”,
+  “project”, “repo”, “user”, “workflow.”
 
 ### Posit Connect
 
