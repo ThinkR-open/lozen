@@ -46,7 +46,13 @@ test_that("deploy_connect_pkgdown works", {
       connect_name <- Sys.getenv("CONNECT_NAME")
 
       if ("tutu" %in% rsconnect::applications(server = connect_name)[["name"]]) {
-        try(rsconnect::terminateApp(appName = "tutu"))
+          try(
+          rsconnect::terminateApp(
+            appName = "tutu",
+            account = Sys.getenv("CONNECT_USER"),
+            server = Sys.getenv("CONNECT_NAME")
+          )
+        )
       }
       expect_false("tutu" %in% rsconnect::applications(server = connect_name)[["name"]])
 
@@ -64,7 +70,13 @@ test_that("deploy_connect_pkgdown works", {
       }
 
       # delete the pkgdown
-      try(rsconnect::terminateApp(appName = "tutu"))
+        try(
+          rsconnect::terminateApp(
+            appName = "tutu",
+            account = Sys.getenv("CONNECT_USER"),
+            server = Sys.getenv("CONNECT_NAME")
+          )
+        )
       expect_false("tutu" %in% rsconnect::applications(server = connect_name)[["name"]])
     })
     unlink(dummypackage, recursive = TRUE)
