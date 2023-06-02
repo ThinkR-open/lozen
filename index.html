@@ -184,14 +184,15 @@
 </h2>
 <p>You need to use this kind of <code>.Renviron</code> file:</p>
 <div class="sourceCode" id="cb2"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>GITLAB_TOKEN<span class="ot">=</span><span class="st">"my.token.generated.in.gitlab"</span></span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>GITLAB_URL<span class="ot">=</span><span class="st">"my.gitlab.url"</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>GITLAB_URL<span class="ot">=</span><span class="st">"https://my.gitlab.url"</span></span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>GITHUB_PAT<span class="ot">=</span><span class="st">"my.personal.access.token.generated.in.github"</span></span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>CONNECT_URL<span class="ot">=</span><span class="st">"my.connect.url"</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>CONNECT_URL<span class="ot">=</span><span class="st">"https://my.connect.url"</span></span>
 <span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>CONNECT_NAME<span class="ot">=</span><span class="st">"my.connect.server.name"</span></span>
 <span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>CONNECT_USER<span class="ot">=</span><span class="st">"my.connect.username"</span></span>
 <span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>CONNECT_TOKEN<span class="ot">=</span><span class="st">"my.api.key.generated.in.connect"</span></span></code></pre></div>
 <p>You can use the command line <code><a href="https://usethis.r-lib.org/reference/edit.html" class="external-link">usethis::edit_r_environ()</a></code> to open a <code>.Renviron</code> file. Save the values inside as mentioned above, and restart your R session.</p>
 <p>Depending on your needs, you will have to set all of them (GitLab, GitHub and Posit Connect), or just some of them. See the details sections below to have more information about how to create them.</p>
+<p>If you wish to use function related to Posit Connect, you must set your Connect account manually within Rstudio.</p>
 </div>
 <div class="section level2">
 <h2 id="use-lozen-as-developer">Use {lozen} as developer<a class="anchor" aria-label="anchor" href="#use-lozen-as-developer"></a>
@@ -199,10 +200,10 @@
 <p><strong>Note that unit tests will create and publish some elements on your own instances (GitLab, GitHub, Posit Connect).</strong> These objects will be automatically deleted at the end of the tests.</p>
 <p>You need to use this kind of <code>.Renviron</code> file:</p>
 <div class="sourceCode" id="cb3"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>GITLAB_TOKEN<span class="ot">=</span><span class="st">"my.token.generated.in.gitlab"</span></span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>GITLAB_URL<span class="ot">=</span><span class="st">"my.gitlab.url"</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>GITLAB_URL<span class="ot">=</span><span class="st">"https://my.gitlab.url"</span></span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>ALLOW_CI_TESTS_ON_GITLAB<span class="ot">=</span><span class="st">"TRUE"</span></span>
 <span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>GITHUB_PAT<span class="ot">=</span><span class="st">"my.personal.access.token.generated.in.github"</span></span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>CONNECT_URL<span class="ot">=</span><span class="st">"my.connect.url"</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>CONNECT_URL<span class="ot">=</span><span class="st">"https://my.connect.url"</span></span>
 <span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>CONNECT_NAME<span class="ot">=</span><span class="st">"my.connect.server.name"</span></span>
 <span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>CONNECT_USER<span class="ot">=</span><span class="st">"my.connect.username"</span></span>
 <span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>CONNECT_TOKEN<span class="ot">=</span><span class="st">"my.api.key.generated.in.connect"</span></span>
@@ -210,6 +211,7 @@
 <p>You can use the command line <code><a href="https://usethis.r-lib.org/reference/edit.html" class="external-link">usethis::edit_r_environ()</a></code> to open a <code>.Renviron</code> file. Save the values inside as mentioned above, and restart your R session.</p>
 <p>You will have to set all of them (GitLab, GitHub and Posit Connect), to be sure all unit tests can be launched. See the details sections below to have more information about how to create them.</p>
 <p>Please note that unit tests using <a href="https://docs.ropensci.org/gert/" class="external-link">gert</a> might show a prompt asking for your gitlab username and password. For the latter, you must provide your gitlab password, not a token.</p>
+<p>For tests deploying content on Posit Connect, you must set your Connect account manually within Rstudio and must have deployed manually a content at least once before being able to run the tests.</p>
 </div>
 <div class="section level2">
 <h2 id="more-details-about-how-to-create-tokens-and-define-environment-variables">More details about how to create tokens and define environment variables<a class="anchor" aria-label="anchor" href="#more-details-about-how-to-create-tokens-and-define-environment-variables"></a>
@@ -229,7 +231,7 @@
 </h3>
 <ul>
 <li>
-<code>GITHUB_PAT</code>: Create a personal access token on GitHub - please note that if you wish to use the function <code><a href="reference/gh_create_weekly_old_and_new_boards.html">gh_create_weekly_old_and_new_boards()</a></code> the <code>read:project</code> scope must be provided with your token</li>
+<code>GITHUB_PAT</code>: Create a personal access token on GitHub - the following scopes must be granted with your token “admin:org”, “delete_repo”, “project”, “repo”, “user”, “workflow.”</li>
 </ul>
 </div>
 <div class="section level3">
