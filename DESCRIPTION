@@ -16,7 +16,7 @@ Authors@R: c(
   )
 Description: Management tools for missions (internal and external).
     Includes weekly, GL projects, etc.
-License: file LICENSE
+License: MIT + file LICENSE
 Depends: 
     R (>= 3.5)
 Imports: 
