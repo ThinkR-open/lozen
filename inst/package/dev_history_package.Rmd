@@ -36,7 +36,22 @@ lozen::add_git_templates()
 
 ```{r}
 lozen::add_kit_package(type = c("package", "deliverables"))
-lozen::add_kit_project(name_licence = "Exemple", type_licence = usethis::use_mit_license)
+```
+
+### Add licence
+
+```{r}
+# In case of a public project, the MIT licence can be used
+lozen::add_kit_project(
+  name_licence = "MyCompany", 
+  type_licence = usethis::use_mit_license
+)
+
+# In case of a private project, a proprietary licence can be used
+# lozen::add_kit_project(
+#   name_licence = "MyCompany", 
+#   type_licence = usethis::use_proprietary_license
+# )
 ```
 
 ### Create a `inst` dir
@@ -106,12 +121,6 @@ my_desc$del("Maintainer")
 my_desc$del("URL")
 my_desc$del("BugReports")
 my_desc$write(file = "DESCRIPTION")
-```
-
-### Licence
-
-```{r}
-usethis::use_proprietary_license("MyCompany")
 ```
 
 ### README
