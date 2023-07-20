@@ -15,7 +15,7 @@
 #' withr::with_tempdir({
 #'   use_gitlab_ci(image = "r-base")
 #' })
-#' 
+#'
 #' withr::with_tempdir({
 #'   use_gitlab_ci(
 #'     image = "rocker/verse",

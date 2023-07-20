@@ -25,13 +25,15 @@ amend_yaml <- function(path_to_yaml,
     ) |>
       clean_image() |>
       write_yaml(
-        file = path_to_yaml
+        file = path_to_yaml,
+        line.sep= "\r"
       )
   } else {
     # Write connect CI as yaml if no yaml currently exist
     connect_ci_list |>
       write_yaml(
-        file = path_to_yaml
+        file = path_to_yaml,
+        line.sep= "\r"
       )
   }
 }

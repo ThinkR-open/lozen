@@ -66,6 +66,8 @@ use_gitlab_ci_deploy_connect <- function(deploy_function = c("deploy_connect_shi
     connect_ci_list = connect_ci_list
   )
 
+  current_yml <- read_yaml(path_to_yaml)
+
   path_to_yaml
 }
 
