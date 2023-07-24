@@ -21,33 +21,6 @@ create_deploy_ci_stage <- function(image,
                                    stage_name = deploy_function,
                                    ...) {
   stopifnot("deploy_function exist" = length(getFromNamespace(x = deploy_function, "lozen")) > 0)
-  #  dots <- list(...)
-  #  if ( length(dots) == 0){  dots <-""}
-  #  bonus <- paste(map2_chr(as.character(names(dots)),
-  #
-  #                           as.character(glue::glue('"{dots}"'))
-  #
-  #
-  #                          ,paste, sep = " = "),collapse=",")
-  #
-  # le_call <- glue::glue("Rscript -e 'lozen::{deploy_function}(connect_url = Sys.getenv(\"CONNECT_URL\"),connect_user = Sys.getenv(\"CONNECT_USER\"),connect_api_token = Sys.getenv(\"CONNECT_TOKEN\"),app_name = Sys.getenv(\"APP_NAME\", unset = Sys.getenv(\"CI_PROJECT_NAME\")),{bonus})'"
-  #        )
-  # IDEE de COlin a creuser pour permettre un controle fin des parametres depuis le CI
-  #   build_rscript_call <- function(lozen_fun, ...) {
-  #   dots <- match.call(expand.dots = FALSE)$`...`
-  #   sprintf(
-  #     "Rscript -e 'lozen::%s(%s)'",
-  #     as.character(substitute(lozen_fun)),
-  #     paste(
-  #       names(dots),
-  #       dots,
-  #       sep = "=",
-  #       collapse = ","
-  #     )
-  #   )
-  # }
-
-
 
   le_call <- glue::glue("Rscript -e 'lozen::{deploy_function}(connect_url = Sys.getenv(\"CONNECT_URL\"),connect_user = Sys.getenv(\"CONNECT_USER\"),connect_api_token = Sys.getenv(\"CONNECT_TOKEN\"),app_name = Sys.getenv(\"APP_NAME\", unset = Sys.getenv(\"CI_PROJECT_NAME\")))'")
 
@@ -74,6 +47,7 @@ create_deploy_ci_stage <- function(image,
         # Install git2r and pak
         "Rscript -e 'install.packages(c(\"git2r\"));install.packages(\"gitlabr\", repos = c(\"https://thinkr-open.r-universe.dev\", \"https://cloud.r-project.org\"))'",
         "Rscript -e 'remotes::install_github(\"thinkr-open/lozen\", build_vignettes = FALSE, ref = Sys.getenv(\"LOZEN_BRANCH\", unset = \"main\"))'",
+        "Rscript -e 'remotes::install_local(dependencies = TRUE)'",
         le_call
       )
     )
