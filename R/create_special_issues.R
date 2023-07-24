@@ -65,7 +65,8 @@ add_issue_clients_github <- function(owner, repo) {
   )
 
   # Fetch current issues
-  issue_listing <- gh("GET /repos/{owner}/{repo}/issues",
+  issue_listing <- gh(
+    "GET /repos/{owner}/{repo}/issues",
     owner = owner,
     repo = repo,
     state = "all"
@@ -84,7 +85,8 @@ add_issue_clients_github <- function(owner, repo) {
 
     # Reopen issue if closed
     if (isTRUE(issue_status == "closed")) {
-      issue_client_id <- gh("PATCH /repos/{owner}/{repo}/issues/{issue_number}",
+      issue_client_id <- gh(
+        "PATCH /repos/{owner}/{repo}/issues/{issue_number}",
         owner = owner,
         repo = repo,
         issue_number = issue_number,
@@ -100,7 +102,8 @@ add_issue_clients_github <- function(owner, repo) {
     }
   } else {
     # Create new issue
-    issue_client_id <- gh("POST /repos/{owner}/{repo}/issues",
+    issue_client_id <- gh(
+      "POST /repos/{owner}/{repo}/issues",
       owner = owner,
       repo = repo,
       title = issue_title,
@@ -187,7 +190,8 @@ add_issue_dev_github <- function(owner, repo) {
   )
 
   # Fetch current issues
-  issue_listing <- gh("GET /repos/{owner}/{repo}/issues",
+  issue_listing <- gh(
+    "GET /repos/{owner}/{repo}/issues",
     owner = owner,
     repo = repo,
     state = "all"
@@ -206,7 +210,8 @@ add_issue_dev_github <- function(owner, repo) {
 
     # Reopen issue if closed
     if (isTRUE(issue_status == "closed")) {
-      issue_client_id <- gh("PATCH /repos/{owner}/{repo}/issues/{issue_number}",
+      issue_client_id <- gh(
+        "PATCH /repos/{owner}/{repo}/issues/{issue_number}",
         owner = owner,
         repo = repo,
         issue_number = issue_number,
@@ -222,7 +227,8 @@ add_issue_dev_github <- function(owner, repo) {
     }
   } else {
     # Create new issue
-    issue_client_id <- gh("POST /repos/{owner}/{repo}/issues",
+    issue_client_id <- gh(
+      "POST /repos/{owner}/{repo}/issues",
       owner = owner,
       repo = repo,
       title = issue_title,
@@ -428,7 +434,9 @@ create_issue_content_clients <- function(project_name, group_url) {
 create_issue_content_clients_github <- function(owner, repo) {
   # get text from md file
   issue_client <- readLines(
-    system.file("github", "first_issue_client.md",
+    system.file(
+      "github",
+      "first_issue_client.md",
       package = "lozen"
     )
   )
@@ -489,29 +497,34 @@ create_issue_content_dev <- function(project_id, group_url, project_name) {
     "- [ ] R\u00e9fl\u00e9chir \u00e0 l\'infra n\u00e9cessaire. Faut-il une version sp\u00e9cifique de R ? Une version du CRAN sp\u00e9cifique ?",
     "- [ ] R\u00e9fl\u00e9chir aux sessions des users qui auront acc\u00e8s \u00e0 la plateforme. Quels users (les devs, les client.e.s) ?",
     "## Finalisation du board",
-    "- [ ] Ajouter les colonnes des issues dans le board dans l'ordre : Bloqu\u00e9, Pr\u00eat, En cours, R\u00e9vision, A valider. Les autres sont en bonus.",
+    "- [ ] Ajouter les colonnes des issues dans le board dans l\'ordre : Bloqu\u00e9, Pr\u00eat, En cours, R\u00e9vision, A valider. Les autres sont en bonus.",
     "## Calendrier",
     "- [ ] Remplir les Key Dates - _e.g. dates de livraisons interm\u00e9diaires, date range des phases du projet_",
     "- [ ] Remplir le calendrier pr\u00e9visionnel",
     "## Gestion des compte-rendus",
     paste0(
-      "- [ ] Choisir la m\u00e9thode de partage de comptes-rendus (Wiki ou projet s\u00e9par\u00e9) et l'indiquer dans la pr\u00e9sentation du projet (= Wiki Home) : ",
-      group_url, "/", project_name, "/-/wikis/home"
+      "- [ ] Choisir la m\u00e9thode de partage de comptes-rendus (Wiki ou projet s\u00e9par\u00e9) et l\'indiquer dans la pr\u00e9sentation du projet (= Wiki Home) : ",
+      group_url,
+      "/",
+      project_name,
+      "/-/wikis/home"
     ),
-    paste0("- [ ] Indiquer aussi la m\u00e9thode de partage de CR dans l'issue de Bienvenue du Client : ", url_issue_client),
+    paste0("- [ ] Indiquer aussi la m\u00e9thode de partage de CR dans l\'issue de Bienvenue du Client : ", url_issue_client),
     "## Acc\u00e8s au projet (si n\u00e9cessaire)",
-    "- [ ] Cr\u00e9er un groupe d\u00e9di\u00e9 - _Menu > Groups > Create group_",
+    "### Pour des raisons de s\u00e9curit\u00e9, il est conseill\u00e9 de stocker les projets d\'un client donn\u00e9 dans un groupe d\u00e9di\u00e9 :",
+    "- [ ] Cr\u00e9er un groupe d\u00e9di\u00e9, par d\u00e9faut sans utilisateurs - _Menu > Groups > Create group_",
     "- [ ] Inviter les clients sur le groupe - _Menu > Admin puis dans Users > New user (mettre Projects limit \u00e0 0 et d\u00e9cocher Can create group)_",
     '- [ ] Ajouter chaque utilisateur au groupe d\u00e9di\u00e9 en tant que \"Guest\"',
     '- [ ] Ajouter le groupe en tant que \"Guest\" dans le d\u00e9p\u00f4t cr\u00e9\u00e9 pour le projet (Ils pourront voir le Kanban, mais pas le code)',
     paste0(
-      "- [ ] Notifier chaque utilisateur en les mentionnant dans un commentaire de l'issue : ", url_issue_client,
+      "- [ ] Notifier chaque utilisateur en les mentionnant dans un commentaire de l\'issue : ",
+      url_issue_client,
       " avec le texte suivant : \n```\nMerci de bien vouloir lire et valider le contenu de cette page.\n",
       "Si vous lisez ce message dans un email, vous pouvez cliquer sur le lien suivant pour acc\u00e9der \u00e0 la page :\n",
       url_issue_client,
       "\n@mention, @mention, ...\n```\n"
     ),
-    '- [ ] Pr\u00e9venir les chefs de projets de monter le niveau de Notification \u00e0 \"Watch\" sur la page d\'acceuil du projet pour recevoir toutes les notifications',
+    '- [ ] Pr\u00e9venir les chefs de projets de monter le niveau de Notification \u00e0 \"Watch\" sur la page d\'accueil du projet pour recevoir toutes les notifications',
     sep = "\n"
   )
 
@@ -543,7 +556,8 @@ create_issue_content_dev <- function(project_id, group_url, project_name) {
 #' }
 create_issue_content_dev_github <- function(owner, repo) {
   # Get Bienvenue issue
-  issues <- gh("GET /repos/{owner}/{repo}/issues",
+  issues <- gh(
+    "GET /repos/{owner}/{repo}/issues",
     owner = owner,
     repo = repo,
     state = "all"
@@ -560,12 +574,13 @@ create_issue_content_dev_github <- function(owner, repo) {
   issue_dev <- paste(
     "- [ ] Remplir les Key Dates et le calendrier pr\u00e9visionnel",
     '- [ ] Ajouter chaque utilisateur au projet en tant que \"Guest\"',
-    '- [ ] Pr\u00e9venir les chefs de projets de monter le niveau de Notification \u00e0 \"Watch\" sur la page d\'acceuil du projet pour recevoir toutes les notifications',
+    '- [ ] Pr\u00e9venir les chefs de projets de monter le niveau de Notification \u00e0 \"Watch\" sur la page d\'accueil du projet pour recevoir toutes les notifications',
     paste0("- [ ] S'assurer que le Board est pret:", glue("https://github.com/{owner}/{repo}/projects/1")),
     paste0("- [ ] S'assurer que le Wiki Home est pret:", glue("https://github.com/{owner}/{repo}/wiki/Home")),
     paste0("- [ ] Indiquer aussi la m\u00e9thode de partage de CR dans l'issue de Bienvenue du Client : ", url_issue_client),
     paste0(
-      "- [ ] Notifier chaque utilisateur en les mentionnant dans un commentaire de l'issue : ", url_issue_client,
+      "- [ ] Notifier chaque utilisateur en les mentionnant dans un commentaire de l'issue : ",
+      url_issue_client,
       " avec le texte suivant : \n```\nMerci de bien vouloir lire et valider le contenu de cette page.\n",
       "Si vous lisez ce message dans un email, vous pouvez cliquer sur le lien suivant pour acc\u00e9der \u00e0 la page :\n",
       url_issue_client,
