@@ -70,12 +70,11 @@ Suggests:
     thinkrtemplate
 VignetteBuilder: 
     knitr
-Remotes: 
-    rstudio/renv,
+Remotes:  
     ThinkR-open/gitlabr,
     ThinkR-open/testdown,
     ThinkR-open/thinkrtemplate
-Config/fusen/version: 0.5.0.9001
+Config/fusen/version: 0.5.1
 Config/testthat/edition: 3
 Encoding: UTF-8
 LazyData: true
