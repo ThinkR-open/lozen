@@ -11,13 +11,16 @@ test_that("read_ci works", {
   expect_equal(
     object = ci_list,
     expected = list(
-      image = "rocker/verse:latest", variables = list(R_LIBS_USER = "ci/lib"),
+      image = "rocker/verse:latest",
+      variables = list(R_LIBS_USER = "ci/lib"),
       cache = list(key = "global-cache", paths = list("${R_LIBS_USER}")),
-      stages = list("deploy_connect"), deploying = list(
+      stages = list("deploy_connect"),
+      deploying = list(
         stage = "deploy_connect",
         script = list(
           "echo \"Library path for packages :\" R_LIBS_USER",
-          "mkdir -p R_LIBS_USER", "Rscript -e 'install.packages(c(\"git2r\"));install.packages(\"gitlabr\", repos = c(\"https://thinkr-open.r-universe.dev\", \"https://cloud.r-project.org\"))'",
+          "mkdir -p R_LIBS_USER",
+          "Rscript -e 'install.packages(c(\"git2r\"));install.packages(\"gitlabr\", repos = c(\"https://thinkr-open.r-universe.dev\", \"https://cloud.r-project.org\"))'",
           "Rscript -e 'remotes::install_github(\"thinkr-open/lozen\", build_vignettes = FALSE, ref = Sys.getenv(\"LOZEN_BRANCH\", unset = \"main\"))'",
           "Rscript -e 'lozen::deploy_connect_shiny(connect_url = Sys.getenv(\"CONNECT_URL\"),connect_user = Sys.getenv(\"CONNECT_USER\"),connect_api_token = Sys.getenv(\"CONNECT_TOKEN\"),app_name = Sys.getenv(\"APP_NAME\", unset = Sys.getenv(\"CI_PROJECT_NAME\")))'"
         )

@@ -3,8 +3,7 @@
 #' Title
 #'
 
-#' @param image image
-#'
+#' @param image image#'
 #' @param deploy_function deploy_function
 #' @param stage_name stage_name
 #' @param ... dots not used
@@ -16,13 +15,17 @@
 #'   image = "rocker/verse",
 #'   deploy_function = "deploy_connect_shiny"
 #' )
-create_deploy_ci_stage <- function(image,
-                                   deploy_function,
-                                   stage_name = deploy_function,
-                                   ...) {
+create_deploy_ci_stage <- function(
+  image,
+  deploy_function,
+  stage_name = deploy_function,
+  ...
+    ) {
   stopifnot("deploy_function exist" = length(getFromNamespace(x = deploy_function, "lozen")) > 0)
 
-  le_call <- glue::glue("Rscript -e 'lozen::{deploy_function}(connect_url = Sys.getenv(\"CONNECT_URL\"),connect_user = Sys.getenv(\"CONNECT_USER\"),connect_api_token = Sys.getenv(\"CONNECT_TOKEN\"),app_name = Sys.getenv(\"APP_NAME\", unset = Sys.getenv(\"CI_PROJECT_NAME\")))'")
+  le_call <- glue::glue(
+    "Rscript -e 'options(rsconnect.packrat = TRUE); lozen::{deploy_function}(forceUpdate=TRUE, connect_url = Sys.getenv(\"CONNECT_URL\"),connect_user = Sys.getenv(\"CONNECT_USER\"),connect_api_token = Sys.getenv(\"CONNECT_TOKEN\"),app_name = Sys.getenv(\"APP_NAME\", unset = Sys.getenv(\"CI_PROJECT_NAME\")))'"
+  )
 
   # Create list of Connect CI parameters
   connect_ci_list <- list(
@@ -46,7 +49,7 @@ create_deploy_ci_stage <- function(image,
         "mkdir -p $R_LIBS_USER",
         # Install git2r and pak
         "Rscript -e 'install.packages(c(\"git2r\"));install.packages(\"gitlabr\", repos = c(\"https://thinkr-open.r-universe.dev\", \"https://cloud.r-project.org\"))'",
-        "Rscript -e 'remotes::install_github(\"thinkr-open/lozen\", build_vignettes = FALSE, ref = Sys.getenv(\"LOZEN_BRANCH\", unset = \"main\"))'",
+        "Rscript -e 'install.packages(\"lozen\", repos = c(\"https://thinkr-open.r-universe.dev\"))'",
         "Rscript -e 'remotes::install_local(dependencies = TRUE)'",
         le_call
       )

@@ -12,7 +12,7 @@ create_deploy_ci_stage(
 )
 }
 \arguments{
-\item{image}{image}
+\item{image}{image#'}
 
 \item{deploy_function}{deploy_function}
 

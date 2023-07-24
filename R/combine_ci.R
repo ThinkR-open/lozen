@@ -34,7 +34,8 @@ combine_ci <- function(ci1, ci2) {
     }) %>%
     setNames(les_nom)
   bool <- map2(
-    .x = bonne_base, .y = names(bonne_base),
+    .x = bonne_base,
+    .y = names(bonne_base),
     .f = duplicated_with_name
   )
   out <- map2(bonne_base, bool, .f = ~ .x[.y])

@@ -13,9 +13,11 @@
 #' @export
 #' @examples
 #' # check_if_yaml_exists()
-check_if_yaml_exists <- function(dir = ".",
-                                 file_name = ".gitlab-ci.yml",
-                                 append = TRUE) {
+check_if_yaml_exists <- function(
+  dir = ".",
+  file_name = ".gitlab-ci.yml",
+  append = TRUE
+    ) {
   path_to_yaml <- file.path(dir, file_name)
 
   if (

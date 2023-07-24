@@ -21,13 +21,13 @@
 #' NB: The environment variable `CONNECT_URL` is already defined generically on forge (only for group "thinkr").
 #'
 #' @return used for side effects
-#'
+
+#' @param stage_name name of the CI stage (need to be unique in the .gitlab-ci.yml file)
+#' @param deploy_function string caracter name of the `deploy_connect_*` functions to use.
 #' @param image  Docker image to use
 #' @param dir Directory to deploy
 #' @param append append the file .gitlab-ci.yml if it already exists
 #' @param file_name Name of the yaml file
-#' @param stage_name name of the CI stage (need to be unique in the .gitlab-ci.yml file)
-#' @param deploy_function string caracter name of the `deploy_connect_*` functions to use.
 #' @param ... param to pass to  deploy_function
 #'
 #' @importFrom yaml write_yaml
@@ -36,21 +36,16 @@
 #' @export
 #' @examples
 #' #
-use_gitlab_ci_deploy_connect <- function(deploy_function = c("deploy_connect_shiny", "deploy_connect_pkgdown"),
-                                         stage_name = "deploy_connect",
-                                         image = "rocker/verse:latest",
-                                         dir = ".",
-                                         append = TRUE,
-                                         file_name = ".gitlab-ci.yml",
-                                         ...) {
-
-  if(!file.exists(file.path(dir, "app.R"))) {
-    warning(
-      "There is no app.R at the root of your package. You should probably run `golem::add_rstudioconnect_file()` to create this file."
-      )
-  }
-
-  deploy_function <- match.arg(deploy_function) 
+use_gitlab_ci_deploy_connect <- function(
+  deploy_function = c("deploy_connect_shiny", "deploy_connect_pkgdown"),
+  stage_name = "deploy_connect",
+  image = "rocker/verse:latest",
+  dir = ".",
+  append = TRUE,
+  file_name = ".gitlab-ci.yml",
+  ...
+    ) {
+  deploy_function <- match.arg(deploy_function)
 
   path_to_yaml <- check_if_yaml_exists(
     dir = dir,
@@ -87,11 +82,11 @@ use_gitlab_ci_deploy_connect <- function(deploy_function = c("deploy_connect_shi
 #'   use_gitlab_ci(type = "check-coverage-pkgdown")
 #'   use_gitlab_ci_deploy_connect_pkgdown()
 #' })
-
 use_gitlab_ci_deploy_connect_pkgdown <- function(...) {
   use_gitlab_ci_deploy_connect(
     stage_name = "deploy_connect_pkgdown",
-    deploy_function = "deploy_connect_pkgdown"
+    deploy_function = "deploy_connect_pkgdown",
+    ...
   )
 }
 
@@ -106,8 +101,13 @@ use_gitlab_ci_deploy_connect_pkgdown <- function(...) {
 #'   use_gitlab_ci(type = "check-coverage-pkgdown")
 #'   use_gitlab_ci_deploy_connect_shiny()
 #' })
-
 use_gitlab_ci_deploy_connect_shiny <- function(...) {
+  if (!file.exists("app.R")) {
+    warning(
+      "There is no app.R at the root of your package. You should probably run `golem::add_rstudioconnect_file()` to create this file."
+    )
+  }
+
   use_gitlab_ci_deploy_connect(
     stage_name = "deploy_connect_shiny",
     deploy_function = "deploy_connect_shiny",
