@@ -237,3 +237,10 @@ flat_use_gitlab_ci_deploy_connect.Rmd:
   R: R/use_gitlab_ci_deploy_connect.R
   tests: tests/testthat/test-use_gitlab_ci_deploy_connect.R
   vignettes: vignettes/bh-deploy-on-connect-through-gitlab-ci.Rmd
+  inflate:
+    flat_file: dev/flat_use_gitlab_ci_deploy_connect.Rmd
+    vignette_name: bh - Deploy on Connect through GitLab CI
+    open_vignette: false
+    check: false
+    document: false
+    overwrite: 'yes'
