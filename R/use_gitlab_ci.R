@@ -38,6 +38,13 @@ use_gitlab_ci <- function(image = "rocker/verse",
   if (grepl("check", type)) {
     lines <- readLines(ci_file)
 
+    install_local <- grep("remotes::install_local\\(upgrade = \"always\"\\)", lines)
+    lines[install_local] <- gsub(
+      'upgrade = \"always\")',
+       'upgrade = \"always\", dependencies = TRUE)',
+        lines[install_local]
+        )
+
     script <- grep('"--as-cran"', lines)
     lines[script] <- gsub(',\\s*"--as-cran"', "", lines[script])
     lines[script] <- gsub('"--as-cran"', "", lines[script])
