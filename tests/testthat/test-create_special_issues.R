@@ -261,7 +261,7 @@ test_that("add_issue_kickoff works", {
 
   # delete kickoff issue
   gitlabr::gl_delete_issue(
-    project = project_id, 
+    project = project_id,
     issue_id = kickoff_output[["iid"]]
   )
 
@@ -279,13 +279,19 @@ test_that("create_issue_content_kickoff works", {
   expect_equal(
     object = create_issue_content_kickoff(),
     expected = c(
-      "## Validation (Pour les clients)", "", "- [ ] Je comprend qu\'un ticket est divis\u00e9 en 3 parties: le titre (besoin), les crit\u00e8res de validation et une partie technique",
+      "## Validation (Pour les clients)",
+      "",
+      "- [ ] Je comprend qu\'un ticket est divis\u00e9 en 3 parties: le titre (besoin), les crit\u00e8res de validation et une partie technique",
       "- [ ] Je comprend que la partie validation est celle qui me concerne en tant client et que toutes les informations pour valider le ticket y sont pr\u00e9sentes",
       "- [ ] J\'ai \u00e9t\u00e9 inform\u00e9 que la partie validation est auto-portante: toutes les informations permettant de valider seront pr\u00e9sentes et compl\u00e9t\u00e9e avec des captures d\'\u00e9cran ou url \u00e0 explorer",
       "- [ ] Je comprend que la partie technique ne concernent que les personnes qui d\u00e9veloppent",
       "- [ ] Je comprend que pour valider ce ticket, je dois ajouter un commentaire ci-dessous pour indiquer que je valide la totalit\u00e9 du ticket et qu\'il peut \u00eatre ferm\u00e9. Le cas \u00e9ch\u00e9ant, j\'indique les corrections \u00e0 apporter",
-      "", "## Technique (Pour les devs)", "", "+ [ ] Ajouter un lien vers le site {pkgdown} du projet dans le crit\u00e8re 3 (auto-portant)",
-      "+ [ ] Mettre ce ticket dans la colonne validation", "+ [ ] Faire en sorte que ce ticket soit valid\u00e9 en KickOff avec le client"
+      "",
+      "## Technique (Pour les devs)",
+      "",
+      "+ [ ] Ajouter un lien vers le site {pkgdown} du projet dans le crit\u00e8re 3 (auto-portant)",
+      "+ [ ] Mettre ce ticket dans la colonne validation",
+      "+ [ ] Faire en sorte que ce ticket soit valid\u00e9 en KickOff avec le client"
     )
   )
 })
@@ -332,28 +338,51 @@ test_that("create_issue_content_clients_github works", {
     object = create_issue_content_clients_github(owner = "ThinkR-open", repo = "example-weekly"),
     expected = c(
       "# Bonjour et bienvenue sur notre outil de suivi de projet.",
-      "", "_Si vous lisez ce message depuis vos emails, merci de cliquer sur le lien en bas \"View it on GitHub\" ou \"Lire sur GitHub\"._",
-      "", "Ce site web est l\'outil de d\u00e9veloppement GitHub. Il nous permet de versionner notre code (conserver l\'historique des modifications) et de communiquer sur les fonctionnalit\u00e9s en cours de d\u00e9veloppement.",
-      "", "Le message que vous lisez actuellement est un ticket de suivi (aussi appel\u00e9 \"issue\"). C\'est sous ce format que nous listons toutes les fonctionnalit\u00e9s demand\u00e9es et bugs divis\u00e9s en unit\u00e9s de d\u00e9veloppement. C\'est aussi sous ce format que la totalit\u00e9 de nos \u00e9changes devront \u00eatre stock\u00e9s. Nous \u00e9vitons les Emails pour conserver l\'historique des \u00e9changes, rang\u00e9s dans les tickets d\u00e9di\u00e9s, pour ne rien perdre de vos besoins et demandes.",
-      "", "## Au cours du d\u00e9veloppement, nous vous demanderons de :",
-      "", "- **r\u00e9pondre \u00e0 nos points de blocage**. Pour cela, comme pour le pr\u00e9sent ticket, vous serez notifi\u00e9s par un Email qui contient un lien pour venir sur l\'interface. Nous vous donnerons le plus d\'informations possibles sur le probl\u00e8me. Pour nous r\u00e9pondre, vous pouvez \u00e9crire un message dans la partie d\u00e9di\u00e9e ci-dessous, quand vous avez le temps de le faire. *Nous vous demandons d\'ailleurs de bien vouloir \u00e9crire un message d\u00e8s \u00e0 pr\u00e9sent et de le valider. Merci.*",
+      "",
+      "_Si vous lisez ce message depuis vos emails, merci de cliquer sur le lien en bas \"View it on GitHub\" ou \"Lire sur GitHub\"._",
+      "",
+      "Ce site web est l\'outil de d\u00e9veloppement GitHub. Il nous permet de versionner notre code (conserver l\'historique des modifications) et de communiquer sur les fonctionnalit\u00e9s en cours de d\u00e9veloppement.",
+      "",
+      "Le message que vous lisez actuellement est un ticket de suivi (aussi appel\u00e9 \"issue\"). C\'est sous ce format que nous listons toutes les fonctionnalit\u00e9s demand\u00e9es et bugs divis\u00e9s en unit\u00e9s de d\u00e9veloppement. C\'est aussi sous ce format que la totalit\u00e9 de nos \u00e9changes devront \u00eatre stock\u00e9s. Nous \u00e9vitons les Emails pour conserver l\'historique des \u00e9changes, rang\u00e9s dans les tickets d\u00e9di\u00e9s, pour ne rien perdre de vos besoins et demandes.",
+      "",
+      "## Au cours du d\u00e9veloppement, nous vous demanderons de :",
+      "",
+      "- **r\u00e9pondre \u00e0 nos points de blocage**. Pour cela, comme pour le pr\u00e9sent ticket, vous serez notifi\u00e9s par un Email qui contient un lien pour venir sur l\'interface. Nous vous donnerons le plus d\'informations possibles sur le probl\u00e8me. Pour nous r\u00e9pondre, vous pouvez \u00e9crire un message dans la partie d\u00e9di\u00e9e ci-dessous, quand vous avez le temps de le faire. *Nous vous demandons d\'ailleurs de bien vouloir \u00e9crire un message d\u00e8s \u00e0 pr\u00e9sent et de le valider. Merci.*",
       "- **suivre l\'avancement du projet** dans le Kanban d\u00e9di\u00e9. Ce Kanban se trouve \u00e0 l\'adresse suivante que vous pouvez ouvrir d\u00e8s \u00e0 pr\u00e9sent dans un nouvel onglet : <https://github.com/ThinkR-open/example-weekly/projects/1>",
       "    + Vous verrez que le ticket que vous \u00eates en train de lire se trouve dans la colonne *\"Bloqu\u00e9\"*. Cette colonne de tickets vous est adress\u00e9e. Tous les tickets qui s\'y trouvent n\u00e9cessitent des informations compl\u00e9mentaires pour \u00eatre trait\u00e9s. En th\u00e9orie, vous aurez re\u00e7u un email pour chacun d\'entre eux, mais s\'il y en a trop, vous savez maintenant o\u00f9 les retrouver.",
       "- **valider les tickets termin\u00e9s**. Dans le Kanban, vous avez une colonne en fin de Kanban nomm\u00e9e *A valider*. Il s\'agit des tickets que nous consid\u00e9rons avoir impl\u00e9ment\u00e9s et qui n\u00e9cessitent validation de votre part.",
       "  + Lorsque vous pouvez faire la validation sans assistance de notre part, nous vous donnerons toutes les instructions pour savoir comment valider. Vous pourrez \u00e9crire un message du type : \"Je valide la fermeture de ce ticket.\"",
       "  + En cas de ticket plus complexe ou plus technique, nous le validerons ensemble lors d\'un point d\'avancement en direct. Auquel cas, nous validerons la fermeture dans le compte-rendu de r\u00e9union.",
-      "", "## Comment valider les tickets ?", "", "La validation se fait par les commanditaires, sur les tickets ajout\u00e9s \u00e0 la colonne \"Validation\" du Projet: <https://github.com/ThinkR-open/example-weekly/projects/1>  ",
+      "",
+      "## Comment valider les tickets ?",
+      "",
+      "La validation se fait par les commanditaires, sur les tickets ajout\u00e9s \u00e0 la colonne \"Validation\" du Projet: <https://github.com/ThinkR-open/example-weekly/projects/1>  ",
       "Vous verrez dans nos tickets qu\'il y a au moins trois parties:",
-      "", "- ETQ (En tant que)", "- Crit\u00e8res de validation", "- Comment technique",
-      "", "Ces parties s\'adressent en premier aux d\u00e9veloppeureuses pour savoir quoi et comment traiter le besoin.  ",
+      "",
+      "- ETQ (En tant que)",
+      "- Crit\u00e8res de validation",
+      "- Comment technique",
+      "",
+      "Ces parties s\'adressent en premier aux d\u00e9veloppeureuses pour savoir quoi et comment traiter le besoin.  ",
       "Lors de la validation, vous verrez la partie \"Crit\u00e8res de validation\" \u00e9voluer avec les consignes ou les captures d\'\u00e9cran qui vous permettent de valider le ticket. Nous vous demandons: ",
-      "", "- De cocher les cases de chacun de ces crit\u00e8res si vous les valider",
+      "",
+      "- De cocher les cases de chacun de ces crit\u00e8res si vous les valider",
       "- D\'ajouter un message dans le fil des commenaitres de l\'issue pour nous indiquer si vous le validez compl\u00e8tement, ou s\'il y a des corrections \u00e0 apporter.",
-      "", "Ensuite, nous nous occupons de fermer le ticket et de r\u00e9-ouvrir tous ceux qui seraient n\u00e9cessaires.  ",
-      "", "## Comptes-rendus", "", "Notez que nos \u00e9changes lors de r\u00e9unions en direct seront r\u00e9dig\u00e9s et accessibles pour vous dans :",
-      "", "- [ ] Le Wiki de ce projet : <https://github.com/ThinkR-open/example-weekly/wiki>",
-      "", "", "## Comment valider ce ticket ?", "", "Ce ticket est particulier, sa validation se fait par chaque nouvelle personne qui entre sur le projet.  ",
-      "", "Merci de bien vouloir nous indiquer que vous avez lu et approuv\u00e9 \u00e0 la date d\'aujourd\'hui ce mode de fonctionnement en \u00e9crivant : \"lu et approuv\u00e9, le {date du jour}\" (Mettre la date du jour) dans un message ci-dessous (Emplacement \"Write\" ou \"Ecrire\") et valider l\'envoi du message en cliquant sur le bouton vert \"Comment\" ou \"Envoyer\".",
+      "",
+      "Ensuite, nous nous occupons de fermer le ticket et de r\u00e9-ouvrir tous ceux qui seraient n\u00e9cessaires.  ",
+      "",
+      "## Comptes-rendus",
+      "",
+      "Notez que nos \u00e9changes lors de r\u00e9unions en direct seront r\u00e9dig\u00e9s et accessibles pour vous dans :",
+      "",
+      "- [ ] Le Wiki de ce projet : <https://github.com/ThinkR-open/example-weekly/wiki>",
+      "",
+      "",
+      "## Comment valider ce ticket ?",
+      "",
+      "Ce ticket est particulier, sa validation se fait par chaque nouvelle personne qui entre sur le projet.  ",
+      "",
+      "Merci de bien vouloir nous indiquer que vous avez lu et approuv\u00e9 \u00e0 la date d\'aujourd\'hui ce mode de fonctionnement en \u00e9crivant : \"lu et approuv\u00e9, le {date du jour}\" (Mettre la date du jour) dans un message ci-dessous (Emplacement \"Write\" ou \"Ecrire\") et valider l\'envoi du message en cliquant sur le bouton vert \"Comment\" ou \"Envoyer\".",
       "Suite \u00e0 quoi, nous nous chargerons de fermer ce ticket."
     )
   )
@@ -448,7 +477,8 @@ test_that("add_issue_kickoff_github works", {
   issue_kkoff <- add_issue_kickoff_github(owner = owner, repo = repo_name)
 
   expect_gt(
-    nrow(issue_kkoff), 0
+    nrow(issue_kkoff),
+    0
   )
 
   expect_match(

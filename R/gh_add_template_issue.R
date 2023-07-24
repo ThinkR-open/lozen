@@ -15,24 +15,26 @@
 #' ## Create temp dir and file
 #' project_path <- tempfile("myproject")
 #' dir.create(project_path)
-#' 
+#'
 #' ## Add the full template in french
 #' gh_add_template_issue(project_path, language = "fr", type = "full")
-#' 
+#'
 #' ## Add the full template in english
 #' gh_add_template_issue(project_path, language = "en", type = "full")
-#' 
+#'
 #' ## Add the light template in french
 #' gh_add_template_issue(project_path, language = "fr", type = "light")
-#' 
+#'
 #' ## Add the light template in english
 #' gh_add_template_issue(project_path, language = "en", type = "light")
-#' 
+#'
 #' # suppress tmp folder
 #' unlink(project_path, recursive = TRUE)
-gh_add_template_issue <- function(project_path = ".",
-                                  language = c("fr", "en"),
-                                  type = c("full", "light")) {
+gh_add_template_issue <- function(
+  project_path = ".",
+  language = c("fr", "en"),
+  type = c("full", "light")
+    ) {
   old <- setwd(project_path)
   on.exit(setwd(old))
 

@@ -43,7 +43,7 @@ set_gitlab_connection(gitlab_con = my_gitlab)
 
 # Create a project
 project_id <- create_group_project(
-  "examplesissues", 
+  "examplesissues",
   namespace_id = NULL
 )
 ```
