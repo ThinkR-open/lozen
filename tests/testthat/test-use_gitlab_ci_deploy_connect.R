@@ -47,7 +47,8 @@ test_that("use_gitlab_ci_deploy_connect_shiny works", {
       private_token = Sys.getenv("GITLAB_TOKEN"),
       project_name = "shinytestproject",
       exp = {
-        cat('library(shiny);
+        cat(
+          'library(shiny);
 
             ui <- fluidPage(
                   h1("Coucou"));
