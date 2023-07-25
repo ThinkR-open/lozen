@@ -25,6 +25,9 @@
     <loc>/articles/ad-build-a-pkgdown-with-reports.html</loc>
   </url>
   <url>
+    <loc>/articles/ae-deploy-a-shiny-app-on-connect-through-gitlab-ci.html</loc>
+  </url>
+  <url>
     <loc>/articles/ba-create-the-skeleton-of-the-r-project--package-app-book-.html</loc>
   </url>
   <url>
@@ -44,9 +47,6 @@
   </url>
   <url>
     <loc>/articles/bg-deploy-on-connect.html</loc>
-  </url>
-  <url>
-    <loc>/articles/bh-deploy-on-connect-through-gitlab-ci.html</loc>
   </url>
   <url>
     <loc>/articles/bi-move-from-gitlab-to-github.html</loc>

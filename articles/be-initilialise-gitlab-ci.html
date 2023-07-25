@@ -87,6 +87,9 @@
       <a href="../articles/ad-build-a-pkgdown-with-reports.html">ad - Build a pkgdown with reports</a>
     </li>
     <li>
+      <a href="../articles/ae-deploy-a-shiny-app-on-connect-through-gitlab-ci.html">ae - Deploy a {golem} app on Posit Connect and its pkgdown on Gitlab Pages through GitLab CI/CD</a>
+    </li>
+    <li>
       <a href="../articles/ba-create-the-skeleton-of-the-r-project--package-app-book-.html">ba - Create the skeleton of the R project (package, app, book)</a>
     </li>
     <li>
@@ -106,9 +109,6 @@
     </li>
     <li>
       <a href="../articles/bg-deploy-on-connect.html">bg - Deploy on Connect</a>
-    </li>
-    <li>
-      <a href="../articles/bh-deploy-on-connect-through-gitlab-ci.html">bh - Deploy on Connect through GitLab CI</a>
     </li>
     <li>
       <a href="../articles/bi-move-from-gitlab-to-github.html">bi - Move from GitLab to GitHub</a>
@@ -257,11 +257,12 @@ file.</p>
 <span><span class="co">#&gt; [1] "deploy_connect_shiny"</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; $deploying$script</span></span>
-<span><span class="co">#&gt; [1] "echo \"Library path for packages :\" $R_LIBS_USER"                                                                                                                                                                                                             </span></span>
-<span><span class="co">#&gt; [2] "mkdir -p $R_LIBS_USER"                                                                                                                                                                                                                                         </span></span>
-<span><span class="co">#&gt; [3] "Rscript -e 'install.packages(c(\"git2r\"));install.packages(\"gitlabr\", repos = c(\"https://thinkr-open.r-universe.dev\", \"https://cloud.r-project.org\"))'"                                                                                                 </span></span>
-<span><span class="co">#&gt; [4] "Rscript -e 'remotes::install_github(\"thinkr-open/lozen\", build_vignettes = FALSE, ref = Sys.getenv(\"LOZEN_BRANCH\", unset = \"main\"))'"                                                                                                                    </span></span>
-<span><span class="co">#&gt; [5] "Rscript -e 'lozen::deploy_connect_shiny(connect_url = Sys.getenv(\"CONNECT_URL\"),connect_user = Sys.getenv(\"CONNECT_USER\"),connect_api_token = Sys.getenv(\"CONNECT_TOKEN\"),app_name = Sys.getenv(\"APP_NAME\", unset = Sys.getenv(\"CI_PROJECT_NAME\")))'"</span></span></code></pre></div>
+<span><span class="co">#&gt; [1] "echo \"Library path for packages :\" $R_LIBS_USER"                                                                                                                                                                                                                                                                  </span></span>
+<span><span class="co">#&gt; [2] "mkdir -p $R_LIBS_USER"                                                                                                                                                                                                                                                                                              </span></span>
+<span><span class="co">#&gt; [3] "Rscript -e 'install.packages(c(\"git2r\"));install.packages(\"gitlabr\", repos = c(\"https://thinkr-open.r-universe.dev\", \"https://cloud.r-project.org\"))'"                                                                                                                                                      </span></span>
+<span><span class="co">#&gt; [4] "Rscript -e 'install.packages(\"lozen\", repos = c(\"https://thinkr-open.r-universe.dev\"))'"                                                                                                                                                                                                                        </span></span>
+<span><span class="co">#&gt; [5] "Rscript -e 'remotes::install_local(dependencies = TRUE)'"                                                                                                                                                                                                                                                           </span></span>
+<span><span class="co">#&gt; [6] "Rscript -e 'options(rsconnect.packrat = TRUE); lozen::deploy_connect_shiny(forceUpdate=TRUE, connect_url = Sys.getenv(\"CONNECT_URL\"),connect_user = Sys.getenv(\"CONNECT_USER\"),connect_api_token = Sys.getenv(\"CONNECT_TOKEN\"),app_name = Sys.getenv(\"APP_NAME\", unset = Sys.getenv(\"CI_PROJECT_NAME\")))'"</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="amend_yaml">amend_yaml<a class="anchor" aria-label="anchor" href="#amend_yaml"></a>
