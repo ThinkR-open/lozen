@@ -16,10 +16,10 @@
 #' @examples
 #' # pkgdown yml
 #' full <- yaml::read_yaml(file = system.file("yaml", ".gitlab-ci-pkg.yml", package = "lozen"))
-#' 
+#'
 #' # shiny yaml
 #' connect <- yaml::read_yaml(file = system.file("yaml", ".gitlab-ci-shiny.yml", package = "lozen"))
-#' 
+#'
 #' ci_list <- combine_ci(ci1 = full, ci2 = connect)
 combine_ci <- function(ci1, ci2) {
   les_nom <- unique(c(names(ci1), names(ci2)))
@@ -34,7 +34,8 @@ combine_ci <- function(ci1, ci2) {
     }) %>%
     setNames(les_nom)
   bool <- map2(
-    .x = bonne_base, .y = names(bonne_base),
+    .x = bonne_base,
+    .y = names(bonne_base),
     .f = duplicated_with_name
   )
   out <- map2(bonne_base, bool, .f = ~ .x[.y])

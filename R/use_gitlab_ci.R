@@ -15,7 +15,7 @@
 #' withr::with_tempdir({
 #'   use_gitlab_ci(image = "r-base")
 #' })
-#' 
+#'
 #' withr::with_tempdir({
 #'   use_gitlab_ci(
 #'     image = "rocker/verse",
@@ -23,10 +23,12 @@
 #'     type = "check-coverage-pkgdown"
 #'   )
 #' })
-use_gitlab_ci <- function(image = "rocker/verse",
-                          repo_name = "https://packagemanager.rstudio.com/all/__linux__/focal/latest",
-                          project_path = ".",
-                          type = "check-coverage-pkgdown") {
+use_gitlab_ci <- function(
+  image = "rocker/verse",
+  repo_name = "https://packagemanager.rstudio.com/all/__linux__/focal/latest",
+  project_path = ".",
+  type = "check-coverage-pkgdown"
+    ) {
   ci_file <- file.path(project_path, ".gitlab-ci.yml")
   gitlabr::use_gitlab_ci(
     image = image,
@@ -37,6 +39,13 @@ use_gitlab_ci <- function(image = "rocker/verse",
 
   if (grepl("check", type)) {
     lines <- readLines(ci_file)
+
+    install_local <- grep("remotes::install_local\\(upgrade = \"always\"\\)", lines)
+    lines[install_local] <- gsub(
+      'upgrade = \"always\")',
+      'upgrade = \"always\", dependencies = TRUE)',
+      lines[install_local]
+    )
 
     script <- grep('"--as-cran"', lines)
     lines[script] <- gsub(',\\s*"--as-cran"', "", lines[script])

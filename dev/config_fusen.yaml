@@ -177,7 +177,7 @@ flat_init_gitlab_ci.Rmd:
     vignette_name: be - Initilialise GitLab CI
     open_vignette: false
     check: false
-    document: false
+    document: true
     overwrite: 'yes'
 flat_manage_git.Rmd:
   path: dev/flat_manage_git.Rmd
@@ -236,4 +236,11 @@ flat_use_gitlab_ci_deploy_connect.Rmd:
   state: active
   R: R/use_gitlab_ci_deploy_connect.R
   tests: tests/testthat/test-use_gitlab_ci_deploy_connect.R
-  vignettes: vignettes/bh-deploy-on-connect-through-gitlab-ci.Rmd
+  vignettes: []
+  inflate:
+    flat_file: dev/flat_use_gitlab_ci_deploy_connect.Rmd
+    vignette_name: .na
+    open_vignette: false
+    check: false
+    document: true
+    overwrite: 'yes'
