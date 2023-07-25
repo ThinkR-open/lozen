@@ -85,6 +85,8 @@ with_gitlab_project <- function(
   stopifnot("connect_url is unset" = connect_url != "")
   stopifnot("connect_user is unset" = connect_user != "")
   stopifnot("connect_name is unset" = connect_name != "")
+  stopifnot("github_pat is unset" = github_pat != "")
+
 
   # Set the connection and create a new project
   set_gitlab_connection(

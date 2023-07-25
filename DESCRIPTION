@@ -36,7 +36,6 @@ Imports:
     lubridate,
     magrittr,
     pkgdown,
-    pkgload,
     purrr,
     rsconnect,
     scales,
@@ -69,8 +68,9 @@ Suggests:
     testdown,
     testthat (>= 3.0.0),
     thinkrtemplate
-VignetteBuilder: knitr
-Remotes: 
+VignetteBuilder: 
+    knitr
+Remotes:  
     ThinkR-open/gitlabr,
     ThinkR-open/testdown,
     ThinkR-open/thinkrtemplate
