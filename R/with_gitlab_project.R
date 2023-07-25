@@ -15,7 +15,7 @@
 #' Connect API. The token must be granted admin access.
 #' @param connect_user A character string. User name on Connect.
 #' @param connect_name A character string. Name of the Connect server (default "connect")
-#' @param github_pat. A character string. The token to gain access to the
+#' @param github_pat A character string. The token to gain access to the
 #' github api.
 #' @param project_name A character string. The name of the project to be created.
 #' @param branch_focus_for_ci Name of the branch to be targeted for the CI pipeline.

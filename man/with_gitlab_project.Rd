@@ -36,15 +36,15 @@ Connect API. The token must be granted admin access.}
 
 \item{connect_name}{A character string. Name of the Connect server (default "connect")}
 
+\item{github_pat}{A character string. The token to gain access to the
+github api.}
+
 \item{project_name}{A character string. The name of the project to be created.}
 
 \item{branch_focus_for_ci}{Name of the branch to be targeted for the CI pipeline.}
 
 \item{exp}{A valid R expression initializing a project and a gitlab ci
 workflow.}
-
-\item{github_pat.}{A character string. The token to gain access to the
-github api.}
 }
 \value{
 A data.frame containing information about jobs of
