@@ -148,6 +148,9 @@ Access to the pkgdown: <https://thinkr-open.github.io/lozen/>
   - `ae - Deploy a {golem} app on Posit Connect and its pkgdown on
     Gitlab Pages through GitLab CI/CD`: Publish your {golem}-related
     work
+  - `af - Deploy a pkgdown on Posit Connect and Gitlab Pages through
+    GitLab CI/CD`: Publish the pkgdown of your R package on Gitlab Pages
+    and Posit Connect
 
 *Documentation dedicated to the team who participates to the
 develompment of {lozen}*
