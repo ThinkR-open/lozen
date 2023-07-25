@@ -5,7 +5,6 @@ test_that("with_gitlab_project works", {
   skip_on_ci()
 
   if (Sys.getenv("ALLOW_CI_TESTS_ON_GITLAB", unset = "FALSE") == "TRUE") {
-    
     output <- with_gitlab_project(
       gitlab_url = Sys.getenv("GITLAB_URL", unset = "https://gitlab.com"),
       namespace_id = NULL,
@@ -18,14 +17,14 @@ test_that("with_gitlab_project works", {
         )
       }
     )
-    
-    if(is.null(output)) {
+
+    if (is.null(output)) {
       message("No CI jobs were launched. A user validation might be required on your Gitlab account. To use free CI/CD minutes on shared runners, you\u2019ll need to validate your account with a credit card. If you prefer not to provide one, you can run pipelines by bringing your own runners and disabling shared runners for your project.")
     } else {
-    expect_equal(
-      output$status,
-      "success"
-    )
+      expect_equal(
+        output$status,
+        "success"
+      )
     }
   }
 })

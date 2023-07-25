@@ -10,9 +10,13 @@
 #' create the project in.
 #' @param private_token A character string. The token to gain access to the
 #' gitlab api.
-#' @param connect_url A character string. The URL to the connect server.
+#' @param connect_url A character string. The URL to the Connect server.
 #' @param connect_api_token A character string. The token to gain access to the
-#' connect API. The token must be granted admin access.
+#' Connect API. The token must be granted admin access.
+#' @param connect_user A character string. User name on Connect.
+#' @param connect_name A character string. Name of the Connect server (default "connect")
+#' @param github_pat. A character string. The token to gain access to the
+#' github api.
 #' @param project_name A character string. The name of the project to be created.
 #' @param branch_focus_for_ci Name of the branch to be targeted for the CI pipeline.
 #' @param exp A valid R expression initializing a project and a gitlab ci
@@ -44,25 +48,38 @@
 #' )
 #' output
 #' }
-with_gitlab_project <- function(gitlab_url = Sys.getenv("GITLAB_URL", unset = "https://gitlab.com"),
-                                namespace_id,
-                                private_token = Sys.getenv("GITLAB_TOKEN"),
-                                connect_url = Sys.getenv(
-                                  "CONNECT_URL"
-                                ),
-                                connect_api_token = Sys.getenv(
-                                  "CONNECT_TOKEN"
-                                ),
-                                project_name = "lozen.test.project",
-                                branch_focus_for_ci = "main",
-                                exp) {
+with_gitlab_project <- function(
+  gitlab_url = Sys.getenv("GITLAB_URL", unset = "https://gitlab.com"),
+  namespace_id,
+  private_token = Sys.getenv("GITLAB_TOKEN"),
+  connect_url = Sys.getenv(
+    "CONNECT_URL"
+  ),
+  connect_api_token = Sys.getenv(
+    "CONNECT_TOKEN"
+  ),
+  connect_user = Sys.getenv(
+    "CONNECT_USER"
+  ),
+  connect_name = Sys.getenv(
+    "CONNECT_NAME",
+    unset = "connect"
+  ),
+  github_pat = Sys.getenv(
+    "GITHUB_PAT"
+  ),
+  project_name = "lozen.test.project",
+  branch_focus_for_ci = "main",
+  exp
+    ) {
   # get project name
   unique_project_name <- paste0(project_name, as.numeric(Sys.time()))
 
   # Have to set a API token for connect
   stopifnot("connect_api_token is unset" = connect_api_token != "")
   stopifnot("connect_url is unset" = connect_url != "")
-  stopifnot("CONNECT_USER is unset" = Sys.getenv("CONNECT_USER") != "")
+  stopifnot("connect_user is unset" = connect_user != "")
+  stopifnot("connect_name is unset" = connect_name != "")
 
   # Set the connection and create a new project
   set_gitlab_connection(
@@ -75,16 +92,25 @@ with_gitlab_project <- function(gitlab_url = Sys.getenv("GITLAB_URL", unset = "h
     default_branch = "main",
     namespace_id = namespace_id
   )
-  
+
   # Create env var into gitlab project
-  
-  lapply(c("CONNECT_TOKEN","CONNECT_URL", "CONNECT_USER"), function(x){
-       get_or_create_var_env_gitlab(
-         project_id,
-         x,
-         Sys.getenv(x)
-       )
+
+  lapply(c("CONNECT_TOKEN", "CONNECT_URL", "CONNECT_USER", "CONNECT_NAME", "GITHUB_PAT"), function(x) {
+    get_or_create_var_env_gitlab(
+      project_id,
+      x,
+      Sys.getenv(x)
+    )
   })
+
+  lapply(c("APP_NAME"), function(x) {
+    get_or_create_var_env_gitlab(
+      project_id,
+      x,
+      project_name
+    )
+  })
+
 
 
   on.exit(
@@ -153,14 +179,12 @@ with_gitlab_project <- function(gitlab_url = Sys.getenv("GITLAB_URL", unset = "h
     1,
   ]
 
-  if(ncol(jobs) == 0) {
-    
+  if (ncol(jobs) == 0) {
     message("No CI jobs were launched. A user validation might be required on your Gitlab account. To use free CI/CD minutes on shared runners, you\u2019ll need to validate your account with a credit card. If you prefer not to provide one, you can run pipelines by bringing your own runners and disabling shared runners for your project.")
-    
+
     return(NULL)
-    
   }
-  
+
   while (jobs$status %in% c("created", "running", "pending")) {
     cat_rule("Waiting for the job to finish")
     Sys.sleep(10)
@@ -217,26 +241,28 @@ with_gitlab_project <- function(gitlab_url = Sys.getenv("GITLAB_URL", unset = "h
 }
 
 #' @noRd
-get_or_create_var_env_gitlab <- function(project_id, 
-                                         var_env, 
-                                         value) {
-
+get_or_create_var_env_gitlab <- function(
+  project_id,
+  var_env,
+  value
+    ) {
   exist_var_env <- try(
     gitlab(
       req = paste0("projects/", project_id, "/variables/", var_env),
       verb = httr::GET
-    ), 
-    silent = TRUE) 
-  
-  if(inherits(exist_var_env, "try-error")){
+    ),
+    silent = TRUE
+  )
+
+  if (inherits(exist_var_env, "try-error")) {
     test_404 <- grepl("404", exist_var_env)
-    if(!test_404){
+    if (!test_404) {
       stop("Cannot access to the repo to check env var")
     }
   }
-  
+
   # create var env if 404
-  
+
   gitlab(
     req = paste0("projects/", project_id, "/variables/"),
     key = var_env,
@@ -244,4 +270,3 @@ get_or_create_var_env_gitlab <- function(project_id,
     verb = httr::POST
   )
 }
-

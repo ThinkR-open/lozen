@@ -10,6 +10,9 @@ with_gitlab_project(
   private_token = Sys.getenv("GITLAB_TOKEN"),
   connect_url = Sys.getenv("CONNECT_URL"),
   connect_api_token = Sys.getenv("CONNECT_TOKEN"),
+  connect_user = Sys.getenv("CONNECT_USER"),
+  connect_name = Sys.getenv("CONNECT_NAME", unset = "connect"),
+  github_pat = Sys.getenv("GITHUB_PAT"),
   project_name = "lozen.test.project",
   branch_focus_for_ci = "main",
   exp
@@ -24,10 +27,14 @@ create the project in.}
 \item{private_token}{A character string. The token to gain access to the
 gitlab api.}
 
-\item{connect_url}{A character string. The URL to the connect server.}
+\item{connect_url}{A character string. The URL to the Connect server.}
 
 \item{connect_api_token}{A character string. The token to gain access to the
-connect API. The token must be granted admin access.}
+Connect API. The token must be granted admin access.}
+
+\item{connect_user}{A character string. User name on Connect.}
+
+\item{connect_name}{A character string. Name of the Connect server (default "connect")}
 
 \item{project_name}{A character string. The name of the project to be created.}
 
@@ -35,6 +42,9 @@ connect API. The token must be granted admin access.}
 
 \item{exp}{A valid R expression initializing a project and a gitlab ci
 workflow.}
+
+\item{github_pat.}{A character string. The token to gain access to the
+github api.}
 }
 \value{
 A data.frame containing information about jobs of
