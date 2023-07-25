@@ -1,5 +1,5 @@
 ---
-title: "bh - Deploy a {golem} app and its pkgdown on Connect through GitLab CI/CD"
+title: "ae - Deploy a {golem} app on Posit Connect and its pkgdown on Gitlab Pages through GitLab CI/CD"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{bh-deploy-on-connect-through-gitlab-ci}

@@ -35,7 +35,8 @@ remotes::install_github(
   repo = "ThinkR-open/lozen",
   ref = "main",
   build_vignettes = TRUE,
-  upgrade = "never")
+  upgrade = "never"
+)
 ```
 
 
@@ -117,6 +118,8 @@ Access to the pkgdown: https://thinkr-open.github.io/lozen/
 - `aa - Create a new project with GitLab`: Create a new R project for a mission - managed on GitLab, with everything needed (the R project skeleton, the init of git, the init of the project on GitLab, etc.)
 - `ab - Create a new project with GitHub`: Create a new R project for a mission - managed on GitHub, with everything needed (the R project skeleton, the init of git, the init of the project on GitLab, etc.)
 - `ac - Create Weekly with GitHub or GitLab`: Generate a weekly/daily for a mission
+- `ad - Build a pkgdown with reports`: Build a pkgdown with coverage and test reports
+- `ae - Deploy a {golem} app on Posit Connect and its pkgdown on Gitlab Pages through GitLab CI/CD`: Publish your {golem}-related work
 
 *Documentation dedicated to the team who participates to the develompment of {lozen}*
 
@@ -127,9 +130,8 @@ Access to the pkgdown: https://thinkr-open.github.io/lozen/
 - `be - Initilialise GitLab CI`
 - `bf - Create special issues`
 - `bg - Deploy on Connect`
-- `bh - Deploy on Connect through GitLab CI`
 - `bi - Move from GitLab to GitHub`
-- `ca - Tools miscellaneous`
+- `cb - Tools miscellaneous`
 
 
 
