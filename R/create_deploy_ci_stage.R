@@ -49,7 +49,7 @@ create_deploy_ci_stage <- function(
         "mkdir -p $R_LIBS_USER",
         # Install git2r and pak
         "Rscript -e 'install.packages(c(\"git2r\"));install.packages(\"gitlabr\", repos = c(\"https://thinkr-open.r-universe.dev\", \"https://cloud.r-project.org\"))'",
-        "Rscript -e 'install.packages(\"lozen\", repos = c(\"https://thinkr-open.r-universe.dev\"))'",
+        "Rscript -e 'install.packages(\"lozen\", repos = c(\"https://thinkr-open.r-universe.dev\", \"https://cran.rstudio.com\"))'",
         "Rscript -e 'remotes::install_local(dependencies = TRUE)'",
         le_call
       )
