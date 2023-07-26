@@ -132,24 +132,23 @@ withr::with_tempdir({
 
 ```{r tests-use_gitlab_ci}
 test_that("init_gitlab_ci throws expected messages", {
-withr::with_tempdir({
+  withr::with_tempdir({
+    expect_message(
+      lozen::use_gitlab_ci(
+        type = "check-coverage-pkgdown"
+      ),
+      "There is no ./.gitlab-ci.yml in your project, a new one will be created."
+    )
 
-expect_message(
-  lozen::use_gitlab_ci(    
-    type = "check-coverage-pkgdown"
-  ),
-  "There is no ./.gitlab-ci.yml in your project, a new one will be created."
-  )
-
-expect_message(
-  lozen::use_gitlab_ci(    
-    type = "check-coverage-pkgdown",
-    overwrite = TRUE
-  ),
-  "Overwriting ./.gitlab-ci.yml."
-  )
+    expect_message(
+      lozen::use_gitlab_ci(
+        type = "check-coverage-pkgdown",
+        overwrite = TRUE
+      ),
+      "Overwriting ./.gitlab-ci.yml."
+    )
+  })
 })
-}
 
 
 test_that("init_gitlab_ci works for bookdown", {
@@ -648,25 +647,23 @@ check_if_yaml_exists <- function(
   
 ```{r tests-check_if_yaml_exists}
 test_that("check_if_yaml_exists throws expected messages", {
-withr::with_tempdir({
-  lozen::use_gitlab_ci(    
-    type = "check-coverage-pkgdown"
-  )
+  withr::with_tempdir({
+    lozen::use_gitlab_ci(
+      type = "check-coverage-pkgdown"
+    )
 
-  expect_message(
-    check_if_yaml_exists(),
-  "Appending new stages in ./.gitlab-ci.yml"
-  )
+    expect_message(
+      check_if_yaml_exists(),
+      "Appending new stages in ./.gitlab-ci.yml"
+    )
 
-  unlink(file.path(getwd(), ".gitlab-ci.yml"))
+    unlink(file.path(getwd(), ".gitlab-ci.yml"))
 
-  expect_message(
-    check_if_yaml_exists(),
-  "There is no ./.gitlab-ci.yml in your project, a new one will be created."
-  )
-
-})
-
+    expect_message(
+      check_if_yaml_exists(),
+      "There is no ./.gitlab-ci.yml in your project, a new one will be created."
+    )
+  })
 })
 ```
 

@@ -67,7 +67,8 @@ Suggests:
     testdown,
     testthat (>= 3.0.0),
     thinkrtemplate
-VignetteBuilder: knitr
+VignetteBuilder: 
+    knitr
 Remotes:  
     ThinkR-open/gitlabr,
     ThinkR-open/testdown,
