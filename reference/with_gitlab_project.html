@@ -63,6 +63,9 @@ expression to initiate a given gitlab ci workflow within a dummy project on a #'
       <a href="../articles/ae-deploy-a-shiny-app-on-connect-through-gitlab-ci.html">ae - Deploy a {golem} app on Posit Connect and its pkgdown on Gitlab Pages through GitLab CI/CD</a>
     </li>
     <li>
+      <a href="../articles/af-deploy-a-pkgdown-on-connect-through-gitlab-ci.html">af - Deploy a pkgdown on Posit Connect and Gitlab Pages through GitLab CI/CD</a>
+    </li>
+    <li>
       <a href="../articles/ba-create-the-skeleton-of-the-r-project--package-app-book-.html">ba - Create the skeleton of the R project (package, app, book)</a>
     </li>
     <li>
@@ -125,7 +128,6 @@ expression to initiate a given gitlab ci workflow within a dummy project on a #'
 <span>  connect_api_token <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Sys.getenv.html" class="external-link">Sys.getenv</a></span><span class="op">(</span><span class="st">"CONNECT_TOKEN"</span><span class="op">)</span>,</span>
 <span>  connect_user <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Sys.getenv.html" class="external-link">Sys.getenv</a></span><span class="op">(</span><span class="st">"CONNECT_USER"</span><span class="op">)</span>,</span>
 <span>  connect_name <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Sys.getenv.html" class="external-link">Sys.getenv</a></span><span class="op">(</span><span class="st">"CONNECT_NAME"</span>, unset <span class="op">=</span> <span class="st">"connect"</span><span class="op">)</span>,</span>
-<span>  github_pat <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Sys.getenv.html" class="external-link">Sys.getenv</a></span><span class="op">(</span><span class="st">"GITHUB_PAT"</span><span class="op">)</span>,</span>
 <span>  project_name <span class="op">=</span> <span class="st">"lozen.test.project"</span>,</span>
 <span>  branch_focus_for_ci <span class="op">=</span> <span class="st">"main"</span>,</span>
 <span>  <span class="va">exp</span></span>
@@ -163,11 +165,6 @@ Connect API. The token must be granted admin access.</p></dd>
 
 <dt>connect_name</dt>
 <dd><p>A character string. Name of the Connect server (default "connect")</p></dd>
-
-
-<dt>github_pat</dt>
-<dd><p>A character string. The token to gain access to the
-github api.</p></dd>
 
 
 <dt>project_name</dt>
