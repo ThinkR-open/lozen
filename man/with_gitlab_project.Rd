@@ -12,7 +12,6 @@ with_gitlab_project(
   connect_api_token = Sys.getenv("CONNECT_TOKEN"),
   connect_user = Sys.getenv("CONNECT_USER"),
   connect_name = Sys.getenv("CONNECT_NAME", unset = "connect"),
-  github_pat = Sys.getenv("GITHUB_PAT"),
   project_name = "lozen.test.project",
   branch_focus_for_ci = "main",
   exp
@@ -35,9 +34,6 @@ Connect API. The token must be granted admin access.}
 \item{connect_user}{A character string. User name on Connect.}
 
 \item{connect_name}{A character string. Name of the Connect server (default "connect")}
-
-\item{github_pat}{A character string. The token to gain access to the
-github api.}
 
 \item{project_name}{A character string. The name of the project to be created.}
 

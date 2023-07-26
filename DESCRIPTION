@@ -64,7 +64,6 @@ Suggests:
     remotes,
     renv,
     rmarkdown (>= 2.14),
-    shiny,
     testdown,
     testthat (>= 3.0.0),
     thinkrtemplate

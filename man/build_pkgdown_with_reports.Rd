@@ -37,7 +37,7 @@ Build a pkgdown with extra reports tab for testdown and coverage output
 # build_pkgdown_with_reports(
 #    pkg = ".",
 #    pkgdown_path = "public",
-#    assets_path = "pkgdown/assets"),
+#    assets_path = "pkgdown/assets",
 #    reports = c("testdown","coverage")
 }
 }

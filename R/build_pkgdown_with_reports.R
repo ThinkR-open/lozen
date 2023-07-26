@@ -19,7 +19,7 @@
 #' # build_pkgdown_with_reports(
 #' #    pkg = ".",
 #' #    pkgdown_path = "public",
-#' #    assets_path = "pkgdown/assets"),
+#' #    assets_path = "pkgdown/assets",
 #' #    reports = c("testdown","coverage")
 #' }
 build_pkgdown_with_reports <- function(pkg = ".",

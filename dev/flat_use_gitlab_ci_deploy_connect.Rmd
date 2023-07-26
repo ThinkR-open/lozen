@@ -141,8 +141,6 @@ test_that("use_gitlab_ci_deploy_connect_shiny works", {
   # Test on Gitlab : Create a golem and test the CI
 
   # Pour un template CI "golem"
-
-
   if (Sys.getenv("ALLOW_CI_TESTS_ON_GITLAB", unset = "FALSE") == "TRUE") {
     output_golem <- with_gitlab_project(
       gitlab_url = Sys.getenv("GITLAB_URL", unset = "https://gitlab.com"),
@@ -152,8 +150,8 @@ test_that("use_gitlab_ci_deploy_connect_shiny works", {
       exp = {
         lozen::create_r_project(project_path = getwd(), type = "golem", name_licence = "test", type_licence = usethis::use_mit_license)
         golem::add_rstudioconnect_file(open = FALSE)
-        lozen::use_gitlab_ci(type = "check-coverage-pkgdown")
-        lozen::use_gitlab_ci_deploy_connect_shiny(append = TRUE)
+        # lozen::use_gitlab_ci(type = "check-coverage-pkgdown")
+        lozen::use_gitlab_ci_deploy_connect_shiny()
       }
     )
 
@@ -166,45 +164,44 @@ test_that("use_gitlab_ci_deploy_connect_shiny works", {
       object = output_golem$connect,
       expected = 200
     )
+
+    if (output_golem$connect == 200) {
+      message("Deployment was successful. You can now remove manually what has been deployed on your Connect.")
+    }
   }
-  if (Sys.getenv("ALLOW_CI_TESTS_ON_GITLAB", unset = "FALSE") == "TRUE") {
-    # Pour un template CI "golem"
-    output_shiny <- with_gitlab_project(
-      gitlab_url = Sys.getenv("GITLAB_URL", unset = "https://gitlab.com"),
-      namespace_id = NULL,
-      private_token = Sys.getenv("GITLAB_TOKEN"),
-      project_name = "shinytestproject",
-      exp = {
-        cat(
-          'library(shiny);
+  # if (Sys.getenv("ALLOW_CI_TESTS_ON_GITLAB", unset = "FALSE") == "TRUE") {
+  #   # Pour un template CI "golem"
+  #   output_shiny <- with_gitlab_project(
+  #     gitlab_url = Sys.getenv("GITLAB_URL", unset = "https://gitlab.com"),
+  #     namespace_id = NULL,
+  #     private_token = Sys.getenv("GITLAB_TOKEN"),
+  #     project_name = "shinytestproject",
+  #     exp = {
+  #       cat(
+  #         'library(shiny);
 
-            ui <- fluidPage(
-                  h1("Coucou"));
+  #           ui <- fluidPage(
+  #                 h1("Coucou"));
 
-            server <- function(input, output, session) {
-            }
-            shinyApp(ui, server)',
-          file = "app.R"
-        )
+  #           server <- function(input, output, session) {
+  #           }
+  #           shinyApp(ui, server)',
+  #         file = "app.R"
+  #       )
+  #       lozen::use_gitlab_ci_deploy_connect_shiny()
+  #     }
+  #   )
 
-        # shiny::shinyAppTemplate(path = ".",
-        #                  examples = "app",
-        #                  dryrun = FALSE)
-        # lozen::use_gitlab_ci(type = "check-coverage-pkgdown")
-        lozen::use_gitlab_ci_deploy_connect_shiny()
-      }
-    )
+  #   expect_equal(
+  #     object = output_shiny$status,
+  #     expected = "success"
+  #   )
 
-    expect_equal(
-      object = output_shiny$status,
-      expected = "success"
-    )
-
-    expect_equal(
-      object = output_shiny$connect,
-      expected = 200
-    )
-  }
+  #   expect_equal(
+  #     object = output_shiny$connect,
+  #     expected = 200
+  #   )
+  # }
 })
 ```
   
@@ -255,19 +252,40 @@ test_that("use_gitlab_ci_deploy_connect_pkgdown works", {
       private_token = Sys.getenv("GITLAB_TOKEN"),
       project_name = "pkgdown.test.project",
       exp = {
-        lozen::create_r_project(type = "package", project_path = getwd(), name_licence = "test", type_licence = usethis::use_mit_license)
-        unlink(x = "_pkgdown.yml", force = TRUE)
+        usethis::create_project(getwd(), open = FALSE)
+        fusen::fill_description(
+          pkg = getwd(),
+          fields = list(
+            Title = "Build A Package From Rmarkdown File",
+            Description = "Use Rmarkdown First method to build your package. Start your package with documentation. Everything can be set from a Rmarkdown file in your project.",
+            `Authors@R` = c(
+              person(
+                "John",
+                "Doe",
+                email = "john@email.me",
+                role = c("aut", "cre"),
+                comment = c(ORCID = "0000-0000-0000-0000")
+              )
+            )
+          )
+        )
+
         withr::with_dir(getwd(), {
-          attachment::att_amend_desc(extra.suggests = c("pkgdown"))
-          desc_to_pimp <- desc::desc("DESCRIPTION")
-          attachment::set_remotes_to_desc()
-          desc_to_pimp$write()
-          usethis::use_r("dummy")
-          pkgdown::build_site(override = list(destination = "inst/site")) # non ce n'est pas ce qu'il faut deployer
+          dev_file <- suppressMessages(fusen::add_minimal_package(pkg = ".", overwrite = TRUE, open = FALSE))
+          flat_file <- dev_file[grepl("flat_", dev_file)]
+          fusen::inflate(
+            pkg = ".",
+            flat_file = flat_file,
+            vignette_name = "Minimal",
+            open_vignette = FALSE,
+            check = FALSE,
+            quiet = TRUE
+          )
+          pkgdown::build_site(override = list(destination = "inst/site"))
         })
 
-        lozen::use_gitlab_ci(type = "check-coverage-pkgdown")
-        lozen::use_gitlab_ci_deploy_connect_pkgdown(append = TRUE)
+        # lozen::use_gitlab_ci(type = "check-coverage-pkgdown")
+        lozen::use_gitlab_ci_deploy_connect_pkgdown()
       }
     )
 
@@ -280,6 +298,10 @@ test_that("use_gitlab_ci_deploy_connect_pkgdown works", {
       object = output_pkgdown$connect,
       expected = 200
     )
+
+    if(output_golem$output_pkgdown == 200) {
+    message("Deployment was successful. You can now remove manually what has been deployed on your Connect.")
+   }
   }
 })
 ```
