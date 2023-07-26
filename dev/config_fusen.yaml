@@ -5,7 +5,6 @@ flat_build_pkgdown_with_reports.Rmd:
   tests: tests/testthat/test-build_pkgdown_with_reports.R
   vignettes: vignettes/ad-build-a-pkgdown-with-reports.Rmd
   inflate:
-    pkg: lozen
     flat_file: dev/flat_build_pkgdown_with_reports.Rmd
     vignette_name: ad - Build a pkgdown with reports
     open_vignette: false

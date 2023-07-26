@@ -15,8 +15,6 @@
 #' Connect API. The token must be granted admin access.
 #' @param connect_user A character string. User name on Connect.
 #' @param connect_name A character string. Name of the Connect server (default "connect")
-#' @param github_pat A character string. The token to gain access to the
-#' github api.
 #' @param project_name A character string. The name of the project to be created.
 #' @param branch_focus_for_ci Name of the branch to be targeted for the CI pipeline.
 #' @param exp A valid R expression initializing a project and a gitlab ci
@@ -65,9 +63,6 @@ with_gitlab_project <- function(
     "CONNECT_NAME",
     unset = "connect"
   ),
-  github_pat = Sys.getenv(
-    "GITHUB_PAT"
-  ),
   project_name = "lozen.test.project",
   branch_focus_for_ci = "main",
   exp
@@ -80,8 +75,6 @@ with_gitlab_project <- function(
   stopifnot("connect_url is unset" = connect_url != "")
   stopifnot("connect_user is unset" = connect_user != "")
   stopifnot("connect_name is unset" = connect_name != "")
-  stopifnot("github_pat is unset" = github_pat != "")
-
 
   # Set the connection and create a new project
   set_gitlab_connection(
@@ -97,23 +90,13 @@ with_gitlab_project <- function(
 
   # Create env var into gitlab project
 
-  lapply(c("CONNECT_TOKEN", "CONNECT_URL", "CONNECT_USER", "CONNECT_NAME", "GITHUB_PAT"), function(x) {
+  lapply(c("CONNECT_TOKEN", "CONNECT_URL", "CONNECT_USER", "CONNECT_NAME"), function(x) {
     get_or_create_var_env_gitlab(
       project_id,
       x,
       Sys.getenv(x)
     )
   })
-
-  lapply(c("APP_NAME"), function(x) {
-    get_or_create_var_env_gitlab(
-      project_id,
-      x,
-      project_name
-    )
-  })
-
-
 
   on.exit(
     {
