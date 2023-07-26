@@ -2,7 +2,7 @@
 title: "ae - Deploy a {golem} app on Posit Connect and its pkgdown on Gitlab Pages through GitLab CI/CD"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{bh-deploy-on-connect-through-gitlab-ci}
+  %\VignetteIndexEntry{ae-deploy-a-shiny-app-on-connect-through-gitlab-ci}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---

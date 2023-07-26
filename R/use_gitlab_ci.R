@@ -7,6 +7,7 @@
 #' @param image Docker image used as basis. See \url{https://github.com/rocker-org/rocker}
 #' @param project_path Path of the project to add CI in.
 #' @inheritParams gitlabr::use_gitlab_ci
+#' @importFrom cli cli_alert_info
 #'
 #' @details See \code{\link[gitlabr]{use_gitlab_ci}}
 #'
@@ -27,9 +28,36 @@ use_gitlab_ci <- function(
   image = "rocker/verse",
   repo_name = "https://packagemanager.rstudio.com/all/__linux__/focal/latest",
   project_path = ".",
-  type = "check-coverage-pkgdown"
+  type = "check-coverage-pkgdown",
+  overwrite = TRUE
     ) {
   ci_file <- file.path(project_path, ".gitlab-ci.yml")
+
+  if (
+    !file.exists(ci_file)
+  ) {
+    cli_alert_info("There is no {ci_file} in your project, a new one will be created.")
+  } else {
+    if (isFALSE(overwrite)) {
+      overwrite <- askYesNo(
+        glue("The file {ci_file} already exists. Do you want to overwrite it ?"),
+        default = FALSE
+      )
+    } else {
+      cli_alert_info("Overwriting {ci_file}")
+      overwrite <- TRUE
+    }
+  }
+
+
+  # Stop if file exist and append not permitted
+  if (
+    file.exists(ci_file) &&
+      !overwrite
+  ) {
+    stop(glue("The file {ci_file} already exists. Please remove it or use the argument overwrite = TRUE"))
+  }
+
   gitlabr::use_gitlab_ci(
     image = image,
     repo_name = repo_name,

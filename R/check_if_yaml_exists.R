@@ -9,6 +9,8 @@
 #' @param dir directory to scan
 #' @param file_name filename to use .gitlab-ci.yml
 #' @param append boolean do we allow to append stage to existing ci file. TRUE by default
+#' @importFrom cli cli_alert_info
+#' @importFrom utils askYesNo
 #'
 #' @export
 #' @examples
@@ -21,15 +23,21 @@ check_if_yaml_exists <- function(
   path_to_yaml <- file.path(dir, file_name)
 
   if (
-    file.exists(path_to_yaml) &&
-      !append
+    !file.exists(path_to_yaml)
   ) {
-    append <- utils::askYesNo(
-      glue("The file {path_to_yaml} already exists. Do you want to append the  the Connect CI to existing CI stage(s) ?"),
-      default = FALSE
-    )
+    cli_alert_info("There is no {path_to_yaml} in your project, a new one will be created.")
   } else {
-    append <- TRUE
+    if (
+      isFALSE(append)
+    ) {
+      append <- askYesNo(
+        glue("The file {path_to_yaml} already exists. Do you want to append the Connect CI to existing CI stage(s) ?"),
+        default = FALSE
+      )
+    } else {
+      cli_alert_info("Appending new stages in {path_to_yaml}")
+      append <- TRUE
+    }
   }
 
 

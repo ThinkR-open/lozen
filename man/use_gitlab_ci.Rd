@@ -8,7 +8,8 @@ use_gitlab_ci(
   image = "rocker/verse",
   repo_name = "https://packagemanager.rstudio.com/all/__linux__/focal/latest",
   project_path = ".",
-  type = "check-coverage-pkgdown"
+  type = "check-coverage-pkgdown",
+  overwrite = TRUE
 )
 }
 \arguments{
@@ -19,6 +20,8 @@ use_gitlab_ci(
 \item{project_path}{Path of the project to add CI in.}
 
 \item{type}{type of the CI template to use}
+
+\item{overwrite}{whether to overwrite existing GitLab CI yml file}
 }
 \description{
 Set gitlab continuous integration

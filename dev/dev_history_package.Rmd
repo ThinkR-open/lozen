@@ -12,7 +12,7 @@ editor_options:
 knitr::opts_chunk$set(
   echo = TRUE,
   eval = FALSE
-  )
+)
 ```
 
 In this document, you will find the useful steps/commands to start the development of a package (structure, documentation, ...)
@@ -53,10 +53,12 @@ usethis::use_testthat()
 
 ```{r}
 # _CI (cf {gitlabr} templates) ----
-lozen::use_gitlab_ci(image = "rocker/verse",
-                              gitlab_url = Sys.getenv("GITLAB_URL",unset = "https://gitlab.com"),
-                              repo_name = "https://packagemanager.rstudio.com/all/__linux__/focal/latest",
-                              type = "check-coverage-pkgdown")
+lozen::use_gitlab_ci(
+  image = "rocker/verse",
+  gitlab_url = Sys.getenv("GITLAB_URL", unset = "https://gitlab.com"),
+  repo_name = "https://packagemanager.rstudio.com/all/__linux__/focal/latest",
+  type = "check-coverage-pkgdown"
+)
 ```
 
 ## Add general information/documentation about the package
@@ -103,12 +105,16 @@ papillon::generate_readme_rmd()
 papillon::generate_readme_rmd(parts = "description")
 
 # _Badges GitLab
-usethis::use_badge(badge_name = "pipeline status",
-                    href = "https://gitlab.com/<group>/<project>/-/commits/main",
-                    src = "https://gitlab.com/<group>/<project>/badges/main/pipeline.svg")
-usethis::use_badge(badge_name = "coverage report",
-                   href = "http://<group>.pages.gitlab.com/<project>/coverage.html",
-                    src = "https://gitlab.com/<group>/<project>/badges/main/coverage.svg")
+usethis::use_badge(
+  badge_name = "pipeline status",
+  href = "https://gitlab.com/<group>/<project>/-/commits/main",
+  src = "https://gitlab.com/<group>/<project>/badges/main/pipeline.svg"
+)
+usethis::use_badge(
+  badge_name = "coverage report",
+  href = "http://<group>.pages.gitlab.com/<project>/coverage.html",
+  src = "https://gitlab.com/<group>/<project>/badges/main/coverage.svg"
+)
 ```
 
 ### NEWS
@@ -138,8 +144,10 @@ usethis::use_package_doc()
 ### Add a css for the vignettes
 
 ```{r}
-file.copy(system.file("templates/html/header_hide.html", package = "lozen"),
-          "vignettes")
+file.copy(
+  system.file("templates/html/header_hide.html", package = "lozen"),
+  "vignettes"
+)
 lozen::add_thinkr_css(path = "../vignettes/")
 ```
 
@@ -168,54 +176,30 @@ stringi::stri_trans_general("é", "hex")
 Be sure to inflate all flat files before to update the documentation and run the check.
 
 ```{r}
-library(magrittr)
-style_and_inflate_a_given_flat <- function(name_flat_rmd) {
-
-  styler::style_file(path = file.path("dev", name_flat_rmd))
-  
-  flat_in_line <- readLines(file.path("dev", name_flat_rmd))
-
-  start_inflate <- which(stringr::str_detect(flat_in_line, "fusen::inflate\\("))
-  
-  if (isTRUE(any(stringr::str_detect(flat_in_line, "rstudioapi::navigateToFile"))))  {
-    end_inflate <- which(stringr::str_detect(flat_in_line, "rstudioapi::navigateToFile")) - 1
-  } else {
-    end_inflate <- length(flat_in_line) - 1
-  }
-  
-  if (end_inflate < start_inflate) {
-    message(glue::glue("inflate_a_given_flat impossible pour le fichier {name_flat_rmd} car il y a surement un rstudioapi::navigateToFile avant le inflate"))
-  }
-  
-  inflate_code <- flat_in_line[start_inflate : end_inflate] %>% stringr::str_c(collapse = "")
-  
-  inflate_code <- stringr::str_replace_all(inflate_code, pattern = "check = TRUE", replacement = "check = FALSE")
-
-  eval(parse(text = inflate_code))
-
-  return(message(glue::glue("{name_flat_rmd} inflate ok")))
-
-}
-vec_flat_files <- list.files("dev")[list.files("dev") %>% stringr::str_detect("^flat")]
-vec_flat_files <- vec_flat_files[!stringr::str_detect(vec_flat_files, "flat_userproject")]
-vec_flat_files %>%
-  purrr::walk(style_and_inflate_a_given_flat)
-# pense a lancer le chunk du dessous aussi 
+# voir fusen::inflate_all()
 ```
 
 ## Update the documentation with `{attachment}`
 
 ```{r}
-# install.packages("attachment", 
+# install.packages("attachment",
 #                  repos = "https://thinkr-open.r-universe.dev/")
 
-suggests <- c("bookdown", "renv", "remotes",
-                     "covr", "gitdown", "testdown",
-                     "thinkrtemplate",
-                     "devtools",
-                     "git2r",
-                     "DT", "htmltools", "markdown",
-              "fusen")
+suggests <- c(
+  "bookdown",
+  "renv",
+  "remotes",
+  "covr",
+  "gitdown",
+  "testdown",
+  "thinkrtemplate",
+  "devtools",
+  "git2r",
+  "DT",
+  "htmltools",
+  "markdown",
+  "fusen"
+)
 attachment::att_amend_desc(
   pkg_ignore = suggests,
   extra.suggests = suggests
@@ -232,8 +216,10 @@ desc::desc_bump_version(which = "dev")
 # devtools::check()
 # devtools::check(args = c("--no-examples", "--no-vignettes", "--no-tests"),
 #                 build_args = "--no-build-vignettes")
-devtools::check(args = c("--no-vignettes"),
-                 build_args = "--no-build-vignettes")
+devtools::check(
+  args = c("--no-vignettes"),
+  build_args = "--no-build-vignettes"
+)
 check_n_covr <- function() {
   res <- devtools::check(args = c("--no-tests"))
   print(res)
