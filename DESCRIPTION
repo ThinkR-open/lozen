@@ -1,6 +1,6 @@
 Package: lozen
 Title: Management tools for missions
-Version: 1.1.0.9007
+Version: 1.1.0.9008
 Authors@R: c(
     person("Sébastien", "Rochette", , "sebastien@thinkr.fr", role = c("aut", "cre"),
            comment = c(ORCID = "0000-0002-1565-9313")),

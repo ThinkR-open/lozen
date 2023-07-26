@@ -176,7 +176,7 @@ flat_init_gitlab_ci.Rmd:
     vignette_name: be - Initilialise GitLab CI
     open_vignette: false
     check: false
-    document: true
+    document: false
     overwrite: 'yes'
 flat_manage_git.Rmd:
   path: dev/flat_manage_git.Rmd

@@ -2,7 +2,7 @@
 title: "af - Deploy a pkgdown on Posit Connect and Gitlab Pages through GitLab CI/CD"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{bh-deploy-on-connect-through-gitlab-ci}
+  %\VignetteIndexEntry{af-deploy-a-pkgdown-on-connect-through-gitlab-ci}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
