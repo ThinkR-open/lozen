@@ -206,7 +206,7 @@ attachment::att_amend_desc(
 )
 attachment::set_remotes_to_desc()
 
-desc::desc_bump_version(which = "dev")
+# desc::desc_bump_version(which = "dev")
 ```
 
 ## Check the package
