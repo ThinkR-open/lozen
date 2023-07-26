@@ -68,7 +68,7 @@ Suggests:
     testthat (>= 3.0.0),
     thinkrtemplate
 VignetteBuilder: knitr
-Remotes: 
+Remotes:  
     ThinkR-open/gitlabr,
     ThinkR-open/testdown,
     ThinkR-open/thinkrtemplate
