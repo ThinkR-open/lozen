@@ -82,7 +82,6 @@ use_gitlab_ci_deploy_connect <- function(
 #'   use_gitlab_ci(type = "check-coverage-pkgdown")
 #'   use_gitlab_ci_deploy_connect_pkgdown()
 #' })
-
 use_gitlab_ci_deploy_connect_pkgdown <- function(...) {
   use_gitlab_ci_deploy_connect(
     stage_name = "deploy_connect_pkgdown",
@@ -102,7 +101,6 @@ use_gitlab_ci_deploy_connect_pkgdown <- function(...) {
 #'   use_gitlab_ci(type = "check-coverage-pkgdown")
 #'   use_gitlab_ci_deploy_connect_shiny()
 #' })
-
 use_gitlab_ci_deploy_connect_shiny <- function(...) {
   if (!file.exists("app.R")) {
     warning(

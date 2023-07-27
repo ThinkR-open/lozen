@@ -47,22 +47,19 @@ flat_create_r_project_skeleton.Rmd:
   - R/local_project.R
   - R/add_kit_package.R
   - R/add_kit_project.R
-  - R/create_book_project.R
   - R/create_r_project.R
   - R/use_dev_history.R
   tests:
   - tests/testthat/test-use_dev_history.R
   - tests/testthat/test-create_r_project.R
-  - tests/testthat/test-create_book_project.R
   - tests/testthat/test-add_kit_project.R
   - tests/testthat/test-add_kit_package.R
   - tests/testthat/test-add_build_ignore.R
   - tests/testthat/test-local_project.R
-  vignettes: vignettes/ba-create-the-skeleton-of-the-r-project--package-app-book-.Rmd
+  vignettes: vignettes/ac-create-the-skeleton-of-the-r-project--package-app-book-.Rmd
   inflate:
-    pkg: lozen
     flat_file: dev/flat_create_r_project_skeleton.Rmd
-    vignette_name: ba - Create the skeleton of the R project (package, app, book)
+    vignette_name: ac - Create the skeleton of the R project (package, app, book)
     open_vignette: false
     check: false
     document: false
@@ -103,10 +100,10 @@ flat_create_weekly.Rmd:
   - tests/testthat/test-gl_create_weekly.R
   - tests/testthat/test-visualise_commits.R
   - tests/testthat/test-gl_get_milestones_progress.R
-  vignettes: vignettes/ac-create-weekly-with-github-or-gitlab.Rmd
+  vignettes: []
   inflate:
     flat_file: dev/flat_create_weekly.Rmd
-    vignette_name: ac - Create Weekly with GitHub or GitLab
+    vignette_name: .na
     open_vignette: false
     check: false
     document: false
@@ -191,7 +188,14 @@ flat_manage_git.Rmd:
   - tests/testthat/test-add_git_templates.R
   - tests/testthat/test-push_all_to_branch.R
   - tests/testthat/test-create_production.R
-  vignettes: vignettes/bb-manage-git-tools--branches-commits-etc--.Rmd
+  vignettes: []
+  inflate:
+    flat_file: dev/flat_manage_git.Rmd
+    vignette_name: .na
+    open_vignette: false
+    check: false
+    document: false
+    overwrite: 'yes'
 flat_manage_github_projects.Rmd:
   path: dev/flat_manage_github_projects.Rmd
   state: active

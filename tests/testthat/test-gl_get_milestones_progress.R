@@ -5,33 +5,35 @@ skip_on_ci()
 
 test_that("gl_get_milestones_progress works", {
   expect_true(inherits(gl_get_milestones_progress, "function"))
-  
+
   gitlab_url <-
     Sys.getenv("GITLAB_URL", unset = "https://gitlab.com")
-  
+
   the_token <- Sys.getenv("GITLAB_TOKEN")
-  
+
   # GitLab con
-  my_gitlab <- gl_connection(gitlab_url = gitlab_url,
-                             private_token = the_token)
-  
+  my_gitlab <- gl_connection(
+    gitlab_url = gitlab_url,
+    private_token = the_token
+  )
+
   # Set the connection for the session
   set_gitlab_connection(my_gitlab)
-  
+
   # Get user infos
   user_info <- gitlab(req = paste0("user"), verb = httr::GET)
   user_name <- user_info %>% pull(username)
-  
+
   project_name <- "lozenexemplemilestones"
-  
+
   # Get user namespace (= group_id)
   # namespace_id <- gitlabr::gitlab(req = "namespaces", search = user_name)[["id"]]
   group_url <- user_info[["web_url"]]
-  
+
   # create_group_project ----
   project_id <-
     create_group_project(project_name, namespace_id = NULL)
-  
+
   expect_message(
     progress_milestones_not_ok <- gl_get_milestones_progress(
       project_id = project_id,
@@ -39,30 +41,37 @@ test_that("gl_get_milestones_progress works", {
     ),
     "No milestones recorded for this repository"
   )
-  
+
   # create a milestone
   url <- paste0("projects/", project_id, "/milestones")
-  
-  gitlab(url,
-         title = "milestone_test",
-         verb = httr::POST)
-  
+
+  gitlab(
+    url,
+    title = "milestone_test",
+    verb = httr::POST
+  )
+
   # add an issue in this milestone
-  
-  milestones_list <-   gitlab(url,
-                              verb = httr::GET)
+
+  milestones_list <- gitlab(
+    url,
+    verb = httr::GET
+  )
   gitlab(
     paste0("projects/", project_id, "/issues"),
     title = "milestone_issue",
     verb = httr::POST,
     milestone_id = milestones_list$id
   )
-  
-  progress_milestones_test <- gl_get_milestones_progress(project_id = project_id,
-                                                         private_token = Sys.getenv("GITLAB_TOKEN"))
+
+  progress_milestones_test <- gl_get_milestones_progress(
+    project_id = project_id,
+    private_token = Sys.getenv("GITLAB_TOKEN")
+  )
   expect_true(inherits(progress_milestones_test, c("gg", "ggplot")))
-  
-    gitlabr::gitlab(req = paste0("projects/", project_id),
-                  verb = httr::DELETE)
-  
+
+  gitlabr::gitlab(
+    req = paste0("projects/", project_id),
+    verb = httr::DELETE
+  )
 })

@@ -286,7 +286,7 @@ test_that("add_wikis_github works", {
 # Execute in the console directly
 fusen::inflate(
   flat_file = "dev/flat_manage_github_projects.Rmd",
-  vignette_name = "bd - Manage GitHub Projects",
+  vignette_name = NA,
   overwrite = TRUE,
   check = FALSE,
   document = FALSE,

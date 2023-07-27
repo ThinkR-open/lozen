@@ -37,31 +37,33 @@
 #'     Sys.getenv("CONNECT_TOKEN") != ""
 #' ) {
 #'   project_name <- "lozen-example-bookdown"
-#' 
+#'
 #'   tmpdir <- tempfile(pattern = "book-")
 #'   dir.create(tmpdir)
 #'   project_path <- file.path(tmpdir, project_name)
-#' 
+#'
 #'   bookdown::create_bs4_book(path = project_path)
-#' 
+#'
 #'   bookdown::render_book(input = project_path)
-#' 
+#'
 #'   deploy_connect_bookdown(
 #'     app_name = project_name,
 #'     deploy_dir = file.path(project_path, "_book")
 #'   )
 #' }
 #' }
-deploy_connect_bookdown <- function(connect_url = Sys.getenv("CONNECT_URL"),
-                                    connect_user = Sys.getenv("CONNECT_USER"),
-                                    connect_api_token = Sys.getenv("CONNECT_TOKEN"),
-                                    app_name = NULL,
-                                    deploy_dir = file.path(getwd(), "_book"),
-                                    connect_name = Sys.getenv("CONNECT_NAME", unset = "connect"),
-                                    file_to_ignore_regex = ".Rprofile$|^.Renviron$|renv/|rstudio_.*/|deliverables/|dev/|data-raw/|dockerfiles/",
-                                    forceUpdate = FALSE,
-                                    lint = FALSE,
-                                    ...) {
+deploy_connect_bookdown <- function(
+  connect_url = Sys.getenv("CONNECT_URL"),
+  connect_user = Sys.getenv("CONNECT_USER"),
+  connect_api_token = Sys.getenv("CONNECT_TOKEN"),
+  app_name = NULL,
+  deploy_dir = file.path(getwd(), "_book"),
+  connect_name = Sys.getenv("CONNECT_NAME", unset = "connect"),
+  file_to_ignore_regex = ".Rprofile$|^.Renviron$|renv/|rstudio_.*/|deliverables/|dev/|data-raw/|dockerfiles/",
+  forceUpdate = FALSE,
+  lint = FALSE,
+  ...
+    ) {
   cli::cat_bullet("Deploying the app on Connect")
   deploy_connect(
     connect_url = connect_url,

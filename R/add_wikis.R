@@ -21,16 +21,17 @@
 #' @examples
 #' \dontrun{
 #' add_wikis(
-#'   project_id = project_id, 
-#'   project_name = project_name, 
-#'   group_url = group_url, 
+#'   project_id = project_id,
+#'   project_name = project_name,
+#'   group_url = group_url,
 #'   group = basename(group_url)
 #' )
 #' }
 add_wikis <- function(project_id, project_name, group_url, group = basename(group_url), type = c("home", "cr", "keys")) {
-
-  existing_wiki <- gitlab(req = paste0("projects/", project_id, "/wikis"),
-                          verb = httr::GET)
+  existing_wiki <- gitlab(
+    req = paste0("projects/", project_id, "/wikis"),
+    verb = httr::GET
+  )
 
   type <- match.arg(type, several.ok = TRUE)
 
@@ -45,11 +46,13 @@ add_wikis <- function(project_id, project_name, group_url, group = basename(grou
     wiki <- gsub(pattern = "\\{url\\}", replacement = group_url, x = wiki)
 
     # Home
-    wiki_home <- gitlab(req = paste0("projects/", project_id, "/wikis"),
-                        verb = httr::POST,
-                        content = paste(wiki, collapse = "\n"),
-                        title = "home",
-                        format = "markdown")
+    wiki_home <- gitlab(
+      req = paste0("projects/", project_id, "/wikis"),
+      verb = httr::POST,
+      content = paste(wiki, collapse = "\n"),
+      title = "home",
+      format = "markdown"
+    )
 
     message("Wiki home page added")
   }
@@ -60,11 +63,13 @@ add_wikis <- function(project_id, project_name, group_url, group = basename(grou
     # Changer {mon_projet}
     wiki2 <- gsub(pattern = "\\{date\\}", replacement = Sys.Date(), x = wiki2)
 
-    wiki_cr <- gitlab(req = paste0("projects/", project_id, "/wikis"),
-                      verb = httr::POST,
-                      content = paste(wiki2, collapse = "\n"),
-                      title = "Comptes-rendus",
-                      format = "markdown")
+    wiki_cr <- gitlab(
+      req = paste0("projects/", project_id, "/wikis"),
+      verb = httr::POST,
+      content = paste(wiki2, collapse = "\n"),
+      title = "Comptes-rendus",
+      format = "markdown"
+    )
 
     message("Wiki Comptes-rendus page added")
   }
@@ -75,16 +80,19 @@ add_wikis <- function(project_id, project_name, group_url, group = basename(grou
     # Changer {mon_projet}
     wiki3 <- gsub(pattern = "\\{date\\}", replacement = Sys.Date(), x = wiki3)
 
-    wiki_keys <- gitlab(req = paste0("projects/", project_id, "/wikis"),
-                      verb = httr::POST,
-                      content = paste(wiki3, collapse = "\n"),
-                      title = "Key dates",
-                      format = "markdown")
+    wiki_keys <- gitlab(
+      req = paste0("projects/", project_id, "/wikis"),
+      verb = httr::POST,
+      content = paste(wiki3, collapse = "\n"),
+      title = "Key dates",
+      format = "markdown"
+    )
 
     message("Wiki \'Key dates\' page added")
   }
 
-  gitlab(req = paste0("projects/", project_id, "/wikis"),
-         verb = httr::GET)
+  gitlab(
+    req = paste0("projects/", project_id, "/wikis"),
+    verb = httr::GET
+  )
 }
-

@@ -16,13 +16,17 @@
 #'   project_id = project_id
 #' )
 #' }
-modify_autoclose_and_coverage <- function(project_id, autoclose = FALSE,
-                                          build_coverage_regex = "Coverage: \\d+\\.\\d+") {
-  protect_prod <- gitlab(req = paste0("projects/", project_id),
-                         verb = httr::PUT,
-                         autoclose_referenced_issues = autoclose,
-                         build_coverage_regex = build_coverage_regex
+modify_autoclose_and_coverage <- function(
+  project_id,
+  autoclose = FALSE,
+  build_coverage_regex = "Coverage: \\d+\\.\\d+"
+    ) {
+  protect_prod <- gitlab(
+    req = paste0("projects/", project_id),
+    verb = httr::PUT,
+    autoclose_referenced_issues = autoclose,
+    build_coverage_regex = build_coverage_regex
   )
-  message("Issues are set to", ifelse(autoclose, " ", " not ") ,"auto-close when merged in \'main\'")
+  message("Issues are set to", ifelse(autoclose, " ", " not "), "auto-close when merged in \'main\'")
   message("build_coverage_regex is set to: ", build_coverage_regex)
 }

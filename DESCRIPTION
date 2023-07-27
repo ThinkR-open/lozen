@@ -1,6 +1,6 @@
 Package: lozen
 Title: Management tools for missions
-Version: 1.1.0.9008
+Version: 1.1.0.9009
 Authors@R: c(
     person("Sébastien", "Rochette", , "sebastien@thinkr.fr", role = c("aut", "cre"),
            comment = c(ORCID = "0000-0002-1565-9313")),
@@ -69,7 +69,7 @@ Suggests:
     thinkrtemplate
 VignetteBuilder: 
     knitr
-Remotes:  
+Remotes: 
     ThinkR-open/gitlabr,
     ThinkR-open/testdown,
     ThinkR-open/thinkrtemplate

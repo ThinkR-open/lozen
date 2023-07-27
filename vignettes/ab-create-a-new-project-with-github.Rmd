@@ -22,6 +22,8 @@ library(lozen)
 
 *This flat file is only used to generate a vignette that explains how to create a new projet with GitHub*. If you need to modify the functions or the unit tests, please go to the dedicated flat file. 
 
+**Please note that Github-related functions are still a WIP**
+
 
 # Packages
 
@@ -137,7 +139,8 @@ create_r_project(
 
 
 ```{r eval = FALSE}
-add_kit_project(project_path,
+add_kit_project(
+  project_path,
   name_licence = "Test",
   type_licence = usethis::use_mit_license
 )
@@ -149,11 +152,14 @@ add_kit_package(project_path)
 ```{r eval = FALSE}
 # The file to create weekly
 file.copy(
-  from = system.file("doc", "ac-create-weekly-with-github-or-gitlab.Rmd",
+  from = system.file(
+    "doc",
+    "ac-create-weekly-with-github-or-gitlab.Rmd",
     package = "lozen"
   ),
   to = file.path(
-    project_path, "dev",
+    project_path,
+    "dev",
     "lead_dev_create_weekly.Rmd"
   )
 )

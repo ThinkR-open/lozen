@@ -578,7 +578,7 @@ test_that("deploy_connect_bookdown works", {
 # Execute in the console directly
 fusen::inflate(
   flat_file = "dev/flat_deploy_connect.Rmd",
-  vignette_name = "bg - Deploy on Connect",
+  vignette_name = NA,
   overwrite = TRUE,
   check = FALSE,
   document = FALSE,

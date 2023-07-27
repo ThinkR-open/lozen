@@ -1611,7 +1611,7 @@ withr::with_tempdir({
 # Execute in the console directly
 fusen::inflate(
   flat_file = "dev/flat_create_special_issues.Rmd",
-  vignette_name = "bf - Create special issues",
+  vignette_name = NA,
   overwrite = TRUE,
   check = FALSE,
   document = FALSE,

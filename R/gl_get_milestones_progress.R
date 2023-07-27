@@ -23,11 +23,13 @@
 #'   private_token = Sys.getenv("GITLAB_TOKEN")
 #' )
 #' }
-gl_get_milestones_progress <- function(project_id,
-                                       language = c("fr", "en"),
-                                       gitlab_url = Sys.getenv("GITLAB_URL", unset = "https://gitlab.com"),
-                                       private_token = Sys.getenv("GITLAB_TOKEN"),
-                                       color = "#f15522") {
+gl_get_milestones_progress <- function(
+  project_id,
+  language = c("fr", "en"),
+  gitlab_url = Sys.getenv("GITLAB_URL", unset = "https://gitlab.com"),
+  private_token = Sys.getenv("GITLAB_TOKEN"),
+  color = "#f15522"
+    ) {
   if (private_token == "") {
     stop("Please specify your private_token. This may be an environment variable named GITLAB_TOKEN")
   }
@@ -42,7 +44,8 @@ gl_get_milestones_progress <- function(project_id,
   set_gitlab_connection(my_gitlab)
 
   # Language
-  language <- match.arg(language,
+  language <- match.arg(
+    language,
     several.ok = FALSE
   )
 
@@ -111,10 +114,14 @@ gl_get_milestones_progress <- function(project_id,
   # Plot
   plot_milestones <- progress_milestone %>%
     ggplot() +
-    geom_col(aes(x = max_progress, y = milestone_name),
-      col = color, fill = NA, linewidth = 0.10
+    geom_col(
+      aes(x = max_progress, y = milestone_name),
+      col = color,
+      fill = NA,
+      linewidth = 0.10
     ) +
-    geom_col(aes(x = progress, y = milestone_name),
+    geom_col(
+      aes(x = progress, y = milestone_name),
       fill = color
     ) +
     scale_x_continuous(

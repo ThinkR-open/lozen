@@ -141,8 +141,8 @@ test_that("use_gitlab_ci_deploy_connect_pkgdown works", {
       expected = 200
     )
 
-    if(output_golem$output_pkgdown == 200) {
-    message("Deployment was successful. You can now remove manually what has been deployed on your Connect.")
-   }
+    if (output_golem$output_pkgdown == 200) {
+      message("Deployment was successful. You can now remove manually what has been deployed on your Connect.")
+    }
   }
 })

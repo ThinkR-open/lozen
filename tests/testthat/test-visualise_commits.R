@@ -9,8 +9,10 @@ gitlab_url <-
 the_token <- Sys.getenv("GITLAB_TOKEN")
 
 # GitLab con
-my_gitlab <- gl_connection(gitlab_url = gitlab_url,
-                           private_token = the_token)
+my_gitlab <- gl_connection(
+  gitlab_url = gitlab_url,
+  private_token = the_token
+)
 
 # Set the connection for the session
 set_gitlab_connection(my_gitlab)
@@ -31,13 +33,15 @@ project_id <-
 
 withr::with_tempdir({
   tempdir <-
-    clone_locally(full_url = paste0(group_url, "/", project_name),
-                  open = FALSE)
-  
+    clone_locally(
+      full_url = paste0(group_url, "/", project_name),
+      open = FALSE
+    )
+
   setwd(tempdir)
   file_to_add <- tempfile(tmpdir = tempdir)
   writeLines(letters[1:6], file_to_add)
-  
+
   gert::git_config_set("user.name", "Jerry")
   gert::git_config_set("user.email", "jerry@gmail.com")
   gert::git_add(".")
@@ -47,10 +51,11 @@ withr::with_tempdir({
 
 
 test_that("visualise_commits works", {
-
   on.exit({
-   gitlabr::gitlab(req = paste0("projects/", project_id),
-                  verb = httr::DELETE)
+    gitlabr::gitlab(
+      req = paste0("projects/", project_id),
+      verb = httr::DELETE
+    )
   })
 
   expect_true(inherits(visualise_commits, "function"))
@@ -63,22 +68,20 @@ test_that("visualise_commits works", {
       date_max = lubridate::today(),
       private_token = Sys.getenv("GITLAB_TOKEN")
     )
-  
+
   expect_true(inherits(repart_commit_test, c("gg", "ggplot")))
-  
-  
+
+
   expect_message(
     repart_commit_not_ok <- visualise_commits(
       project_id = project_id,
       gitlab_url = Sys.getenv("GITLAB_URL", unset = "https://gitlab.com"),
-      date_min = yesterday-100,
-      date_max = lubridate::today()-100,
+      date_min = yesterday - 100,
+      date_max = lubridate::today() - 100,
       private_token = Sys.getenv("GITLAB_TOKEN")
     ),
     "There are no commits for this period in the repository"
   )
-  
+
   expect_null(repart_commit_not_ok)
-  
-  
 })

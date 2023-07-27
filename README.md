@@ -141,26 +141,16 @@ Access to the pkgdown: <https://thinkr-open.github.io/lozen/>
   - `ab - Create a new project with GitHub`: Create a new R project for
     a mission - managed on GitHub, with everything needed (the R project
     skeleton, the init of git, the init of the project on GitLab, etc.)
-  - `ac - Create Weekly with GitHub or GitLab`: Generate a weekly/daily
+    (**WIP**)
+  - `ac - Create the skeleton of the R project (package, app, book)`:
+    Add the skeleton of a R product in your project
+  - `ad - Set up continuous integration and continuous deployment for
+    Gitlab CI/CD`: Set up the publication of your product
+  - `ae - Create Weekly with GitHub or GitLab`: Generate a weekly/daily
     for a mission
-  - `ad - Build a pkgdown with reports`: Build a pkgdown with coverage
+  - `af - Build a pkgdown with reports`: Build a pkgdown with coverage
     and test reports
-  - `ae - Deploy a {golem} app on Posit Connect and its pkgdown on
-    Gitlab Pages through GitLab CI/CD`: Publish your {golem}-related
-    work
-  - `af - Deploy a pkgdown on Posit Connect and Gitlab Pages through
-    GitLab CI/CD`: Publish the pkgdown of your R package on Gitlab Pages
-    and Posit Connect
-
-*Documentation dedicated to the team who participates to the
-develompment of {lozen}*
-
-  - `ba - Create the skeleton of the R project (package, app, book)`
-  - `bb - Manage git tools (branches, commits, etc.)`
-  - `bc - Manage GitLab projects`
-  - `bd - Manage GitHub Projects`
-  - `be - Initilialise GitLab CI`
-  - `bf - Create special issues`
-  - `bg - Deploy on Connect`
-  - `bi - Move from GitLab to GitHub`
-  - `cb - Tools miscellaneous`
+  - `ba - Manage forge board and wiki`: Create and manage your
+    communication tools on Gitlab
+  - `bb - Manage git tools (branches, commits, etc.)`: Manage your
+    repository on Gitlab
