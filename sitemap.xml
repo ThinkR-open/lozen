@@ -22,43 +22,22 @@
     <loc>/articles/ab-create-a-new-project-with-github.html</loc>
   </url>
   <url>
-    <loc>/articles/ac-create-weekly-with-github-or-gitlab.html</loc>
+    <loc>/articles/ac-create-the-skeleton-of-the-r-project--package-app-book-.html</loc>
   </url>
   <url>
-    <loc>/articles/ad-build-a-pkgdown-with-reports.html</loc>
+    <loc>/articles/ad-set-up-continuous-integration-and-deployment-through-gitlab-ci.html</loc>
   </url>
   <url>
-    <loc>/articles/ae-deploy-a-shiny-app-on-connect-through-gitlab-ci.html</loc>
+    <loc>/articles/ae-create-weekly-with-github-or-gitlab.html</loc>
   </url>
   <url>
-    <loc>/articles/af-deploy-a-pkgdown-on-connect-through-gitlab-ci.html</loc>
+    <loc>/articles/af-build-a-pkgdown-with-reports.html</loc>
   </url>
   <url>
-    <loc>/articles/ba-create-the-skeleton-of-the-r-project--package-app-book-.html</loc>
+    <loc>/articles/ba-manage-forge-board-wiki.html</loc>
   </url>
   <url>
     <loc>/articles/bb-manage-git-tools--branches-commits-etc--.html</loc>
-  </url>
-  <url>
-    <loc>/articles/bc-manage-gitlab-projects.html</loc>
-  </url>
-  <url>
-    <loc>/articles/bd-manage-github-projects.html</loc>
-  </url>
-  <url>
-    <loc>/articles/be-initilialise-gitlab-ci.html</loc>
-  </url>
-  <url>
-    <loc>/articles/bf-create-special-issues.html</loc>
-  </url>
-  <url>
-    <loc>/articles/bg-deploy-on-connect.html</loc>
-  </url>
-  <url>
-    <loc>/articles/bi-move-from-gitlab-to-github.html</loc>
-  </url>
-  <url>
-    <loc>/articles/cb-testthat-tools.html</loc>
   </url>
   <url>
     <loc>/articles/index.html</loc>

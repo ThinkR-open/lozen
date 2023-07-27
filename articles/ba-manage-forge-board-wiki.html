@@ -5,7 +5,7 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>bb - Manage git tools (branches, commits, etc.) • lozen</title>
+<title>ba - Manage forge board and wiki • lozen</title>
 <!-- favicons --><link rel="icon" type="image/png" sizes="16x16" href="../favicon-16x16.png">
 <link rel="icon" type="image/png" sizes="32x32" href="../favicon-32x32.png">
 <link rel="apple-touch-icon" type="image/png" sizes="180x180" href="../apple-touch-icon.png">
@@ -18,7 +18,7 @@
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.7.1/css/all.min.css" integrity="sha256-nAmazAk6vS34Xqo0BSrTb+abbtFlgsFK7NKSi6o7Y78=" crossorigin="anonymous">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.7.1/css/v4-shims.min.css" integrity="sha256-6qHlizsOWFskGlwVOKuns+D1nB6ssZrHQrNj1wGplHc=" crossorigin="anonymous">
 <!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/1.7.1/clipboard.min.js" integrity="sha384-cV+rhyOuRHc9Ub/91rihWcGmMmCXDeksTtCihMupQHSsi8GIIRDG0ThDc3HGQFJ3" crossorigin="anonymous"></script><!-- sticky kit --><script src="https://cdnjs.cloudflare.com/ajax/libs/sticky-kit/1.1.3/sticky-kit.min.js" integrity="sha256-c4Rlo1ZozqTPE2RLuvbusY3+SU1pQaJC0TjuhygMipw=" crossorigin="anonymous"></script><!-- pkgdown --><link href="../pkgdown.css" rel="stylesheet">
-<script src="../pkgdown.js"></script><meta property="og:title" content="bb - Manage git tools (branches, commits, etc.)">
+<script src="../pkgdown.js"></script><meta property="og:title" content="ba - Manage forge board and wiki">
 <meta property="og:description" content="lozen">
 <meta property="og:image" content="/logo.png">
 <meta name="twitter:card" content="summary">
@@ -127,12 +127,11 @@
       </header><div class="row">
   <div class="col-md-9 contents">
     <div class="page-header toc-ignore">
-      <h1 data-toc-skip>bb - Manage git tools (branches, commits,
-etc.)</h1>
+      <h1 data-toc-skip>ba - Manage forge board and wiki</h1>
             
       
       
-      <div class="hidden name"><code>bb-manage-git-tools--branches-commits-etc--.Rmd</code></div>
+      <div class="hidden name"><code>ba-manage-forge-board-wiki.Rmd</code></div>
 
     </div>
 
@@ -141,45 +140,84 @@ etc.)</h1>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">lozen</span><span class="op">)</span></span></code></pre></div>
 <div class="section level2">
-<h2 id="define-local-installation-and-clone">Define local installation and clone<a class="anchor" aria-label="anchor" href="#define-local-installation-and-clone"></a>
+<h2 id="add-labels">Add labels<a class="anchor" aria-label="anchor" href="#add-labels"></a>
 </h2>
-<p>This code will clone the GitLab project locally, in a temporary
-directory.</p>
+<p>This will add labels “Prêt”, “En cours”, etc. in your project.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">project_path</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/clone_locally.html">clone_locally</a></span><span class="op">(</span></span>
-<span>  project_name <span class="op">=</span> <span class="va">the_project</span><span class="op">[[</span><span class="st">"name"</span><span class="op">]</span><span class="op">]</span>,</span>
-<span>  group_url <span class="op">=</span> <span class="va">group_url</span>,</span>
-<span>  open <span class="op">=</span> <span class="cn">FALSE</span></span>
-<span><span class="op">)</span></span></code></pre></div>
-</div>
-<div class="section level2">
-<h2 id="push-to-server">Push to server<a class="anchor" aria-label="anchor" href="#push-to-server"></a>
-</h2>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/push_main.html">push_main</a></span><span class="op">(</span></span>
-<span>  project_path <span class="op">=</span> <span class="va">project_path</span></span>
-<span><span class="op">)</span></span></code></pre></div>
-</div>
-<div class="section level2">
-<h2 id="create-a-production-branch">Create a <em>production</em> branch<a class="anchor" aria-label="anchor" href="#create-a-production-branch"></a>
-</h2>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/create_production.html">create_production</a></span><span class="op">(</span></span>
-<span>  project_path <span class="op">=</span> <span class="va">project_path</span></span>
-<span><span class="op">)</span></span></code></pre></div>
-</div>
-<div class="section level2">
-<h2 id="protect-branches">Protect branches<a class="anchor" aria-label="anchor" href="#protect-branches"></a>
-</h2>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/protect_branches.html">protect_branches</a></span><span class="op">(</span></span>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/add_labels.html">add_labels</a></span><span class="op">(</span></span>
 <span>  project_id <span class="op">=</span> <span class="va">project_id</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level2">
+<h2 id="create-the-board">Create the board<a class="anchor" aria-label="anchor" href="#create-the-board"></a>
+</h2>
+<p>This code prepares the <em>board</em> for the <em>issues</em>: Issues
+&gt; Board &gt; Add List</p>
+<ul>
+<li>If the labels are duplicated, go to Issues &gt; Labels. Delete all
+the “project labels” by clicking on the 3 vertical dots, then Delete.
+The list of labels is now empty, but if you go back to the
+<em>board</em>, you will still have the global labels available, in one
+copy.</li>
+</ul>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/add_board.html">add_board</a></span><span class="op">(</span></span>
+<span>  project_id <span class="op">=</span> <span class="va">project_id</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+<div class="section level3">
+<h3 id="add-some-special-issues-in-the-board">Add some special issues in the board<a class="anchor" aria-label="anchor" href="#add-some-special-issues-in-the-board"></a>
+</h3>
+<div class="section level4">
+<h4 id="add-the-first-issue-for-the-client">Add the first issue for the client<a class="anchor" aria-label="anchor" href="#add-the-first-issue-for-the-client"></a>
+</h4>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/add_issue_clients.html">add_issue_clients</a></span><span class="op">(</span></span>
+<span>  project_id <span class="op">=</span> <span class="va">project_id</span>,</span>
+<span>  project_name <span class="op">=</span> <span class="va">project_name</span>,</span>
+<span>  group_url <span class="op">=</span> <span class="va">group_url</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level4">
+<h4 id="add-the-issue-that-will-be-shown-during-the-kick-off">Add the issue that will be shown during the kick-off<a class="anchor" aria-label="anchor" href="#add-the-issue-that-will-be-shown-during-the-kick-off"></a>
+</h4>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/add_issue_kickoff.html">add_issue_kickoff</a></span><span class="op">(</span></span>
+<span>  project_id <span class="op">=</span> <span class="va">project_id</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level4">
+<h4 id="add-the-todo-for-the-lead-dev">Add the todo for the Lead Dev<a class="anchor" aria-label="anchor" href="#add-the-todo-for-the-lead-dev"></a>
+</h4>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/add_issue_dev.html">add_issue_dev</a></span><span class="op">(</span></span>
+<span>  project_id <span class="op">=</span> <span class="va">project_id</span>,</span>
+<span>  group_url <span class="op">=</span> <span class="va">group_url</span>,</span>
+<span>  project_name <span class="op">=</span> <span class="va">project_name</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+</div>
+</div>
+</div>
+<div class="section level2">
+<h2 id="create-the-wiki-pages">Create the wiki pages<a class="anchor" aria-label="anchor" href="#create-the-wiki-pages"></a>
+</h2>
+<p>This will create some pages in the wiki of your project:</p>
+<ul>
+<li>Home</li>
+<li>Comptes-rendus</li>
+<li>Key dates</li>
+</ul>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/add_wikis.html">add_wikis</a></span><span class="op">(</span></span>
+<span>  project_id <span class="op">=</span> <span class="va">project_id</span>,</span>
+<span>  project_name <span class="op">=</span> <span class="va">project_name</span>,</span>
+<span>  group_url <span class="op">=</span> <span class="va">group_url</span>,</span>
+<span>  group <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/basename.html" class="external-link">basename</a></span><span class="op">(</span><span class="va">group_url</span><span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="no-autoclose-issue-and-coverage-regex">No autoclose issue and coverage regex<a class="anchor" aria-label="anchor" href="#no-autoclose-issue-and-coverage-regex"></a>
 </h2>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/modify_autoclose_and_coverage.html">modify_autoclose_and_coverage</a></span><span class="op">(</span></span>
 <span>  project_id <span class="op">=</span> <span class="va">project_id</span></span>
 <span><span class="op">)</span></span></code></pre></div>
@@ -187,7 +225,7 @@ directory.</p>
 <div class="section level2">
 <h2 id="add-commit-templates">Add commit templates<a class="anchor" aria-label="anchor" href="#add-commit-templates"></a>
 </h2>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/add_git_templates.html">add_git_templates</a></span><span class="op">(</span></span>
 <span>  project_path <span class="op">=</span> <span class="va">project_path</span>,</span>
 <span>  type <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"commit"</span>, <span class="st">"mr"</span><span class="op">)</span></span>
@@ -207,7 +245,7 @@ project:</p>
 <li>A “full” template that contains all the information required to
 complete the issues</li>
 </ul>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/gl_add_template_issue.html">gl_add_template_issue</a></span><span class="op">(</span></span>
 <span>  project_path <span class="op">=</span> <span class="va">project_path</span>,</span>
 <span>  language <span class="op">=</span> <span class="st">"fr"</span> <span class="co"># you can use "en" instead</span></span>

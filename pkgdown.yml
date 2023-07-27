@@ -4,18 +4,11 @@ pkgdown_sha: ~
 articles:
   aa-create-a-new-project-with-gitlab: aa-create-a-new-project-with-gitlab.html
   ab-create-a-new-project-with-github: ab-create-a-new-project-with-github.html
-  ac-create-weekly-with-github-or-gitlab: ac-create-weekly-with-github-or-gitlab.html
-  ad-build-a-pkgdown-with-reports: ad-build-a-pkgdown-with-reports.html
-  ae-deploy-a-shiny-app-on-connect-through-gitlab-ci: ae-deploy-a-shiny-app-on-connect-through-gitlab-ci.html
-  af-deploy-a-pkgdown-on-connect-through-gitlab-ci: af-deploy-a-pkgdown-on-connect-through-gitlab-ci.html
-  ba-create-the-skeleton-of-the-r-project--package-app-book-: ba-create-the-skeleton-of-the-r-project--package-app-book-.html
+  ac-create-the-skeleton-of-the-r-project--package-app-book-: ac-create-the-skeleton-of-the-r-project--package-app-book-.html
+  ad-set-up-continuous-integration-and-deployment-through-gitlab-ci: ad-set-up-continuous-integration-and-deployment-through-gitlab-ci.html
+  ae-create-weekly-with-github-or-gitlab: ae-create-weekly-with-github-or-gitlab.html
+  af-build-a-pkgdown-with-reports: af-build-a-pkgdown-with-reports.html
+  ba-manage-forge-board-wiki: ba-manage-forge-board-wiki.html
   bb-manage-git-tools--branches-commits-etc--: bb-manage-git-tools--branches-commits-etc--.html
-  bc-manage-gitlab-projects: bc-manage-gitlab-projects.html
-  bd-manage-github-projects: bd-manage-github-projects.html
-  be-initilialise-gitlab-ci: be-initilialise-gitlab-ci.html
-  bf-create-special-issues: bf-create-special-issues.html
-  bg-deploy-on-connect: bg-deploy-on-connect.html
-  bi-move-from-gitlab-to-github: bi-move-from-gitlab-to-github.html
-  cb-testthat-tools: cb-testthat-tools.html
-last_built: 2023-07-26T09:20Z
+last_built: 2023-07-27T08:40Z
 

@@ -58,7 +58,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">lozen</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.1.0.9008</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.1.0.9009</span>
       </span>
     </div>
 
@@ -81,43 +81,22 @@
       <a href="../articles/ab-create-a-new-project-with-github.html">ab - Create a new project with GitHub</a>
     </li>
     <li>
-      <a href="../articles/ac-create-weekly-with-github-or-gitlab.html">ac - Create Weekly with GitHub or GitLab</a>
+      <a href="../articles/ac-create-the-skeleton-of-the-r-project--package-app-book-.html">ac - Create the skeleton of the R project (package, app, book)</a>
     </li>
     <li>
-      <a href="../articles/ad-build-a-pkgdown-with-reports.html">ad - Build a pkgdown with reports</a>
+      <a href="../articles/ad-set-up-continuous-integration-and-deployment-through-gitlab-ci.html">ad - Set up continuous integration and continuous deployment for Gitlab CI/CD</a>
     </li>
     <li>
-      <a href="../articles/ae-deploy-a-shiny-app-on-connect-through-gitlab-ci.html">ae - Deploy a {golem} app on Posit Connect and its pkgdown on Gitlab Pages through GitLab CI/CD</a>
+      <a href="../articles/ae-create-weekly-with-github-or-gitlab.html">ae - Create Weekly with GitHub or GitLab</a>
     </li>
     <li>
-      <a href="../articles/af-deploy-a-pkgdown-on-connect-through-gitlab-ci.html">af - Deploy a pkgdown on Posit Connect and Gitlab Pages through GitLab CI/CD</a>
+      <a href="../articles/af-build-a-pkgdown-with-reports.html">af - Build a pkgdown with reports</a>
     </li>
     <li>
-      <a href="../articles/ba-create-the-skeleton-of-the-r-project--package-app-book-.html">ba - Create the skeleton of the R project (package, app, book)</a>
+      <a href="../articles/ba-manage-forge-board-wiki.html">ba - Manage forge board and wiki</a>
     </li>
     <li>
       <a href="../articles/bb-manage-git-tools--branches-commits-etc--.html">bb - Manage git tools (branches, commits, etc.)</a>
-    </li>
-    <li>
-      <a href="../articles/bc-manage-gitlab-projects.html">bc - Manage GitLab projects</a>
-    </li>
-    <li>
-      <a href="../articles/bd-manage-github-projects.html">bd - Manage GitHub Projects</a>
-    </li>
-    <li>
-      <a href="../articles/be-initilialise-gitlab-ci.html">be - Initilialise GitLab CI</a>
-    </li>
-    <li>
-      <a href="../articles/bf-create-special-issues.html">bf - Create special issues</a>
-    </li>
-    <li>
-      <a href="../articles/bg-deploy-on-connect.html">bg - Deploy on Connect</a>
-    </li>
-    <li>
-      <a href="../articles/bi-move-from-gitlab-to-github.html">bi - Move from GitLab to GitHub</a>
-    </li>
-    <li>
-      <a href="../articles/cb-testthat-tools.html">cb - Testthat tools</a>
     </li>
   </ul>
 </li>
@@ -305,243 +284,36 @@ directory.</p>
 <div class="section level3">
 <h3 id="create-the-skeleton-for-your-product-and-initiate-the-cicd">Create the skeleton for your product and initiate the CI/CD<a class="anchor" aria-label="anchor" href="#create-the-skeleton-for-your-product-and-initiate-the-cicd"></a>
 </h3>
-<div class="section level4">
-<h4 id="r-package-skeleton">R package skeleton<a class="anchor" aria-label="anchor" href="#r-package-skeleton"></a>
-</h4>
-<div class="section level5">
-<h5 id="create-a-basic-r-package">Create a basic R package<a class="anchor" aria-label="anchor" href="#create-a-basic-r-package"></a>
-</h5>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/create_r_project.html">create_r_project</a></span><span class="op">(</span></span>
-<span>  project_path <span class="op">=</span> <span class="va">project_path</span>,</span>
-<span>  type <span class="op">=</span> <span class="st">"package"</span>,</span>
-<span>  name_licence <span class="op">=</span> <span class="st">"example"</span>,</span>
-<span>  type_licence <span class="op">=</span> <span class="fu">usethis</span><span class="fu">::</span><span class="va"><a href="https://usethis.r-lib.org/reference/licenses.html" class="external-link">use_mit_license</a></span></span>
-<span><span class="op">)</span></span></code></pre></div>
-</div>
-<div class="section level5">
-<h5 id="initiate-the-cicd">Initiate the CI/CD<a class="anchor" aria-label="anchor" href="#initiate-the-cicd"></a>
-</h5>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu">lozen</span><span class="fu">::</span><span class="fu"><a href="../reference/use_gitlab_ci.html">use_gitlab_ci</a></span><span class="op">(</span></span>
-<span>  project_path <span class="op">=</span> <span class="va">project_path</span>,</span>
-<span>  type <span class="op">=</span> <span class="st">"check-coverage-pkgdown"</span></span>
-<span><span class="op">)</span></span></code></pre></div>
-<p>Please note that the <code>R/</code> and <code>tests/</code> folders
-will be missing from the R package created using
-<code>create_r_project(type = "package")</code>. If these folders
-remains missing, the “coverage” job of the “test” stage of the CI
-pipeline will fail (the following steps of the CI pipeline will
-nevertheless be run).</p>
-</div>
-</div>
-<div class="section level4">
-<h4 id="shiny-app">Shiny app<a class="anchor" aria-label="anchor" href="#shiny-app"></a>
-</h4>
-<div class="section level5">
-<h5 id="create-a-basic-golem-shiny-app">Create a basic {golem} shiny app<a class="anchor" aria-label="anchor" href="#create-a-basic-golem-shiny-app"></a>
-</h5>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/create_r_project.html">create_r_project</a></span><span class="op">(</span></span>
-<span>  project_path <span class="op">=</span> <span class="va">project_path</span>,</span>
-<span>  type <span class="op">=</span> <span class="st">"golem"</span>,</span>
-<span>  name_licence <span class="op">=</span> <span class="st">"Name licence"</span>,</span>
-<span>  type_licence <span class="op">=</span> <span class="fu">usethis</span><span class="fu">::</span><span class="va"><a href="https://usethis.r-lib.org/reference/licenses.html" class="external-link">use_proprietary_license</a></span></span>
-<span><span class="op">)</span></span></code></pre></div>
-</div>
-<div class="section level5">
-<h5 id="initiate-the-cicd-1">Initiate the CI/CD<a class="anchor" aria-label="anchor" href="#initiate-the-cicd-1"></a>
-</h5>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu">lozen</span><span class="fu">::</span><span class="fu"><a href="../reference/use_gitlab_ci.html">use_gitlab_ci</a></span><span class="op">(</span></span>
-<span>  project_path <span class="op">=</span> <span class="va">project_path</span>,</span>
-<span>  type <span class="op">=</span> <span class="st">"check-coverage-pkgdown"</span></span>
-<span><span class="op">)</span></span></code></pre></div>
-</div>
-</div>
-<div class="section level4">
-<h4 id="bookdown">Bookdown<a class="anchor" aria-label="anchor" href="#bookdown"></a>
-</h4>
-<div class="section level5">
-<h5 id="create-a-basic-bookdown">Create a basic bookdown<a class="anchor" aria-label="anchor" href="#create-a-basic-bookdown"></a>
-</h5>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu">bookdown</span><span class="fu">::</span><span class="fu"><a href="https://pkgs.rstudio.com/bookdown/reference/create_book.html" class="external-link">create_bs4_book</a></span><span class="op">(</span></span>
-<span>  path <span class="op">=</span> <span class="va">project_path</span></span>
-<span><span class="op">)</span></span></code></pre></div>
-</div>
-<div class="section level5">
-<h5 id="initiate-the-cicd-2">Initiate the CI/CD<a class="anchor" aria-label="anchor" href="#initiate-the-cicd-2"></a>
-</h5>
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu">lozen</span><span class="fu">::</span><span class="fu"><a href="../reference/use_gitlab_ci.html">use_gitlab_ci</a></span><span class="op">(</span></span>
-<span>  project_path <span class="op">=</span> <span class="va">project_path</span>,</span>
-<span>  type <span class="op">=</span> <span class="st">"bookdown"</span></span>
-<span><span class="op">)</span></span></code></pre></div>
-</div>
-</div>
+<p>To initiate a new product, please take a look at the following
+vignette :
+<code>vignettes/ac-create-the-skeleton-of-the-r-project--package-app-book-.Rmd</code>.</p>
 </div>
 <div class="section level3">
-<h3 id="create-weekly">Create weekly<a class="anchor" aria-label="anchor" href="#create-weekly"></a>
+<h3 id="initiate-the-cicd">Initiate the CI/CD<a class="anchor" aria-label="anchor" href="#initiate-the-cicd"></a>
 </h3>
-<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># The file to create weekly</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/files.html" class="external-link">file.copy</a></span><span class="op">(</span></span>
-<span>  from <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"doc"</span>, <span class="st">"ac-create-weekly-with-github-or-gitlab.Rmd"</span>,</span>
-<span>    package <span class="op">=</span> <span class="st">"lozen"</span></span>
-<span>  <span class="op">)</span>,</span>
-<span>  to <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span></span>
-<span>    <span class="va">project_path</span>, <span class="st">"dev"</span>,</span>
-<span>    <span class="st">"lead_dev_create_weekly.Rmd"</span></span>
-<span>  <span class="op">)</span></span>
-<span><span class="op">)</span></span></code></pre></div>
-</div>
-<div class="section level3">
-<h3 id="manage-a-calendar">Manage a calendar<a class="anchor" aria-label="anchor" href="#manage-a-calendar"></a>
-</h3>
-<p>Use your tools or vignette to manage your calendar for this
-project.</p>
-</div>
-<div class="section level3">
-<h3 id="add-commit-templates">Add commit templates<a class="anchor" aria-label="anchor" href="#add-commit-templates"></a>
-</h3>
-<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/add_git_templates.html">add_git_templates</a></span><span class="op">(</span></span>
-<span>  project_path <span class="op">=</span> <span class="va">project_path</span>,</span>
-<span>  type <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"commit"</span>, <span class="st">"mr"</span><span class="op">)</span></span>
-<span><span class="op">)</span></span></code></pre></div>
-<blockquote>
-<p>Tell all devs to run this in their own project
-<code>gert::git_config_set(repo = project_path, name = "commit.template", value = ".gitlab/template_commit")</code></p>
-</blockquote>
-</div>
-<div class="section level3">
-<h3 id="add-issues-templates">Add issues templates<a class="anchor" aria-label="anchor" href="#add-issues-templates"></a>
-</h3>
-<p>2 templates will be added for the issues that will be opened on your
-project:</p>
-<ul>
-<li>A “light” template</li>
-<li>A “full” template that contains all the information required to
-complete the issues</li>
-</ul>
-<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/gl_add_template_issue.html">gl_add_template_issue</a></span><span class="op">(</span></span>
-<span>  project_path <span class="op">=</span> <span class="va">project_path</span>,</span>
-<span>  language <span class="op">=</span> <span class="st">"fr"</span> <span class="co"># you can use "en" instead</span></span>
-<span><span class="op">)</span></span></code></pre></div>
-</div>
-<div class="section level3">
-<h3 id="push-to-server">Push to server<a class="anchor" aria-label="anchor" href="#push-to-server"></a>
-</h3>
-<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/push_main.html">push_main</a></span><span class="op">(</span></span>
-<span>  project_path <span class="op">=</span> <span class="va">project_path</span></span>
-<span><span class="op">)</span></span></code></pre></div>
-</div>
-<div class="section level3">
-<h3 id="create-a-production-branch">Create a <em>production</em> branch<a class="anchor" aria-label="anchor" href="#create-a-production-branch"></a>
-</h3>
-<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/create_production.html">create_production</a></span><span class="op">(</span></span>
-<span>  project_path <span class="op">=</span> <span class="va">project_path</span></span>
-<span><span class="op">)</span></span></code></pre></div>
-</div>
-<div class="section level3">
-<h3 id="protect-branches">Protect branches<a class="anchor" aria-label="anchor" href="#protect-branches"></a>
-</h3>
-<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/protect_branches.html">protect_branches</a></span><span class="op">(</span></span>
-<span>  project_id <span class="op">=</span> <span class="va">project_id</span></span>
-<span><span class="op">)</span></span></code></pre></div>
+<p>To set up continuous integration and continuous deployment of your
+product, please take a look at the following vignette :
+<code>vignettes/ad-set-up-continuous-integration-and-deployment-through-gitlab-ci.Rmd</code>.</p>
 </div>
 </div>
 <div class="section level2">
-<h2 id="no-autoclose-issue-and-coverage-regex">No autoclose issue and coverage regex<a class="anchor" aria-label="anchor" href="#no-autoclose-issue-and-coverage-regex"></a>
+<h2 id="manage-git-tools-branches-commits-issues-etc-">Manage git tools (branches, commits, issues, etc.)<a class="anchor" aria-label="anchor" href="#manage-git-tools-branches-commits-issues-etc-"></a>
 </h2>
-<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/modify_autoclose_and_coverage.html">modify_autoclose_and_coverage</a></span><span class="op">(</span></span>
-<span>  project_id <span class="op">=</span> <span class="va">project_id</span></span>
-<span><span class="op">)</span></span></code></pre></div>
+<p>Please take a look at the following vignette :
+<code>vignettes/bb-manage-git-tools--branches-commits-etc--.Rmd</code>.</p>
 </div>
 <div class="section level2">
-<h2 id="create-the-board-on-forge">Create the board on Forge<a class="anchor" aria-label="anchor" href="#create-the-board-on-forge"></a>
+<h2 id="create-and-manage-the-forge-board-and-wiki">Create and manage the forge board and wiki<a class="anchor" aria-label="anchor" href="#create-and-manage-the-forge-board-and-wiki"></a>
 </h2>
-<div class="section level3">
-<h3 id="add-labels">Add labels<a class="anchor" aria-label="anchor" href="#add-labels"></a>
-</h3>
-<p>This will add labels “Prêt”, “En cours”, etc. in your project.</p>
-<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/add_labels.html">add_labels</a></span><span class="op">(</span></span>
-<span>  project_id <span class="op">=</span> <span class="va">project_id</span></span>
-<span><span class="op">)</span></span></code></pre></div>
-</div>
-<div class="section level3">
-<h3 id="create-the-board">Create the board<a class="anchor" aria-label="anchor" href="#create-the-board"></a>
-</h3>
-<p>This code prepares the <em>board</em> for the <em>issues</em>: Issues
-&gt; Board &gt; Add List</p>
-<ul>
-<li>If the labels are duplicated, go to Issues &gt; Labels. Delete all
-the “project labels” by clicking on the 3 vertical dots, then Delete.
-The list of labels is now empty, but if you go back to the
-<em>board</em>, you will still have the global labels available, in one
-copy.</li>
-</ul>
-<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/add_board.html">add_board</a></span><span class="op">(</span></span>
-<span>  project_id <span class="op">=</span> <span class="va">project_id</span></span>
-<span><span class="op">)</span></span></code></pre></div>
-</div>
-<div class="section level3">
-<h3 id="add-some-special-issues-in-the-board">Add some special issues in the board<a class="anchor" aria-label="anchor" href="#add-some-special-issues-in-the-board"></a>
-</h3>
-<div class="section level4">
-<h4 id="add-the-first-issue-for-the-client">Add the first issue for the client<a class="anchor" aria-label="anchor" href="#add-the-first-issue-for-the-client"></a>
-</h4>
-<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/add_issue_clients.html">add_issue_clients</a></span><span class="op">(</span></span>
-<span>  project_id <span class="op">=</span> <span class="va">project_id</span>,</span>
-<span>  project_name <span class="op">=</span> <span class="va">project_name</span>,</span>
-<span>  group_url <span class="op">=</span> <span class="va">group_url</span></span>
-<span><span class="op">)</span></span></code></pre></div>
-</div>
-<div class="section level4">
-<h4 id="add-the-issue-that-will-be-shown-during-the-kick-off">Add the issue that will be shown during the kick-off<a class="anchor" aria-label="anchor" href="#add-the-issue-that-will-be-shown-during-the-kick-off"></a>
-</h4>
-<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/add_issue_kickoff.html">add_issue_kickoff</a></span><span class="op">(</span></span>
-<span>  project_id <span class="op">=</span> <span class="va">project_id</span></span>
-<span><span class="op">)</span></span></code></pre></div>
-</div>
-<div class="section level4">
-<h4 id="add-the-todo-for-the-lead-dev">Add the todo for the Lead Dev<a class="anchor" aria-label="anchor" href="#add-the-todo-for-the-lead-dev"></a>
-</h4>
-<div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/add_issue_dev.html">add_issue_dev</a></span><span class="op">(</span></span>
-<span>  project_id <span class="op">=</span> <span class="va">project_id</span>,</span>
-<span>  group_url <span class="op">=</span> <span class="va">group_url</span>,</span>
-<span>  project_name <span class="op">=</span> <span class="va">project_name</span></span>
-<span><span class="op">)</span></span></code></pre></div>
-</div>
-</div>
+<p>Please take a look at the following vignette :
+<code>vignettes/ba-manage-forge-board-wiki.Rmd</code>.</p>
 </div>
 <div class="section level2">
-<h2 id="create-the-wiki-pages">Create the wiki pages<a class="anchor" aria-label="anchor" href="#create-the-wiki-pages"></a>
+<h2 id="visualise-the-status-of-your-project">Visualise the status of your project<a class="anchor" aria-label="anchor" href="#visualise-the-status-of-your-project"></a>
 </h2>
-<p>This will create some pages in the wiki of your project:</p>
-<ul>
-<li>Home</li>
-<li>Comptes-rendus</li>
-<li>Key dates</li>
-</ul>
-<div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/add_wikis.html">add_wikis</a></span><span class="op">(</span></span>
-<span>  project_id <span class="op">=</span> <span class="va">project_id</span>,</span>
-<span>  project_name <span class="op">=</span> <span class="va">project_name</span>,</span>
-<span>  group_url <span class="op">=</span> <span class="va">group_url</span>,</span>
-<span>  group <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/basename.html" class="external-link">basename</a></span><span class="op">(</span><span class="va">group_url</span><span class="op">)</span></span>
-<span><span class="op">)</span></span></code></pre></div>
+<p>Please take a look at the following vignette :
+<code>ae-create-weekly-with-github-or-gitlab.Rmd</code>.</p>
+<!-- # Units tests -->
 </div>
   </div>
 
