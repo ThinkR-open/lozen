@@ -28,7 +28,7 @@
 #' date_max <- "2022-06-30"
 #' user <- "ThinkR-open"
 #' repo <- "example-weekly"
-#' 
+#'
 #' if (Sys.getenv("GITHUB_PAT") != "") {
 #'   weekly <- gh_create_weekly_new_projects_board(
 #'     date_min = date_min,

@@ -1,0 +1,174 @@
+---
+title: "ad - Set up continuous integration and continuous deployment for Gitlab CI/CD"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{ad-set-up-continuous-integration-and-deployment-through-gitlab-ci}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(lozen)
+```
+
+# Initiate the Continuous Integration (CI) / Continuous Deployment (CD) 
+
+These operations will set up on Gitlab :
+- the continuous integration of your project
+- the continuous deployment, on Gitlab Pages, of your pkgdown (if you are working with a R package or a golem app) or of your bookdown.
+
+A `.gitlab-ci.yml` file will be created at the root of your project. Please ensure that this file will be pushed on your repository for the CI/CD to be working.
+
+Please note that any `.gitlab-ci.yml` file already present would be overwritten.
+
+## For a R package or a {golem} app
+
+```{r eval = FALSE}
+lozen::use_gitlab_ci(
+  project_path = project_path,
+  type = "check-coverage-pkgdown"
+)
+```
+
+Please note that the `R/` and `tests/` folders will be missing from a R package created using `create_r_project(type = "package")`. If these folders remains missing, the "coverage" job of the "test" stage of the CI pipeline will fail (the following steps of the CI pipeline will nevertheless be run). 
+
+## For a book 
+
+```{r eval = FALSE}
+lozen::use_gitlab_ci(
+  project_path = project_path,
+  type = "bookdown"
+)
+```
+
+
+## How can I find the pkgdown/book associated with my project
+
+Once the former steps are done, you can commit all your changes and push them to your repository remote.
+
+Thereafter, you should be able to [see your pipeline running](https://docs.gitlab.com/ee/ci/pipelines/#view-pipelines) on Gitlab.
+
+If your pipeline did not raise any error, the deployed pkgdown/book is now hosted on [Gitlab pages](https://docs.gitlab.com/ee/user/project/pages/getting_started_part_one.html).
+
+If you are working on `https://gitlab.com`, the url should be `https://username.gitlab.io/your.repository.name`. 
+
+
+# Continuous deployment on Posit Connect
+
+## CD of a pkgdown
+
+For the following to be working, please ensure you are working in a valid R package. Your project must be associated with a repository present on Gitlab.
+
+Before running the following commands please ensure that you are working on your R package project.
+
+### Create the pkgdown
+
+```{r, eval=FALSE}
+usethis::use_pkgdown()
+pkgdown::build_site(override = list(destination = "inst/site"))
+```
+
+### Initiate the deployment of your pkgdown
+
+#### To be done on your R project
+
+```{r, eval=FALSE}
+lozen::use_gitlab_ci_deploy_connect_pkgdown()
+```
+
+Any `.gitlab-ci.yml` file already present in your project is now completed with new staged, specific to the deployment on Connect.
+
+Be aware that running this command multiple times would duplicate these steps in your `.gitlab-ci.yml` file. It should be avoided.
+
+#### To be done on Gitlab
+
+Some environment variables must be set on Gitlab for the CI/CD to be working.
+
+You'll need to define : 
+
+```{r, eval=FALSE}
+CONNECT_URL <- "https://my.connect.url"
+CONNECT_NAME <- "my.connect.server.name"
+CONNECT_USER <- "my.connect.username"
+CONNECT_TOKEN <- "my.api.key.generated.in.connect"
+APP_NAME <- "the.name.of.your.pkgdown.on.connect"
+# APP_NAME is not mandatory; whether it is not provided, it will be replaced by the name of your project on Gitlab
+```
+
+For most of them, you may have already set them on your `.Renviron` file (see the dedicated section on the {lozen} README).
+
+If you are not familiar with defining environement variable on gitlab, please follow the [official documentation](https://docs.gitlab.com/ee/ci/variables/index.html).
+
+Once this is done, you can commit all your changes and push them to your repository remote.
+
+Thereafter, you should be able to [see your pipeline running](https://docs.gitlab.com/ee/ci/pipelines/#view-pipelines) on Gitlab.
+
+#### How can I find the pkgdown associated with my R package on Posit Connect
+
+If your pipeline did not raise any error, you app is now deployed on your Posit Connect. You can now log in your Posit Connect and enjoy your pkgdown !
+
+
+## CD of a golem shiny app
+
+For the following to be working, please ensure you are working in a shiny app initiated with {golem}. Your app project must be associated with a repository present on Gitlab.
+
+If this is not done yet please go to the vignette `vignettes/aa-create-a-new-project-with-gitlab.Rmd` and follow the steps related to the creation of a project on Gitlab and of a R project skeleton.
+
+Before running the following commands please ensure that you are working on your golem app project.
+
+### Add an app.R at the root of your package to deploy on RStudio Connect 
+
+```{r, eval=FALSE}
+golem::add_rstudioconnect_file()
+```
+
+### Initiate the deployment of your app
+
+#### To be done on your R project
+
+```{r, eval=FALSE}
+use_gitlab_ci_deploy_connect_shiny()
+```
+
+Any `.gitlab-ci.yml` file already present in your project is now completed with new staged, specific to the deployment on Connect.
+
+Be aware that running this command multiple times would duplicate these steps in your `.gitlab-ci.yml` file. It should be avoided.
+
+#### To be done on Gitlab
+
+Some environment variables must be set on Gitlab for the CI/CD to be working.
+
+You'll need to define : 
+
+```{r, eval=FALSE}
+CONNECT_URL <- "https://my.connect.url"
+CONNECT_NAME <- "my.connect.server.name"
+CONNECT_USER <- "my.connect.username"
+CONNECT_TOKEN <- "my.api.key.generated.in.connect"
+APP_NAME <- "the.name.of.your.app.on.connect"
+# APP_NAME is not mandatory; whether it is not provided, it will be replaced by the name of your project on Gitlab
+```
+
+For most of them, you may have already set them on your `.Renviron` file (see the dedicated section on the {lozen} README).
+
+If you are not familiar with defining environement variable on gitlab, please follow the [official documentation](https://docs.gitlab.com/ee/ci/variables/index.html).
+
+Once this is done, you can commit all your changes and push them to your repository remote.
+
+Thereafter, you should be able to [see your pipeline running](https://docs.gitlab.com/ee/ci/pipelines/#view-pipelines) on Gitlab.
+
+#### How can I find the app associated with my {golem} package
+
+If your pipeline did not raise any error, you app is now deployed on your Posit Connect. You can now log in your Posit Connect and enjoy your app !
+
+
+## CD of a book
+
+#### --TO-BE-COMPLETED

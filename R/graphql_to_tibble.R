@@ -20,26 +20,26 @@
 #' @export
 #' @examples
 #' \dontrun{
-#' 
+#'
 #' # Example with board hosted in an organization github account
 #' board_url_organization <- "https://github.com/orgs/ThinkR-open/projects/4/"
 #' github_token <- Sys.getenv("GITHUB_PAT")
-#' 
+#'
 #' graphql_to_tibble(
 #'   board_url = board_url_organization,
 #'   github_token = github_token
 #' )
-#' 
-#' 
+#'
+#'
 #' # Example with board hosted in a user github account
 #' board_url_user <- "https://github.com/users/the-thinkr/projects/1"
 #' github_token <- Sys.getenv("GITHUB_PAT")
-#' 
+#'
 #' graphql_to_tibble(
 #'   board_url = board_url_user,
 #'   github_token = github_token
 #' )
-#' 
+#'
 #' }
 graphql_to_tibble <- function(board_url, github_token = Sys.getenv("GITHUB_PAT")) {
   if (github_token == "") {

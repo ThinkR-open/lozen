@@ -17,6 +17,7 @@
 #' @export
 #'
 #' @examples
+#' ### R package skeleton
 #' withr::with_tempdir({
 #'   project_path <- getwd()
 #'   create_r_project(
@@ -27,6 +28,8 @@
 #'   )
 #' })
 #' 
+#' 
+#' ### Shiny app
 #' withr::with_tempdir({
 #'   project_path <- getwd()
 #'   create_r_project(
@@ -37,6 +40,7 @@
 #'   )
 #' })
 #' 
+#' ### Bookdown
 #' withr::with_tempdir({
 #'   project_path <- getwd()
 #'   create_r_project(
@@ -46,6 +50,7 @@
 #'     type_licence = usethis::use_proprietary_license
 #'   )
 #' })
+#' 
 create_r_project <- function(project_path, type = c("package", "golem", "book"), name_licence, type_licence) {
   type <- match.arg(type)
 

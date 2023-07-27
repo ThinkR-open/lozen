@@ -14,9 +14,9 @@ library(testthat)
 pkgload::load_all(export_all = FALSE)
 ```
 
-# `use_dev_history()`: Use a dev history file
+# Use a dev history file
 
-Creates `dev_history.Rmd` files:
+`use_dev_history()` creates `dev_history.Rmd` files:
 
 - "dev_history_package": Instructions to create and develop a R package
 - "dev_history_renv": Instructions to init renv
@@ -74,6 +74,7 @@ test_that("use_dev_history works", {
 })
 ```
 
+
 # `create_r_project()`: Create a R project with full content skeleton
 
 ```{r function-create_r_project}
@@ -127,8 +128,8 @@ create_r_project <- function(project_path, type = c("package", "golem", "book"),
 }
 ```
 
-
 ```{r example-create_r_project, eval=FALSE}
+### R package skeleton
 withr::with_tempdir({
   project_path <- getwd()
   create_r_project(
@@ -139,6 +140,8 @@ withr::with_tempdir({
   )
 })
 
+
+### Shiny app
 withr::with_tempdir({
   project_path <- getwd()
   create_r_project(
@@ -149,6 +152,7 @@ withr::with_tempdir({
   )
 })
 
+### Bookdown
 withr::with_tempdir({
   project_path <- getwd()
   create_r_project(
@@ -158,7 +162,9 @@ withr::with_tempdir({
     type_licence = usethis::use_proprietary_license
   )
 })
+
 ```
+
 
 ```{r tests-create_r_project}
 test_that("create_r_project works", {
@@ -166,9 +172,9 @@ test_that("create_r_project works", {
 })
 ```
 
-# `create_book_project()`: Transform project as book with lozen template
+# Transform project as book with lozen template with `create_book_project()`
 
-```{r function-create_book_project}
+```{r function-create_book_project, filename = "create_book_project"}
 #' Transform project as book with lozen template
 #'
 #' @param project_path project_path
@@ -409,7 +415,7 @@ test_that("add_kit_package works", {
 })
 ```
 
-# `add_build_ignore()`: Add files to buildignore
+# Add files to buildignore : `add_build_ignore()`
 
 ```{r function-add_build_ignore}
 #' Add files to Rbuildignore
@@ -447,7 +453,7 @@ test_that("add_build_ignore works", {
 })
 ```
 
-# `add_git_ignore()`: Add files to gitignore
+# Add files to gitignore : `add_git_ignore()`
 
 ```{r function-add_git_ignore}
 #' Add files to gitignore
@@ -588,10 +594,10 @@ unlink(project_path_book, recursive = TRUE)
 # Execute in the console directly
 fusen::inflate(
   flat_file = "dev/flat_create_r_project_skeleton.Rmd",
-  vignette_name = "ba - Create the skeleton of the R project (package, app, book)",
+  vignette_name = "ac - Create the skeleton of the R project (package, app, book)",
   overwrite = TRUE,
   check = FALSE,
-  document = FALSE,
+  document = TRUE,
   open_vignette = FALSE
 )
 

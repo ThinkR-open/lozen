@@ -33,6 +33,7 @@ Side Effect: Transform project as package or book:
 Create a R project with full content skeleton
 }
 \examples{
+### R package skeleton
 withr::with_tempdir({
   project_path <- getwd()
   create_r_project(
@@ -43,6 +44,8 @@ withr::with_tempdir({
   )
 })
 
+
+### Shiny app
 withr::with_tempdir({
   project_path <- getwd()
   create_r_project(
@@ -53,6 +56,7 @@ withr::with_tempdir({
   )
 })
 
+### Bookdown
 withr::with_tempdir({
   project_path <- getwd()
   create_r_project(
@@ -62,4 +66,5 @@ withr::with_tempdir({
     type_licence = usethis::use_proprietary_license
   )
 })
+
 }

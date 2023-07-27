@@ -571,7 +571,7 @@ test_that("add_wikis works", {
 # Execute in the console directly
 fusen::inflate(
   flat_file = "dev/flat_manage_gitlab_projects.Rmd", 
-  vignette_name = "bc - Manage GitLab projects",
+  vignette_name = NA,
   overwrite = TRUE,
   check = FALSE, 
   document = FALSE, 

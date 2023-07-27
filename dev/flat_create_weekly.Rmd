@@ -2547,7 +2547,7 @@ test_that("gl_get_milestones_progress works", {
 # Execute in the console directly
 fusen::inflate(
   flat_file = "dev/flat_create_weekly.Rmd",
-  vignette_name = "ac - Create Weekly with GitHub or GitLab",
+  vignette_name = NA,
   overwrite = TRUE,
   check = FALSE,
   document = FALSE,

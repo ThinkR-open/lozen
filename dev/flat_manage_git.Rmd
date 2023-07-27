@@ -318,7 +318,7 @@ test_that("create_production works", {
 # Execute in the console directly
 fusen::inflate(
   flat_file = "dev/flat_manage_git.Rmd",
-  vignette_name = "bb - Manage git tools (branches, commits, etc.)",
+  vignette_name = NA,
   overwrite = TRUE,
   check = FALSE,
   document = FALSE,

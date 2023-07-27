@@ -52,9 +52,9 @@ test_that("add_labels works", {
 
   ## Add again but nothing append
   expect_message(labels <- add_labels(project_id), "No new labels to add")
-
+  
   expect_equal(nrow(labels), 0)
-
+  
 })
 
 # add_board ----

@@ -398,7 +398,7 @@ test_that("move_issues_from_gitlab_to_github works", {
 # Execute in the console directly
 fusen::inflate(
   flat_file = "dev/flat_move_issues_from_gitlab_to_github.Rmd",
-  vignette_name = "bi - Move from GitLab to GitHub",
+  vignette_name = NA,
   overwrite = TRUE,
   check = FALSE,
   document = FALSE,

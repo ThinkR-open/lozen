@@ -38,7 +38,7 @@
 #' date_max <- "2022-06-30"
 #' board_url_old <- glue::glue("/repos/{user}/{repo}/projects")
 #' board_url_new <- "https://github.com/orgs/ThinkR-open/projects/4/"
-#' 
+#'
 #' # old board
 #' weekly_old <- gh_create_weekly_old_and_new_boards(
 #'   date_min = date_min,
@@ -50,10 +50,10 @@
 #'   verbose = FALSE
 #' )
 #' cat(weekly_old$weekly_info)
-#' 
+#'
 #' # clipr::write_clip(weekly_old$weekly_info)
-#' 
-#' 
+#'
+#'
 #' # new board
 #' weekly_new <- gh_create_weekly_old_and_new_boards(
 #'   date_min = date_min,
@@ -67,7 +67,7 @@
 #' )
 #' cat(weekly_new$weekly_info)
 #' # clipr::write_clip(weekly_new$weekly_info)
-#' 
+#'
 #' }
 
 gh_create_weekly_old_and_new_boards <- function(date_min,

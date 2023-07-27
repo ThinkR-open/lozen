@@ -157,222 +157,31 @@ project_path <- clone_locally(
 
 ## Create the skeleton for your product and initiate the CI/CD
 
-### R package skeleton
-
-#### Create a basic R package
-
-```{r eval = FALSE}
-create_r_project(
-  project_path = project_path,
-  type = "package",
-  name_licence = "example",
-  type_licence = usethis::use_mit_license
-)
-```
-
-#### Initiate the CI/CD
-
-```{r eval = FALSE}
-lozen::use_gitlab_ci(
-  project_path = project_path,
-  type = "check-coverage-pkgdown"
-)
-```
-
-Please note that the `R/` and `tests/` folders will be missing from the R package created using `create_r_project(type = "package")`. If these folders remains missing, the "coverage" job of the "test" stage of the CI pipeline will fail (the following steps of the CI pipeline will nevertheless be run). 
+   
+To initiate a new product, please take a look at the following vignette : `vignettes/ac-create-the-skeleton-of-the-r-project--package-app-book-.Rmd`.
 
 
-### Shiny app
+## Initiate the CI/CD
 
-#### Create a basic {golem} shiny app
-
-```{r eval = FALSE}
-create_r_project(
-  project_path = project_path,
-  type = "golem",
-  name_licence = "Name licence",
-  type_licence = usethis::use_proprietary_license
-)
-```
-
-#### Initiate the CI/CD
-
-```{r eval = FALSE}
-lozen::use_gitlab_ci(
-  project_path = project_path,
-  type = "check-coverage-pkgdown"
-)
-```
-
-### Bookdown
-
-#### Create a basic bookdown
-
-```{r eval = FALSE}
-bookdown::create_bs4_book(
-  path = project_path
-)
-```
-
-#### Initiate the CI/CD
-
-```{r eval = FALSE}
-lozen::use_gitlab_ci(
-  project_path = project_path,
-  type = "bookdown"
-)
-```
-
-## Create weekly
-
-```{r eval = FALSE}
-# The file to create weekly
-file.copy(
-  from = system.file("doc", "ac-create-weekly-with-github-or-gitlab.Rmd",
-    package = "lozen"
-  ),
-  to = file.path(
-    project_path, "dev",
-    "lead_dev_create_weekly.Rmd"
-  )
-)
-```
-
-## Manage a calendar
-
-Use your tools or vignette to manage your calendar for this project.
+To set up continuous integration and continuous deployment of your product, please take a look at the following vignette : `vignettes/ad-set-up-continuous-integration-and-deployment-through-gitlab-ci.Rmd`.
 
 
-## Add commit templates
 
-```{r eval = FALSE}
-add_git_templates(
-  project_path = project_path,
-  type = c("commit", "mr")
-)
-```
+# Manage git tools (branches, commits, issues, etc.)
 
-> Tell all devs to run this in their own project `gert::git_config_set(repo = project_path, name = "commit.template", value = ".gitlab/template_commit")`
+Please take a look at the following vignette : `vignettes/bb-manage-git-tools--branches-commits-etc--.Rmd`.
 
 
-## Add issues templates
 
-2 templates will be added for the issues that will be opened on your project: 
+# Create and manage the forge board and wiki
 
-- A "light" template
-- A "full" template that contains all the information required to complete the issues
+Please take a look at the following vignette : `vignettes/ba-manage-forge-board-wiki.Rmd`.
 
 
-```{r eval = FALSE}
-gl_add_template_issue(
-  project_path = project_path,
-  language = "fr" # you can use "en" instead
-)
-```
 
-## Push to server
+# Visualise the status of your project
 
-```{r eval = FALSE}
-push_main(
-  project_path = project_path
-)
-```
+Please take a look at the following vignette : `ae-create-weekly-with-github-or-gitlab.Rmd`.
 
-## Create a _production_ branch
-
-```{r eval = FALSE}
-create_production(
-  project_path = project_path
-)
-```
-
-## Protect branches
-
-```{r eval = FALSE}
-protect_branches(
-  project_id = project_id
-)
-```
-
-# No autoclose issue and coverage regex
-
-```{r eval = FALSE}
-modify_autoclose_and_coverage(
-  project_id = project_id
-)
-```
-
-# Create the board on Forge
-
-## Add labels
-
-This will add labels "Prêt", "En cours", etc. in your project.
-
-
-```{r eval = FALSE}
-add_labels(
-  project_id = project_id
-)
-```
-
-## Create the board
-
-This code prepares the _board_ for the _issues_: Issues > Board > Add List
-
-+ If the labels are duplicated, go to Issues > Labels. Delete all the "project labels" by clicking on the 3 vertical dots, then Delete. The list of labels is now empty, but if you go back to the _board_, you will still have the global labels available, in one copy.
-
-
-```{r eval = FALSE}
-add_board(
-  project_id = project_id
-)
-```
-
-## Add some special issues in the board
-
-### Add the first issue for the client
-
-```{r eval = FALSE}
-add_issue_clients(
-  project_id = project_id,
-  project_name = project_name,
-  group_url = group_url
-)
-```
-
-### Add the issue that will be shown during the kick-off
-
-```{r eval = FALSE}
-add_issue_kickoff(
-  project_id = project_id
-)
-```
-
-### Add the todo for the Lead Dev
-
-```{r eval = FALSE}
-add_issue_dev(
-  project_id = project_id,
-  group_url = group_url,
-  project_name = project_name
-)
-```
-
-# Create the wiki pages
-
-This will create some pages in the wiki of your project:
-
-- Home
-- Comptes-rendus
-- Key dates
-
-
-```{r eval = FALSE}
-add_wikis(
-  project_id = project_id,
-  project_name = project_name,
-  group_url = group_url,
-  group = basename(group_url)
-)
-```
+<!-- # Units tests -->
 

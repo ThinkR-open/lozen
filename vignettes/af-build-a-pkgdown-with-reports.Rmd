@@ -1,8 +1,8 @@
 ---
-title: "ad - Build a pkgdown with reports"
+title: "af - Build a pkgdown with reports"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{ad-build-a-pkgdown-with-reports}
+  %\VignetteIndexEntry{af-build-a-pkgdown-with-reports}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---

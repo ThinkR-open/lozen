@@ -802,7 +802,7 @@ test_that("amend_yaml works", {
 # Execute in the console directly
 fusen::inflate(
   flat_file = "dev/flat_init_gitlab_ci.Rmd",
-  vignette_name = "be - Initilialise GitLab CI",
+  vignette_name = NA,
   overwrite = TRUE,
   check = FALSE,
   document = FALSE,

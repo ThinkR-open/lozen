@@ -438,7 +438,7 @@ test_that("fetch_connect works", {
 # Execute in the console directly
 fusen::inflate(
   flat_file = "dev/flat_helper_testthat.Rmd",
-  vignette_name = "cb - Testthat tools",
+  vignette_name = NA,
   overwrite = TRUE,
   check = FALSE,
   document = FALSE,
