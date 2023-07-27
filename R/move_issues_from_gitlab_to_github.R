@@ -42,23 +42,27 @@
 #'   force = FALSE
 #' )
 #' }
-move_issues_from_gitlab_to_github <- function(gitlab_url = "https://gitlab.com/",
-                                              github_url = "https://github.com/",
-                                              gitlab_group,
-                                              gitlab_repo,
-                                              gitlab_project_id,
-                                              github_owner,
-                                              github_repo,
-                                              gitlab_private_token = Sys.getenv("GITLAB_TOKEN"),
-                                              github_token = NULL,
-                                              sleep_time = 60,
-                                              issue_start_over = 1,
-                                              max_page = 10,
-                                              force = FALSE) {
+move_issues_from_gitlab_to_github <- function(
+  gitlab_url = "https://gitlab.com/",
+  github_url = "https://github.com/",
+  gitlab_group,
+  gitlab_repo,
+  gitlab_project_id,
+  github_owner,
+  github_repo,
+  gitlab_private_token = Sys.getenv("GITLAB_TOKEN"),
+  github_token = NULL,
+  sleep_time = 60,
+  issue_start_over = 1,
+  max_page = 10,
+  force = FALSE
+    ) {
   # Change body to get correct URL and avoid notifying all users
-  change_body <- function(body,
-                          gitlab = file.path(gitlab_url, gitlab_group, gitlab_repo, fsep = "/"),
-                          github = file.path(github_url, github_owner, github_repo)) {
+  change_body <- function(
+  body,
+  gitlab = file.path(gitlab_url, gitlab_group, gitlab_repo, fsep = "/"),
+  github = file.path(github_url, github_owner, github_repo)
+      ) {
     # Change users
     body <- gsub("@", "[at]", body)
     # Change URL
@@ -97,7 +101,8 @@ move_issues_from_gitlab_to_github <- function(gitlab_url = "https://gitlab.com/"
     message(paste("---- issue", w.issue, "/", nrow(my_project_issues), "----"))
 
     # Test if issue exists
-    exists_issue <- try(gh(glue("GET /repos/{owner}/{repo}/issues/{w.issue}",
+    exists_issue <- try(gh(glue(
+      "GET /repos/{owner}/{repo}/issues/{w.issue}",
       owner = owner,
       repo = repo,
       w.issue = w.issue
@@ -106,7 +111,9 @@ move_issues_from_gitlab_to_github <- function(gitlab_url = "https://gitlab.com/"
     if (!inherits(exists_issue, "try-error")) {
       if (!isTRUE(force)) {
         answer <- utils::askYesNo(msg = paste(
-          "Issue ", w.issue, "already exists.\n",
+          "Issue ",
+          w.issue,
+          "already exists.\n",
           "If you continue, the process will add a new issue on GitHub\n",
           "with a different issue number than the original on GitLab.\n",
           "Do you want to proceed?"
@@ -140,13 +147,18 @@ move_issues_from_gitlab_to_github <- function(gitlab_url = "https://gitlab.com/"
 
     the_body <- paste0(
       "_Issue retrieved from another repository_.\n",
-      "_Originally created on: ", as.Date(the_issue$created_at), "_\n",
-      "_Originally posted by: ", the_issue$author.name, "_\n\n",
+      "_Originally created on: ",
+      as.Date(the_issue$created_at),
+      "_\n",
+      "_Originally posted by: ",
+      the_issue$author.name,
+      "_\n\n",
       change_body(the_issue$description)
     )
 
     if (length(all_labels) != 0) {
-      issue_client_id <- gh("POST /repos/{owner}/{repo}/issues",
+      issue_client_id <- gh(
+        "POST /repos/{owner}/{repo}/issues",
         owner = owner,
         repo = repo,
         title = the_issue$title,
@@ -154,7 +166,8 @@ move_issues_from_gitlab_to_github <- function(gitlab_url = "https://gitlab.com/"
         labels = as.list(all_labels)
       )
     } else {
-      issue_client_id <- gh("POST /repos/{owner}/{repo}/issues",
+      issue_client_id <- gh(
+        "POST /repos/{owner}/{repo}/issues",
         owner = owner,
         repo = repo,
         title = the_issue$title,
@@ -183,12 +196,17 @@ move_issues_from_gitlab_to_github <- function(gitlab_url = "https://gitlab.com/"
         # Change body
         the_com_body <- paste0(
           "_Comment retrieved from another repository_.\n",
-          "_Originally created on: ", as.Date(the_comment$created_at), "_\n",
-          "_Originally posted by: ", the_comment$author.name, "_\n\n",
+          "_Originally created on: ",
+          as.Date(the_comment$created_at),
+          "_\n",
+          "_Originally posted by: ",
+          the_comment$author.name,
+          "_\n\n",
           change_body(the_comment$body)
         )
 
-        issue_client_id <- gh("POST /repos/{owner}/{repo}/issues/{the_gh_id}/comments",
+        issue_client_id <- gh(
+          "POST /repos/{owner}/{repo}/issues/{the_gh_id}/comments",
           owner = owner,
           repo = repo,
           the_gh_id = the_gh_id,
@@ -201,7 +219,8 @@ move_issues_from_gitlab_to_github <- function(gitlab_url = "https://gitlab.com/"
     # Close issue if it was closed ----
     if (the_issue$state == "closed") {
       message(paste("Close issue", w.issue))
-      issue_client_id <- gh("POST /repos/{owner}/{repo}/issues/{the_gh_id}",
+      issue_client_id <- gh(
+        "POST /repos/{owner}/{repo}/issues/{the_gh_id}",
         owner = owner,
         repo = repo,
         the_gh_id = the_gh_id,

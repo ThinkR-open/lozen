@@ -27,34 +27,36 @@
 #' @examples
 #' \dontrun{
 #'
-#'   visualise_commits(
-#'     project_id = "<get_your_id_project>",
-#'     gitlab_url = Sys.getenv("GITLAB_URL", unset = "https://gitlab.com"),
-#'     date_min = "2022-09-22",
-#'     date_max = "2022-09-29",
-#'     private_token = Sys.getenv("GITLAB_TOKEN")
-#'   )
+#' visualise_commits(
+#'   project_id = "<get_your_id_project>",
+#'   gitlab_url = Sys.getenv("GITLAB_URL", unset = "https://gitlab.com"),
+#'   date_min = "2022-09-22",
+#'   date_max = "2022-09-29",
+#'   private_token = Sys.getenv("GITLAB_TOKEN")
+#' )
 #'
-#'   # Or on project already cloned
-#'   tempdir <-
-#'     clone_locally(full_url = "https://gitlab.com/my_name/my_repo", open = FALSE)
+#' # Or on project already cloned
+#' tempdir <-
+#'   clone_locally(full_url = "https://gitlab.com/my_name/my_repo", open = FALSE)
 #'
-#'   visualise_commits(
-#'     path = tempdir,
-#'     date_min = "2022-09-22",
-#'     date_max = "2022-09-29"
-#'   )
+#' visualise_commits(
+#'   path = tempdir,
+#'   date_min = "2022-09-22",
+#'   date_max = "2022-09-29"
+#' )
 #' }
-visualise_commits <- function(project_id,
-                              gitlab_url = Sys.getenv("GITLAB_URL", unset = "https://gitlab.com"),
-                              private_token = Sys.getenv("GITLAB_TOKEN"),
-                              path,
-                              ref = NULL,
-                              date_min = Sys.Date() - 7,
-                              date_max = Sys.Date(),
-                              language = c("fr", "en"),
-                              conv_tags = c("feat", "fix", "doc", "test", "ci", "refactor", "style", "chore"),
-                              color = "#15b7d6") {
+visualise_commits <- function(
+  project_id,
+  gitlab_url = Sys.getenv("GITLAB_URL", unset = "https://gitlab.com"),
+  private_token = Sys.getenv("GITLAB_TOKEN"),
+  path,
+  ref = NULL,
+  date_min = Sys.Date() - 7,
+  date_max = Sys.Date(),
+  language = c("fr", "en"),
+  conv_tags = c("feat", "fix", "doc", "test", "ci", "refactor", "style", "chore"),
+  color = "#15b7d6"
+    ) {
   if (missing(path)) {
     if (private_token == "") {
       stop(
@@ -89,7 +91,8 @@ visualise_commits <- function(project_id,
   }
 
   # Language
-  language <- match.arg(language,
+  language <- match.arg(
+    language,
     several.ok = FALSE
   )
   conv_tags <- tolower(conv_tags)
@@ -106,8 +109,11 @@ visualise_commits <- function(project_id,
 
   # Get commits
   all_commits <- git2r::commits(
-    repo = path, ref = ref,
-    topological = TRUE, time = TRUE, reverse = FALSE
+    repo = path,
+    ref = ref,
+    topological = TRUE,
+    time = TRUE,
+    reverse = FALSE
   ) %>%
     map_dfr(as_tibble) %>%
     mutate(order = rev(1:n()))
@@ -134,7 +140,8 @@ visualise_commits <- function(project_id,
 
   # Filter commits that respect the conventional commit style
   commits_conv <- commits_date_range %>%
-    mutate(conv_title = str_extract_all(message,
+    mutate(conv_title = str_extract_all(
+      message,
       pattern = paste(paste0("^", conv_tags), collapse = "|")
     )) %>%
     select(sha, conv_title) %>%

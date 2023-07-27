@@ -72,7 +72,6 @@ withr::with_tempdir({
     type_licence = usethis::use_proprietary_license
   )
 })
-
 ```
 
 # Transform project as book with lozen template with `create_book_project()`

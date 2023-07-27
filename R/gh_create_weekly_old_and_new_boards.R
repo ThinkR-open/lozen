@@ -67,22 +67,22 @@
 #' )
 #' cat(weekly_new$weekly_info)
 #' # clipr::write_clip(weekly_new$weekly_info)
-#'
 #' }
-
-gh_create_weekly_old_and_new_boards <- function(date_min,
-                                                date_max,
-                                                user,
-                                                repo,
-                                                board_url,
-                                                new_board = TRUE,
-                                                regex_done = "close|closed|done",
-                                                regex_validation = "a valider|validation",
-                                                regex_blocked = "blocked|bloque|bloqu\\\\u00e9",
-                                                regex_inprogress = "in progress|en cours|review|revision|r\\\\u00e9vision|r\\\\u00e9-validation",
-                                                regex_ready = "ready|pret|pr\\\\u00eat",
-                                                github_token = Sys.getenv("GITHUB_PAT"),
-                                                verbose = FALSE) {
+gh_create_weekly_old_and_new_boards <- function(
+  date_min,
+  date_max,
+  user,
+  repo,
+  board_url,
+  new_board = TRUE,
+  regex_done = "close|closed|done",
+  regex_validation = "a valider|validation",
+  regex_blocked = "blocked|bloque|bloqu\\\\u00e9",
+  regex_inprogress = "in progress|en cours|review|revision|r\\\\u00e9vision|r\\\\u00e9-validation",
+  regex_ready = "ready|pret|pr\\\\u00eat",
+  github_token = Sys.getenv("GITHUB_PAT"),
+  verbose = FALSE
+    ) {
   word_to_validate <- "Realised and to validate"
   word_realised <- "Realised and validated"
   word_blocked <- "Blocked"
@@ -144,7 +144,8 @@ gh_create_weekly_old_and_new_boards <- function(date_min,
       ) %>%
       mutate(state = tolower(state)) %>%
       select(-id) %>%
-      mutate(content_url = gsub(content_url,
+      mutate(content_url = gsub(
+        content_url,
         pattern = "https://github.com",
         replacement = "https://api.github.com/repos"
       ))
@@ -158,7 +159,8 @@ gh_create_weekly_old_and_new_boards <- function(date_min,
         state == "open")
 
     if (nrow(cards_tbl_blocked) != 0) {
-      cards_tbl_blocked <- inner_join(cards_tbl_blocked,
+      cards_tbl_blocked <- inner_join(
+        cards_tbl_blocked,
         select(all_issues_tbl, id, number, assignees),
         by = "number"
       )
@@ -178,7 +180,8 @@ gh_create_weekly_old_and_new_boards <- function(date_min,
       )
 
     if (nrow(cards_tbl_progress) != 0) {
-      cards_tbl_progress <- inner_join(cards_tbl_progress,
+      cards_tbl_progress <- inner_join(
+        cards_tbl_progress,
         select(all_issues_tbl, id, number, assignees),
         by = "number"
       )
@@ -194,7 +197,8 @@ gh_create_weekly_old_and_new_boards <- function(date_min,
       )
 
     if (nrow(cards_tbl_valid) != 0) {
-      cards_tbl_valid <- inner_join(cards_tbl_valid,
+      cards_tbl_valid <- inner_join(
+        cards_tbl_valid,
         select(all_issues_tbl, id, number, assignees),
         by = "number"
       )
@@ -213,7 +217,8 @@ gh_create_weekly_old_and_new_boards <- function(date_min,
       )
 
     if (nrow(cards_tbl_ready) != 0) {
-      cards_tbl_ready <- inner_join(cards_tbl_ready,
+      cards_tbl_ready <- inner_join(
+        cards_tbl_ready,
         select(all_issues_tbl, id, number, assignees),
         by = "number"
       )
@@ -243,7 +248,8 @@ gh_create_weekly_old_and_new_boards <- function(date_min,
     )
 
     if (nrow(cards_tbl_done) != 0) {
-      cards_tbl_done <- inner_join(cards_tbl_done,
+      cards_tbl_done <- inner_join(
+        cards_tbl_done,
         select(all_issues_tbl, id, number, assignees),
         by = "number"
       )
@@ -276,7 +282,8 @@ gh_create_weekly_old_and_new_boards <- function(date_min,
     if (nrow(cards_tbl_blocked) != 0) {
       cards_tbl_blocked <- cards_tbl_blocked %>%
         mutate(issue_number = as.numeric(
-          gsub(content_url,
+          gsub(
+            content_url,
             pattern = glue("https://api.github.com/repos/{user}/{repo}/issues/"),
             replacement = ""
           )
@@ -301,7 +308,8 @@ gh_create_weekly_old_and_new_boards <- function(date_min,
     if (nrow(cards_tbl_progress) != 0) {
       cards_tbl_progress <- cards_tbl_progress %>%
         mutate(issue_number = as.numeric(
-          gsub(content_url,
+          gsub(
+            content_url,
             pattern = glue("https://api.github.com/repos/{user}/{repo}/issues/"),
             replacement = ""
           )
@@ -328,7 +336,8 @@ gh_create_weekly_old_and_new_boards <- function(date_min,
     if (nrow(cards_tbl_valid) != 0) {
       cards_tbl_valid <- cards_tbl_valid %>%
         mutate(issue_number = as.numeric(
-          gsub(content_url,
+          gsub(
+            content_url,
             pattern = glue("https://api.github.com/repos/{user}/{repo}/issues/"),
             replacement = ""
           )
@@ -354,7 +363,8 @@ gh_create_weekly_old_and_new_boards <- function(date_min,
     if (nrow(cards_tbl_ready) != 0) {
       cards_tbl_ready <- cards_tbl_ready %>%
         mutate(issue_number = as.numeric(
-          gsub(content_url,
+          gsub(
+            content_url,
             pattern = glue("https://api.github.com/repos/{user}/{repo}/issues/"),
             replacement = ""
           )
@@ -380,7 +390,8 @@ gh_create_weekly_old_and_new_boards <- function(date_min,
     if (nrow(cards_tbl_done_closed) != 0) {
       cards_tbl_done_closed <- cards_tbl_done_closed %>%
         mutate(issue_number = as.numeric(
-          gsub(content_url,
+          gsub(
+            content_url,
             pattern = glue("https://api.github.com/repos/{user}/{repo}/issues/"),
             replacement = ""
           )
@@ -408,7 +419,8 @@ gh_create_weekly_old_and_new_boards <- function(date_min,
     if (nrow(cards_tbl_done_open) != 0) {
       cards_tbl_done_open <- cards_tbl_done_open %>%
         mutate(issue_number = as.numeric(
-          gsub(content_url,
+          gsub(
+            content_url,
             pattern = glue("https://api.github.com/repos/{user}/{repo}/issues/"),
             replacement = ""
           )
@@ -428,9 +440,12 @@ gh_create_weekly_old_and_new_boards <- function(date_min,
   }
 
   # New issues opened during the week (even if closed)
-  new_issues <- gh(glue("/repos/{user}/{repo}/issues"),
-    sort = "created", since = format_ISO8601(
-      as_datetime(paste0(date_min, "T00:00:01"),
+  new_issues <- gh(
+    glue("/repos/{user}/{repo}/issues"),
+    sort = "created",
+    since = format_ISO8601(
+      as_datetime(
+        paste0(date_min, "T00:00:01"),
         tz = lubridate::tz(now())
       ),
       usetz = TRUE

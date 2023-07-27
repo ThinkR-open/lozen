@@ -4,18 +4,19 @@
 # This is an internal function to deploy on connect,
 # it will be used by deploy_connect_shiny,deploy_connect_pkgdown and other functions
 # that will be added later.
-deploy_connect <- function(connect_url,
-                           connect_user,
-                           connect_api_token,
-                           app_name,
-                           app_primary_doc = NULL,
-                           deploy_dir,
-                           connect_name,
-                           file_to_ignore_regex,
-                           forceUpdate,
-                           lint,
-                           ...) {
-
+deploy_connect <- function(
+  connect_url,
+  connect_user,
+  connect_api_token,
+  app_name,
+  app_primary_doc = NULL,
+  deploy_dir,
+  connect_name,
+  file_to_ignore_regex,
+  forceUpdate,
+  lint,
+  ...
+    ) {
   if (missing(connect_url)) {
     stop("connect_url is missing")
   }

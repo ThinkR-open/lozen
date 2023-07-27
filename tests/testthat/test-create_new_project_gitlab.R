@@ -40,21 +40,20 @@ test_that("create_group_project works", {
   expect_message(create_group_project(project_name, namespace_id = NULL))
 })
 
-expect_message(project_id <- create_group_project(project_name, namespace_id = NULL, default_branch = "main"),
+expect_message(
+  project_id <- create_group_project(project_name, namespace_id = NULL, default_branch = "main"),
   regexp = "already exists"
 )
 
 # add_labels ----
 test_that("add_labels works", {
-
   ## Add new
   add_labels(project_id)
 
   ## Add again but nothing append
   expect_message(labels <- add_labels(project_id), "No new labels to add")
-  
+
   expect_equal(nrow(labels), 0)
-  
 })
 
 # add_board ----

@@ -39,7 +39,6 @@
 #'   board_url = board_url_user,
 #'   github_token = github_token
 #' )
-#'
 #' }
 graphql_to_tibble <- function(board_url, github_token = Sys.getenv("GITHUB_PAT")) {
   if (github_token == "") {
@@ -59,7 +58,8 @@ graphql_to_tibble <- function(board_url, github_token = Sys.getenv("GITHUB_PAT")
   if (grepl("^orgs/", organization_1)) {
     is_orgs_or_user <- "orgs"
     organization <- gsub("orgs/|users/", "", organization_1)
-    req_project_id <- glue('
+    req_project_id <- glue(
+      '
   query{
     organization(login: "$_organization_$"){
       projectV2(number: $_project_number_$) {
@@ -74,7 +74,8 @@ graphql_to_tibble <- function(board_url, github_token = Sys.getenv("GITHUB_PAT")
     is_orgs_or_user <- "users"
     organization <- gsub("orgs/|users/", "", organization_1)
     req_project_id <-
-      req_project_id <- glue('
+      req_project_id <- glue(
+        '
   query{
     user(login: "$_organization_$"){
       projectV2(number: $_project_number_$) {
@@ -98,7 +99,8 @@ graphql_to_tibble <- function(board_url, github_token = Sys.getenv("GITHUB_PAT")
 
 
   # get project board status
-  req_board_infos <- glue('query{
+  req_board_infos <- glue(
+    'query{
     node(id: "$_project_id_$") {
         ... on ProjectV2 {
           items(first: 100) {
@@ -136,7 +138,8 @@ graphql_to_tibble <- function(board_url, github_token = Sys.getenv("GITHUB_PAT")
     .close = "_$"
   )
 
-  board_infos <- gh_gql(req_board_infos,
+  board_infos <- gh_gql(
+    req_board_infos,
     .token = github_token
   )
 

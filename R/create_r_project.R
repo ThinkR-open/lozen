@@ -27,8 +27,8 @@
 #'     type_licence = usethis::use_proprietary_license
 #'   )
 #' })
-#' 
-#' 
+#'
+#'
 #' ### Shiny app
 #' withr::with_tempdir({
 #'   project_path <- getwd()
@@ -39,7 +39,7 @@
 #'     type_licence = usethis::use_proprietary_license
 #'   )
 #' })
-#' 
+#'
 #' ### Bookdown
 #' withr::with_tempdir({
 #'   project_path <- getwd()
@@ -50,7 +50,7 @@
 #'     type_licence = usethis::use_proprietary_license
 #'   )
 #' })
-#' 
+#'
 create_r_project <- function(project_path, type = c("package", "golem", "book"), name_licence, type_licence) {
   type <- match.arg(type)
 
