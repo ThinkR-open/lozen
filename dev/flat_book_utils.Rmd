@@ -1,0 +1,120 @@
+---
+title: "flat_book_utils.Rmd empty"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r development, include=FALSE}
+library(testthat)
+```
+
+<!--
+ You need to run the 'description' chunk in the '0-dev_history.Rmd' file before continuing your code there.
+-->
+
+```{r development-load}
+# Load already included functions if relevant
+pkgload::load_all(export_all = FALSE)
+```
+
+# paged_template
+
+```{r function-paged_template}
+#' Render pagedown html_paged
+#'
+#' @return A pagedown template
+#' @inheritParams pagedown::html_paged
+#' @export
+#'
+#' @examples
+paged_template <- function(
+  ...,
+  css = c("default-fonts", "default-page", "default"),
+  theme = NULL,
+  template = pkg_resource("html", "paged.html"),
+  csl = NULL,
+  front_cover = NULL,
+  back_cover = NULL
+    ) {
+  pagedown::html_paged(
+    ...,
+    css = css,
+    theme = theme,
+    template = template,
+    csl = csl,
+    front_cover = front_cover,
+    back_cover = back_cover
+  )
+}
+```
+
+```{r examples-paged_template, eval=FALSE}
+#' \dontrun{
+bookdown::render_book("index.Rmd", output_format = "lozen::paged_template")
+#' }
+```
+
+```{r tests-paged_template}
+test_that("paged_template works", {
+
+})
+```
+
+# bs4_book_template
+    
+```{r function-bs4_book_template}
+#' Render bookdown bs4book
+#'
+#' @return A pagedown template
+#' @inheritParams bookdown::bs4_book
+#' @importFrom bookdown bs4_book
+#' @export
+#'
+bs4_book_template <- function(
+  theme = bs4_book_theme(),
+  repo = NULL,
+  ...,
+  lib_dir = "libs",
+  pandoc_args = NULL,
+  extra_dependencies = NULL,
+  template = "default",
+  split_bib = FALSE,
+  footnotes_inline = TRUE
+    ) {
+  bs4_bookbs4_book(
+    theme = theme,
+    repo = repo,
+    ...,
+    lib_dir = lib_dir,
+    pandoc_args = pandoc_args,
+    extra_dependencies = extra_dependencies,
+    template = template,
+    split_bib = split_bib,
+    footnotes_inline = footnotes_inline
+  )
+}
+```
+  
+```{r example-bs4_book_template, eval=FALSE}
+#' \dontrun{
+bookdown::render_book("index.Rmd", output_format = "lozen::bs4_book_template")
+#' }
+```
+  
+```{r tests-bs4_book_template}
+test_that("bs4_book_template works", {
+  expect_true(inherits(bs4_book_template, "function"))
+})
+```
+  
+
+```{r development-inflate, eval=FALSE}
+# Run but keep eval=FALSE to avoid infinite loop
+# Execute in the console directly
+fusen::inflate(
+  flat_file = "dev/flat_book_utils.Rmd",
+  vignette_name = NA,
+  check = FALSE
+)
+```

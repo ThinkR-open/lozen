@@ -9,6 +9,7 @@ use_gitlab_ci(
   repo_name = "https://packagemanager.rstudio.com/all/__linux__/focal/latest",
   project_path = ".",
   type = "check-coverage-pkgdown",
+  bookdown_output_format = c("lozen::paged_template", "lozen::bs4_book_template"),
   overwrite = TRUE
 )
 }
@@ -20,6 +21,8 @@ use_gitlab_ci(
 \item{project_path}{Path of the project to add CI in.}
 
 \item{type}{type of the CI template to use}
+
+\item{bookdown_output_format}{If type="bookdown" it corresponds to the function used to output the bookdown}
 
 \item{overwrite}{whether to overwrite existing GitLab CI yml file}
 }

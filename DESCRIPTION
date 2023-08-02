@@ -21,6 +21,7 @@ Depends:
     R (>= 3.5)
 Imports: 
     attachment,
+    bookdown (>= 0.27),
     cli,
     desc,
     dplyr,
@@ -35,6 +36,7 @@ Imports:
     httr,
     lubridate,
     magrittr,
+    pagedown,
     pkgdown,
     purrr,
     rsconnect,
@@ -50,7 +52,6 @@ Imports:
     yaml,
     yesno
 Suggests: 
-    bookdown (>= 0.27),
     covr,
     devtools,
     DT,

@@ -186,7 +186,6 @@ Be sure to inflate all flat files before to update the documentation and run the
 #                  repos = "https://thinkr-open.r-universe.dev/")
 
 suggests <- c(
-  "bookdown",
   "renv",
   "remotes",
   "covr",
@@ -202,7 +201,8 @@ suggests <- c(
 )
 attachment::att_amend_desc(
   pkg_ignore = suggests,
-  extra.suggests = suggests
+  extra.suggests = suggests,
+  update.config = TRUE
 )
 attachment::set_remotes_to_desc()
 
