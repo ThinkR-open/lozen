@@ -17,5 +17,7 @@ A pagedown template
 Render pagedown html_paged
 }
 \examples{
+\dontrun{
 rmarkdown::render("my_file.Rmd", output_format = lozen::paged_template)
+#'}
 }

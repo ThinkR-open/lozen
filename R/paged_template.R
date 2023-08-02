@@ -4,13 +4,17 @@
 #'
 #' @return A pagedown template
 #' @inheritParams pagedown::html_paged
+#' @importFrom pagedown html_paged
 #' @export
 #'
 #' @examples
+#' \dontrun{
 #' rmarkdown::render("my_file.Rmd", output_format = lozen::paged_template)
-paged_template <- function(
-  ...) {
-  pagedown::html_paged(
+#' #'}
+paged_template <- function(    
+    ...
+) {    
+  html_paged(    
     ...
   )
 }

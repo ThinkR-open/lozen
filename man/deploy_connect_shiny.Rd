@@ -33,14 +33,9 @@ deploy_connect_shiny(
 
 \item{file_to_ignore_regex}{Regex to use to ignore files}
 
-\item{forceUpdate}{What should happen if there's no deployment record for
-the app, but there's an app with the same name on the server? If \code{TRUE},
-will always update the previously-deployed app. If \code{FALSE}, will ask
-the user what to do, or fail if not in an interactive context.
-
-Defaults to \code{TRUE} when called automatically by the IDE, and \code{FALSE}
-otherwise. You can override the default by setting option
-\code{rsconnect.force.update.apps}.}
+\item{forceUpdate}{If \code{TRUE}, update any previously-deployed app without
+asking. If \code{FALSE}, ask to update. If unset, defaults to the value of
+\code{getOption("rsconnect.force.update.apps", FALSE)}.}
 
 \item{lint}{Lint the project before initiating deployment, to identify
 potentially problematic code?}

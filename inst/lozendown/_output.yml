@@ -1,4 +1,4 @@
-lozendown::paged_template:
+lozen::paged_template:
   toc: true
   toc_depth: 2
   self_contained: true

@@ -61,16 +61,16 @@ Nulla tincidunt tincidunt mi.
 Curabitur iaculis, lorem vel rhoncus faucibus, felis magna fermentum augue, et ultricies lacus lorem varius purus.
 Curabitur eu amet.
 
-Regardez la figure \@ref(fig:fig1).
+Regardez la figure \@ref(fig:fig2).
 :::
 
 > Notez la façon de rédiger la légende d'une figure en markdown.
 > Attention à passer des lignes autour de la référence.
 > Ne pas utiliser de `_` dans le nom de la référence
 
-(ref:fig1cap) Légende de la figure rédigée en *markdown*
+(ref:fig2cap) Légende de la figure rédigée en *markdown*
 
-```{r fig1, echo=FALSE, out.width="100%", fig.width=8, fig.height=4, fig.cap="(ref:fig1cap)", fig.topcaption=TRUE}
+```{r fig2, echo=FALSE, out.width="100%", fig.width=8, fig.height=4, fig.cap="(ref:fig2cap)", fig.topcaption=TRUE}
 par(mar = c(2, 2, 0, 0))
 plot(cars)
 ```
@@ -85,15 +85,15 @@ Suspendisse lectus tortor, dignissim sit amet, adipiscing nec, ultricies sed, do
 Cras elementum ultrices diam.
 Maecenas ligula massa, varius a, semper congue, euismod non, mi.
 
-Regardez le tableau \@ref(tab:tab1).
+Regardez le tableau \@ref(tab:tab2).
 
 > Notez la façon de rédiger la légende d'une table en markdown.
 > Attention à passer des lignes autour de la référence.
 > Ne pas utiliser de `_` dans le nom de la référence
 
-Regardez le tableau \@ref(tab:tab1) avec la légende dans le code.
+Regardez le tableau \@ref(tab:tab2) avec la légende dans le code.
 
-```{r tab1, echo=FALSE, out.width="100%", ft.align="center"}
+```{r tab2, echo=FALSE, out.width="100%", ft.align="center"}
 # library(flextable)
 # ft <- flextable(head(mtcars))
 # ft <- set_caption(ft, 
