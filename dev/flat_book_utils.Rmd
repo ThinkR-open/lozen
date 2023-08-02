@@ -38,7 +38,9 @@ paged_template <- function(
 ```
 
 ```{r examples-paged_template, eval=FALSE}
-rmarkdown::render("my_file.Rmd", output_format = lozen::paged_template)
+#' \dontrun{
+bookdown::render_book("index.Rmd", output_format = "lozen::paged_template")
+#' }
 ```
 
 ```{r tests-paged_template}
@@ -47,6 +49,33 @@ test_that("paged_template works", {
 })
 ```
 
+# bs4_book_template
+    
+```{r function-bs4_book_template}
+#' Render bookdown bs4book
+#' 
+#' @return A pagedown template
+#' @inheritParams bookdown::bs4_book
+#' @importFrom bookdown bs4_book
+#' @export
+#' 
+bs4_book_template <- function(...){
+    bs4_book(...)
+}
+```
+  
+```{r example-bs4_book_template, eval=FALSE}
+#' \dontrun{
+bookdown::render_book("index.Rmd", output_format = "lozen::bs4_book_template")
+#' }
+```
+  
+```{r tests-bs4_book_template}
+test_that("bs4_book_template works", {
+  expect_true(inherits(bs4_book_template, "function")) 
+})
+```
+  
 
 ```{r development-inflate, eval=FALSE}
 # Run but keep eval=FALSE to avoid infinite loop
