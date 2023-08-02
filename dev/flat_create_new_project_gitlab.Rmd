@@ -135,21 +135,21 @@ project_path <- clone_locally(
 
 ## Create the skeleton for your product and initiate the CI/CD
    
-To initiate a new product, please take a look at the following vignette : `vignettes/ac-create-the-skeleton-of-the-r-project--package-app-book-.Rmd`.
+To initiate a new product, please take a look at the following vignette : `ac-create-the-skeleton-of-the-r-project--package-app-book-.Rmd`.
 
 ## Initiate the CI/CD
 
-To set up continuous integration and continuous deployment of your product, please take a look at the following vignette : `vignettes/ad-set-up-continuous-integration-and-deployment-through-gitlab-ci.Rmd`.
+To set up continuous integration and continuous deployment of your product, please take a look at the following vignette : `ad-set-up-continuous-integration-and-deployment-through-gitlab-ci.Rmd`.
 
 
 # Manage git tools (branches, commits, issues, etc.)
 
-Please take a look at the following vignette : `vignettes/bb-manage-git-tools--branches-commits-etc--.Rmd`.
+Please take a look at the following vignette : `bb-manage-git-tools--branches-commits-etc--.Rmd`.
 
 
 # Create and manage the forge board and wiki
 
-Please take a look at the following vignette : `vignettes/ba-manage-forge-board-wiki.Rmd`.
+Please take a look at the following vignette : `ba-manage-forge-board-wiki.Rmd`.
 
 
 # Visualise the status of your project
