@@ -32,7 +32,6 @@ flat_create_new_project_gitlab.Rmd:
   tests: tests/testthat/test-create_new_project_gitlab.R
   vignettes: vignettes/aa-create-a-new-project-with-gitlab.Rmd
   inflate:
-    pkg: lozen
     flat_file: dev/flat_create_new_project_gitlab.Rmd
     vignette_name: aa - Create a new project with GitLab
     open_vignette: false
@@ -44,17 +43,19 @@ flat_create_r_project_skeleton.Rmd:
   state: active
   R:
   - R/add_build_ignore.R
-  - R/local_project.R
+  - R/add_git_ignore.R
   - R/add_kit_package.R
   - R/add_kit_project.R
+  - R/create_book_project.R
   - R/create_r_project.R
-  - R/use_dev_history.R
+  - R/local_project.R
   tests:
-  - tests/testthat/test-use_dev_history.R
   - tests/testthat/test-create_r_project.R
+  - tests/testthat/test-create_book_project.R
   - tests/testthat/test-add_kit_project.R
   - tests/testthat/test-add_kit_package.R
   - tests/testthat/test-add_build_ignore.R
+  - tests/testthat/test-add_git_ignore.R
   - tests/testthat/test-local_project.R
   vignettes: vignettes/ac-create-the-skeleton-of-the-r-project--package-app-book-.Rmd
   inflate:
@@ -62,7 +63,7 @@ flat_create_r_project_skeleton.Rmd:
     vignette_name: ac - Create the skeleton of the R project (package, app, book)
     open_vignette: false
     check: false
-    document: false
+    document: true
     overwrite: 'yes'
 flat_create_special_issues.Rmd:
   path: dev/flat_create_special_issues.Rmd

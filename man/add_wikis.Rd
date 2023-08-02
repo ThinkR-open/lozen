@@ -40,9 +40,9 @@ Types:
 \examples{
 \dontrun{
 add_wikis(
-  project_id = project_id, 
-  project_name = project_name, 
-  group_url = group_url, 
+  project_id = project_id,
+  project_name = project_name,
+  group_url = group_url,
   group = basename(group_url)
 )
 }

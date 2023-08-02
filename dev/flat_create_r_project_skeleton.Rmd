@@ -14,67 +14,6 @@ library(testthat)
 pkgload::load_all(export_all = FALSE)
 ```
 
-# Use a dev history file
-
-`use_dev_history()` creates `dev_history.Rmd` files:
-
-- "dev_history_package": Instructions to create and develop a R package
-- "dev_history_renv": Instructions to init renv
-
-This function will put the file into your "dev" folder.
-
-```{r function-use_dev_history}
-#' Une a dev histroy file
-#'
-#' @param path Path to project to add dev_history in
-#' @param type Type of dev_history. Multiple types possible among "package", "book", "renv".
-#'
-#' @export
-use_dev_history <- function(path = ".", type = c("package", "renv")) {
-  type <- match.arg(type, choices = c("package", "book", "renv"), several.ok = TRUE)
-
-  old <- setwd(path)
-  on.exit(setwd(old))
-
-  if (!dir.exists(file.path(path, "dev"))) {
-    dir.create(file.path(path, "dev"))
-  }
-
-  if (any(grepl("connect", type))) {
-    add_git_ignore("rsconnect/", directory = path)
-  }
-
-  for (i in type) {
-    file <- system.file("package", paste0("dev_history_", i, ".R"), package = "lozen")
-    if (file == "") {
-      file <- system.file("package", paste0("dev_history_", i, ".Rmd"), package = "lozen")
-    }
-    if (file == "") {
-      file <- system.file("package", paste0("flat_", i, ".Rmd"), package = "lozen")
-    }
-    if (file == "") {
-      stop("template ", i, " not found")
-    }
-    file.copy(file, file.path(path, "dev"))
-  }
-
-  add_build_ignore("dev")
-}
-```
-
-```{r examples-use_dev_history}
-withr::with_tempdir({
-  use_dev_history(path = ".", type = c("package", "book", "renv"))
-})
-```
-
-```{r tests-use_dev_history}
-test_that("use_dev_history works", {
-
-})
-```
-
-
 # `create_r_project()`: Create a R project with full content skeleton
 
 ```{r function-create_r_project}
@@ -491,6 +430,65 @@ test_that("add_git_ignore works", {
 })
 ```
 
+# Use a dev history file
+
+`use_dev_history()` creates `dev_history.Rmd` files:
+
+- "dev_history_package": Instructions to create and develop a R package
+- "dev_history_renv": Instructions to init renv
+
+This function will put the file into your "dev" folder.
+
+```{r function-use_dev_history}
+#' Une a dev histroy file
+#'
+#' @param path Path to project to add dev_history in
+#' @param type Type of dev_history. Multiple types possible among "package", "book", "renv".
+#'
+#' @export
+use_dev_history <- function(path = ".", type = c("package", "renv")) {
+  type <- match.arg(type, choices = c("package", "book", "renv"), several.ok = TRUE)
+
+  old <- setwd(path)
+  on.exit(setwd(old))
+
+  if (!dir.exists(file.path(path, "dev"))) {
+    dir.create(file.path(path, "dev"))
+  }
+
+  if (any(grepl("connect", type))) {
+    add_git_ignore("rsconnect/", directory = path)
+  }
+
+  for (i in type) {
+    file <- system.file("package", paste0("dev_history_", i, ".R"), package = "lozen")
+    if (file == "") {
+      file <- system.file("package", paste0("dev_history_", i, ".Rmd"), package = "lozen")
+    }
+    if (file == "") {
+      file <- system.file("package", paste0("flat_", i, ".Rmd"), package = "lozen")
+    }
+    if (file == "") {
+      stop("template ", i, " not found")
+    }
+    file.copy(file, file.path(path, "dev"))
+  }
+
+  add_build_ignore("dev")
+}
+```
+
+```{r examples-use_dev_history, eval=FALSE}
+withr::with_tempdir({
+  use_dev_history(path = ".", type = c("package", "book", "renv"))
+})
+```
+
+```{r tests-use_dev_history}
+test_that("use_dev_history works", {
+
+})
+```
 
 
 ```{r tests-local_project, filename = "local_project"}
