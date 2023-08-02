@@ -28,11 +28,23 @@ pkgload::load_all(export_all = FALSE)
 #' @export
 #'
 #' @examples
-paged_template <- function(    
-    ...
-) {    
-  pagedown::html_paged(    
-    ...
+paged_template <- function(
+  ...,
+  css = c("default-fonts", "default-page", "default"),
+  theme = NULL,
+  template = pkg_resource("html", "paged.html"),
+  csl = NULL,
+  front_cover = NULL,
+  back_cover = NULL
+    ) {
+  pagedown::html_paged(
+    ...,
+    css = css,
+    theme = theme,
+    template = template,
+    csl = csl,
+    front_cover = front_cover,
+    back_cover = back_cover
   )
 }
 ```
@@ -53,14 +65,34 @@ test_that("paged_template works", {
     
 ```{r function-bs4_book_template}
 #' Render bookdown bs4book
-#' 
+#'
 #' @return A pagedown template
 #' @inheritParams bookdown::bs4_book
 #' @importFrom bookdown bs4_book
 #' @export
-#' 
-bs4_book_template <- function(...){
-    bs4_book(...)
+#'
+bs4_book_template <- function(
+  theme = bs4_book_theme(),
+  repo = NULL,
+  ...,
+  lib_dir = "libs",
+  pandoc_args = NULL,
+  extra_dependencies = NULL,
+  template = "default",
+  split_bib = FALSE,
+  footnotes_inline = TRUE
+    ) {
+  bs4_bookbs4_book(
+    theme = theme,
+    repo = repo,
+    ...,
+    lib_dir = lib_dir,
+    pandoc_args = pandoc_args,
+    extra_dependencies = extra_dependencies,
+    template = template,
+    split_bib = split_bib,
+    footnotes_inline = footnotes_inline
+  )
 }
 ```
   
@@ -72,7 +104,7 @@ bookdown::render_book("index.Rmd", output_format = "lozen::bs4_book_template")
   
 ```{r tests-bs4_book_template}
 test_that("bs4_book_template works", {
-  expect_true(inherits(bs4_book_template, "function")) 
+  expect_true(inherits(bs4_book_template, "function"))
 })
 ```
   
@@ -84,5 +116,5 @@ fusen::inflate(
   flat_file = "dev/flat_book_utils.Rmd",
   vignette_name = NA,
   check = FALSE
-  )
+)
 ```

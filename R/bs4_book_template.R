@@ -11,6 +11,26 @@
 #' \dontrun{
 #' bookdown::render_book("index.Rmd", output_format = "lozen::bs4_book_template")
 #' }
-bs4_book_template <- function(...){
-    bs4_book(...)
+bs4_book_template <- function(
+  theme = bs4_book_theme(),
+  repo = NULL,
+  ...,
+  lib_dir = "libs",
+  pandoc_args = NULL,
+  extra_dependencies = NULL,
+  template = "default",
+  split_bib = FALSE,
+  footnotes_inline = TRUE
+) {
+    bs4_bookbs4_book(
+  theme = theme,
+  repo = repo,
+  ...,
+  lib_dir = lib_dir,
+  pandoc_args = pandoc_args,
+  extra_dependencies = extra_dependencies,
+  template = template,
+  split_bib = split_bib,
+  footnotes_inline = footnotes_inline
+)
 }

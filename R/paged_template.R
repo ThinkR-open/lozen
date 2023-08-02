@@ -11,9 +11,21 @@
 #' bookdown::render_book("index.Rmd", output_format = "lozen::paged_template")
 #' }
 paged_template <- function(    
-    ...
+    ...,
+     css = c("default-fonts", "default-page", "default"),
+  theme = NULL,
+  template = pkg_resource("html", "paged.html"),
+  csl = NULL,
+  front_cover = NULL,
+  back_cover = NULL
 ) {    
   pagedown::html_paged(    
-    ...
+    ...,
+    css = css,
+    theme = theme,
+    template = template,
+    csl = csl,
+    front_cover = front_cover,
+    back_cover = back_cover
   )
 }
