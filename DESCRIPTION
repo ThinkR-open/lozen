@@ -35,6 +35,7 @@ Imports:
     httr,
     lubridate,
     magrittr,
+    pagedown,
     pkgdown,
     purrr,
     rsconnect,

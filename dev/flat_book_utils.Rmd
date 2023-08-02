@@ -1,0 +1,59 @@
+---
+title: "flat_book_utils.Rmd empty"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r development, include=FALSE}
+library(testthat)
+```
+
+<!--
+ You need to run the 'description' chunk in the '0-dev_history.Rmd' file before continuing your code there.
+-->
+
+```{r development-load}
+# Load already included functions if relevant
+pkgload::load_all(export_all = FALSE)
+```
+
+# paged_template
+
+```{r function-paged_template}
+#' Render pagedown html_paged
+#'
+#' @return A pagedown template
+#' @inheritParams pagedown::html_paged
+#' @export
+#'
+#' @examples
+paged_template <- function(    
+    ...
+) {    
+  pagedown::html_paged(    
+    ...
+  )
+}
+```
+
+```{r examples-paged_template, eval=FALSE}
+rmarkdown::render("my_file.Rmd", output_format = lozen::paged_template)
+```
+
+```{r tests-paged_template}
+test_that("paged_template works", {
+
+})
+```
+
+
+```{r development-inflate, eval=FALSE}
+# Run but keep eval=FALSE to avoid infinite loop
+# Execute in the console directly
+fusen::inflate(
+  flat_file = "dev/flat_book_utils.Rmd",
+  vignette_name = NA,
+  check = FALSE
+  )
+```
