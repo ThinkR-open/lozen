@@ -10,9 +10,10 @@
 #' \dontrun{
 #' bookdown::render_book("index.Rmd", output_format = "lozen::paged_template")
 #' }
-paged_template <- function(
-  ...) {
-  pagedown::html_paged(
+paged_template <- function(    
+    ...
+) {    
+  pagedown::html_paged(    
     ...
   )
 }
