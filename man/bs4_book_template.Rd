@@ -47,8 +47,3 @@ A pagedown template
 \description{
 Render bookdown bs4book
 }
-\examples{
-\dontrun{
-bookdown::render_book("index.Rmd", output_format = "lozen::bs4_book_template")
-}
-}

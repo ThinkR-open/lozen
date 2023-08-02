@@ -41,8 +41,3 @@ A pagedown template
 \description{
 Render pagedown html_paged
 }
-\examples{
-\dontrun{
-bookdown::render_book("index.Rmd", output_format = "lozen::paged_template")
-}
-}
