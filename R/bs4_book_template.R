@@ -8,4 +8,3 @@
 #' @export
 #'
 bs4_book_template <- bookdown::bs4_book
-

@@ -38,7 +38,20 @@ bookdown::render_book("index.Rmd", output_format = "lozen::paged_template")
 
 ```{r tests-paged_template}
 test_that("paged_template works", {
+  withr::with_tempdir({
+    lozen::create_r_project(
+      project_path = getwd(),
+      type = "book",
+      type_licence = usethis::use_mit_license,
+      name_licence = "Bibi"
+    )
 
+    bookdown::render_book("index.Rmd", output_format = "lozen::paged_template")
+
+    expect_true(
+      file.exists(file.path(getwd(), "_main.html"))
+    )
+  })
 })
 ```
 
@@ -53,7 +66,6 @@ test_that("paged_template works", {
 #' @export
 #'
 bs4_book_template <- bookdown::bs4_book
-
 ```
   
 ```{r example-bs4_book_template, eval=FALSE}
@@ -65,6 +77,25 @@ bookdown::render_book("index.Rmd", output_format = "lozen::bs4_book_template")
 ```{r tests-bs4_book_template}
 test_that("bs4_book_template works", {
   expect_true(inherits(bs4_book_template, "function"))
+
+  withr::with_tempdir({
+    lozen::create_r_project(
+      project_path = getwd(),
+      type = "book",
+      type_licence = usethis::use_mit_license,
+      name_licence = "Bibi"
+    )
+
+    bookdown::render_book("index.Rmd", output_format = "lozen::bs4_book_template")
+
+    expect_true(
+      dir.exists(file.path(getwd(), "_book"))
+    )
+
+    expect_true(
+      file.exists(file.path(getwd(), "_book", "index.html"))
+    )
+  })
 })
 ```
   
