@@ -4,7 +4,6 @@ dir.r: R
 dir.v: vignettes
 dir.t: tests
 extra.suggests:
-  - bookdown
   - renv
   - remotes
   - covr
@@ -18,7 +17,6 @@ extra.suggests:
   - markdown
   - fusen
 pkg_ignore:
-  - bookdown
   - renv
   - remotes
   - covr

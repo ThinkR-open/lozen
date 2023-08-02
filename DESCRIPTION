@@ -21,6 +21,7 @@ Depends:
     R (>= 3.5)
 Imports: 
     attachment,
+    bookdown (>= 0.27),
     cli,
     desc,
     dplyr,
@@ -51,7 +52,6 @@ Imports:
     yaml,
     yesno
 Suggests: 
-    bookdown (>= 0.27),
     covr,
     devtools,
     DT,
@@ -70,7 +70,7 @@ Suggests:
     thinkrtemplate
 VignetteBuilder: 
     knitr
-Remotes: 
+Remotes:  
     ThinkR-open/gitlabr,
     ThinkR-open/testdown,
     ThinkR-open/thinkrtemplate
