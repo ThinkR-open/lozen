@@ -27,26 +27,7 @@ pkgload::load_all(export_all = FALSE)
 #' @inheritParams pagedown::html_paged
 #' @export
 #'
-#' @examples
-paged_template <- function(
-  ...,
-  css = c("default-fonts", "default-page", "default"),
-  theme = NULL,
-  template = pkg_resource("html", "paged.html"),
-  csl = NULL,
-  front_cover = NULL,
-  back_cover = NULL
-    ) {
-  pagedown::html_paged(
-    ...,
-    css = css,
-    theme = theme,
-    template = template,
-    csl = csl,
-    front_cover = front_cover,
-    back_cover = back_cover
-  )
-}
+paged_template <- pagedown::html_paged
 ```
 
 ```{r examples-paged_template, eval=FALSE}
@@ -71,29 +52,8 @@ test_that("paged_template works", {
 #' @importFrom bookdown bs4_book
 #' @export
 #'
-bs4_book_template <- function(
-  theme = bs4_book_theme(),
-  repo = NULL,
-  ...,
-  lib_dir = "libs",
-  pandoc_args = NULL,
-  extra_dependencies = NULL,
-  template = "default",
-  split_bib = FALSE,
-  footnotes_inline = TRUE
-    ) {
-  bs4_bookbs4_book(
-    theme = theme,
-    repo = repo,
-    ...,
-    lib_dir = lib_dir,
-    pandoc_args = pandoc_args,
-    extra_dependencies = extra_dependencies,
-    template = template,
-    split_bib = split_bib,
-    footnotes_inline = footnotes_inline
-  )
-}
+bs4_book_template <- bookdown::bs4_book
+
 ```
   
 ```{r example-bs4_book_template, eval=FALSE}
