@@ -321,7 +321,7 @@ test_that("build_pkgdown_with_reports works", {
 # Execute in the console directly
 fusen::inflate(
   flat_file = "dev/flat_build_pkgdown_with_reports.Rmd",
-  vignette_name = "ad - Build a pkgdown with reports",
+  vignette_name = "af - Build a pkgdown with reports",
   overwrite = TRUE,
   check = FALSE,
   document = FALSE,

@@ -21,6 +21,7 @@ The following instructions are used to initiate a product on your Forge. But the
 library(gitlabr)
 library(lozen)
 library(dplyr)
+library(stringr)
 ```
 
 # Define the name of the principal branch
@@ -121,11 +122,12 @@ You will be able to create the first skeleton of your product, depending if it i
 
 ## Define local installation and clone
 
-This code will clone the GitLab project locally, in a temporary directory.
+This code will clone the GitLab project locally, in the path of your choice (if no `project_path` is provided, it will be cloned in a temporary directory).
 
 ```{r, eval=FALSE}
 project_path <- clone_locally(
   project_name = the_project[["name"]],
+  project_path = "path/to/the/project",
   group_url = group_url,
   open = FALSE
 )
