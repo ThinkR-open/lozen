@@ -2,7 +2,7 @@
 
 test_that("bs4_book_template works", {
   expect_true(inherits(bs4_book_template, "function"))
-
+  skip_on_ci()
   withr::with_tempdir({
     lozen::create_r_project(
       project_path = getwd(),

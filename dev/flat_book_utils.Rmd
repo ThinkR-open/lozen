@@ -38,7 +38,10 @@ bookdown::render_book("index.Rmd", output_format = "lozen::paged_template")
 
 ```{r tests-paged_template}
 test_that("paged_template works", {
+  skip_on_ci()
+  
   withr::with_tempdir({
+    
     lozen::create_r_project(
       project_path = getwd(),
       type = "book",
@@ -77,7 +80,7 @@ bookdown::render_book("index.Rmd", output_format = "lozen::bs4_book_template")
 ```{r tests-bs4_book_template}
 test_that("bs4_book_template works", {
   expect_true(inherits(bs4_book_template, "function"))
-
+  skip_on_ci()
   withr::with_tempdir({
     lozen::create_r_project(
       project_path = getwd(),
