@@ -102,6 +102,7 @@
 <span>  repo_name <span class="op">=</span> <span class="st">"https://packagemanager.rstudio.com/all/__linux__/focal/latest"</span>,</span>
 <span>  project_path <span class="op">=</span> <span class="st">"."</span>,</span>
 <span>  type <span class="op">=</span> <span class="st">"check-coverage-pkgdown"</span>,</span>
+<span>  bookdown_output_format <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"lozen::paged_template"</span>, <span class="st">"lozen::bs4_book_template"</span><span class="op">)</span>,</span>
 <span>  overwrite <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -122,6 +123,10 @@
 
 <dt>type</dt>
 <dd><p>type of the CI template to use</p></dd>
+
+
+<dt>bookdown_output_format</dt>
+<dd><p>If type="bookdown" it corresponds to the function used to output the bookdown</p></dd>
 
 
 <dt>overwrite</dt>
