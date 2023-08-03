@@ -93,7 +93,7 @@ add_issue_clients(
 ```{r tests-add_issue_clients}
 ## 04-05-2023 On skip pour des raisons d'auth sur le CI
 skip_on_ci()
-
+skip_if_not(Sys.getenv("GITLAB_TOKEN") != "")
 test_that("add_issue_clients works", {
   expect_true(inherits(add_issue_clients, "function"))
 
@@ -291,7 +291,7 @@ add_issue_dev(
 ```{r tests-add_issue_dev}
 ## 04-05-2023 On skip pour des raisons d'auth sur le CI
 skip_on_ci()
-
+skip_if_not(Sys.getenv("GITLAB_TOKEN") != "")
 test_that("add_issue_dev works", {
   expect_true(inherits(add_issue_dev, "function"))
 
@@ -437,7 +437,7 @@ create_issue_content_dev(
 ```{r tests-create_issue_content_dev}
 ## 04-05-2023 On skip pour des raisons d'auth sur le CI
 skip_on_ci()
-
+skip_if_not(Sys.getenv("GITLAB_TOKEN") != "")
 test_that("create_issue_content_dev works", {
   expect_true(inherits(create_issue_content_dev, "function"))
 
@@ -547,7 +547,7 @@ add_issue_kickoff(project_id = "<get_your_id_project>")
 ```{r tests-add_issue_kickoff}
 ## 04-05-2023 On skip pour des raisons d'auth sur le CI
 skip_on_ci()
-
+skip_if_not(Sys.getenv("GITLAB_TOKEN") != "")
 test_that("add_issue_kickoff works", {
   gitlab_url <- Sys.getenv("GITLAB_URL", unset = "https://gitlab.com")
 
@@ -641,7 +641,7 @@ create_issue_content_kickoff()
 ```{r tests-create_issue_content_kickoff}
 ## 04-05-2023 On skip pour des raisons d'auth sur le CI
 skip_on_ci()
-
+skip_if_not(Sys.getenv("GITLAB_TOKEN") != "")
 test_that("create_issue_content_kickoff works", {
   expect_equal(
     object = create_issue_content_kickoff(),
@@ -762,12 +762,9 @@ add_issue_clients_github(
 ```{r tests-add_issue_clients_github}
 ## 04-05-2023 On skip pour des raisons d'auth sur le CI
 skip_on_ci()
-
+skip_if_not(Sys.getenv("GITHUB_PAT") != "")
 test_that("add_issue_clients_github works", {
   expect_true(inherits(add_issue_clients_github, "function"))
-
-
-
   user <- gh::gh("GET /user")
   owner <- user$login
   repo_name <- "my-new-repo-for-gh-testing"
@@ -1003,7 +1000,7 @@ add_issue_dev_github(
 ```{r tests-add_issue_dev_github}
 ## 04-05-2023 On skip pour des raisons d'auth sur le CI
 skip_on_ci()
-
+skip_if_not(Sys.getenv("GITHUB_PAT") != "")
 test_that("add_issue_dev_github works", {
   expect_true(inherits(add_issue_dev_github, "function"))
 
@@ -1107,7 +1104,7 @@ create_issue_content_dev_github(
 ```{r tests-create_issue_content_dev_github}
 ## 04-05-2023 On skip pour des raisons d'auth sur le CI
 skip_on_ci()
-
+skip_if_not(Sys.getenv("GITHUB_PAT") != "")
 test_that("create_issue_content_dev_github works", {
   expect_true(inherits(create_issue_content_dev_github, "function"))
 
@@ -1233,7 +1230,7 @@ add_issue_kickoff_github(
 ```{r tests-add_issue_kickoff_github}
 ## 04-05-2023 On skip pour des raisons d'auth sur le CI
 skip_on_ci()
-
+skip_if_not(Sys.getenv("GITHUB_PAT") != "")
 test_that("add_issue_kickoff_github works", {
   # run depending on env variable value
   user <- gh::gh("GET /user")

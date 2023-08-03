@@ -2,7 +2,7 @@
 
 ## 04-05-2023 On skip pour des raisons d'auth sur le CI
 skip_on_ci()
-
+skip_if_not(Sys.getenv("GITLAB_TOKEN") != "")
 test_that("gl_create_weekly works", {
   expect_true(inherits(gl_create_weekly, "function"))
   
