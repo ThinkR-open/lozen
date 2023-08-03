@@ -122,7 +122,7 @@ use_gitlab_ci <- function(
 
     if (length(bookdown_lines) >= 0) {
       if (bookdown_output_format[1] == "lozen::paged_template") {
-        line_to_add <- "        - Rscript -e 'install.packages(\"lozen\", repos = c(\"https://thinkr-open.r-universe.dev\", \"https://cran.rstudio.com\"));bookdown::render_book(\"index.Rmd\", output_format = \"lozen::paged_template\", clean = FALSE);file.copy(\"_main.html\", \"public/_pagedown.html\")'"
+        line_to_add <- "        - Rscript -e 'install.packages(\"lozen\", repos = c(\"https://thinkr-open.r-universe.dev\", \"https://cran.rstudio.com\"));bookdown::render_book(\"index.Rmd\", output_format = \"lozen::paged_template\", clean = FALSE);file.copy(\"_main.html\", \"public/index.html\")'"
       } else {
         line_to_add <- "        - Rscript -e 'install.packages(\"lozen\", repos = c(\"https://thinkr-open.r-universe.dev\", \"https://cran.rstudio.com\"));bookdown::render_book(\"index.Rmd\", output_format = \"lozen::bs4_book_template\", output_dir = \"public\", clean = FALSE)'"
       }

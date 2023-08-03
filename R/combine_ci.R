@@ -16,10 +16,10 @@
 #' @examples
 #' # pkgdown yml
 #' full <- yaml::read_yaml(file = system.file("yaml", ".gitlab-ci-pkg.yml", package = "lozen"))
-#'
+#' 
 #' # shiny yaml
 #' connect <- yaml::read_yaml(file = system.file("yaml", ".gitlab-ci-shiny.yml", package = "lozen"))
-#'
+#' 
 #' ci_list <- combine_ci(ci1 = full, ci2 = connect)
 combine_ci <- function(ci1, ci2) {
   les_nom <- unique(c(names(ci1), names(ci2)))

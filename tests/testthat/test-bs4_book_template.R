@@ -2,4 +2,23 @@
 
 test_that("bs4_book_template works", {
   expect_true(inherits(bs4_book_template, "function"))
+  skip_on_ci()
+  withr::with_tempdir({
+    lozen::create_r_project(
+      project_path = getwd(),
+      type = "book",
+      type_licence = usethis::use_mit_license,
+      name_licence = "Bibi"
+    )
+
+    bookdown::render_book("index.Rmd", output_format = "lozen::bs4_book_template")
+
+    expect_true(
+      dir.exists(file.path(getwd(), "_book"))
+    )
+
+    expect_true(
+      file.exists(file.path(getwd(), "_book", "index.html"))
+    )
+  })
 })
