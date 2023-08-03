@@ -80,7 +80,7 @@ For the following to be working, please ensure you are working in a valid R pack
 
 If this is not done yet please go to the vignette `vignettes/aa-create-a-new-project-with-gitlab.Rmd` and follow the steps related to the creation of a project on Gitlab and of a R package skeleton.
 
-Before running the following commands please ensure that you are working on your R package project.
+Before running the following commands please ensure that you are working directory is there of your R package project.
 
 ### Create the pkgdown
 
@@ -135,7 +135,7 @@ For the following to be working, please ensure you are working in a shiny app in
 
 If this is not done yet please go to the vignette `vignettes/aa-create-a-new-project-with-gitlab.Rmd` and follow the steps related to the creation of a project on Gitlab and of a shiny app skeleton.
 
-Before running the following commands please ensure that you are working on your golem app project.
+Before running the following commands please ensure that you are working directory is there of your golem project.
 
 ### Add an app.R at the root of your package to deploy on RStudio Connect 
 
@@ -189,7 +189,7 @@ For the following to be working, please ensure you are working in a book project
 
 If this is not done yet please go to the vignette `vignettes/aa-create-a-new-project-with-gitlab.Rmd` and follow the steps related to the creation of a project on Gitlab and of a book project skeleton.
 
-Before running the following commands please ensure that you are working on your book project.
+Before running the following commands please ensure that you are working directory is there of your book project.
 
 ### Build your book
 
