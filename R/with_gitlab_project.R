@@ -98,17 +98,17 @@ with_gitlab_project <- function(
     )
   })
 
-  on.exit(
-    {
-      # Delete the gitlab project
-      gitlab(
-        req = paste0("projects/", project_id),
-        verb = httr::DELETE
-      )
-      unset_gitlab_connection()
-    },
-    add = TRUE
-  )
+  # on.exit(
+  #   {
+  #     # Delete the gitlab project
+  #     gitlab(
+  #       req = paste0("projects/", project_id),
+  #       verb = httr::DELETE
+  #     )
+  #     unset_gitlab_connection()
+  #   },
+  #   add = TRUE
+  # )
 
   ## Create tmp dir
   tmpdir <- tempfile(pattern = "lozen-test-project-")
