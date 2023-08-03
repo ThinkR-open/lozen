@@ -2249,9 +2249,11 @@ visualise_commits <- function(project_id,
   
 ```{r tests-visualise_commits}
 ## 04-05-2023 On skip pour des raisons d'auth sur le CI
-
+## 03-08-2023 
 test_that("visualise_commits works", {
 skip_on_ci()
+
+skip_if_not(Sys.getenv("GITLAB_TOKEN") != "")
 
 gitlab_url <-
   Sys.getenv("GITLAB_URL", unset = "https://gitlab.com")

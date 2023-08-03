@@ -93,5 +93,6 @@ weekly_new <- gh_create_weekly_old_and_new_boards(
 )
 cat(weekly_new$weekly_info)
 # clipr::write_clip(weekly_new$weekly_info)
+
 }
 }

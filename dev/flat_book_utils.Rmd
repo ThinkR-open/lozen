@@ -101,7 +101,74 @@ test_that("bs4_book_template works", {
   })
 })
 ```
+
+# render_book
+    
+```{r function-render_book}
+#' Render a book with lozen formats
+#' 
+#' @param rmd_to_render rmd file to render
+#' @param output_format format to be user to render the book
+#' @param output_dir output directory
+#' @param ... extra params to be used in bookdown::render_book
+#' @importFrom bookdown render_book
+#' @importFrom cli cli_alert_info cli_alert_warning
+#' 
+#' @return a rendered book
+#' 
+#' @export
+render_book <- function(
+  rmd_to_render = "index.Rmd",
+  output_format = c("lozen::bs4_book_template", "lozen::paged_template"),
+  output_dir = "_book",
+   ...){
+    
+match.arg(output_format, c("lozen::bs4_book_template", "lozen::paged_template"))
+
+book_format <- output_format[1]
+
+if(book_format == "lozen::bs4_book_template") {
+  bookdown::render_book(
+    input = rmd_to_render,
+    output_format = output_format,
+    output_dir = output_dir,
+    ... )
+} else if(book_format == "lozen::paged_template") {
+  # avec "lozen::paged_template" le output_dir n'est pas pris en compte, on va bouger le fichier produit a posteriori
+  bookdown::render_book(
+    input = rmd_to_render,
+    output_format = output_format,    
+    ... )
+    if(!dir.exists(output_dir)) {
+      dir.create(output_dir)
+    }
+      file.copy(
+        "_main.html",
+      file.path(output_dir, "_main.html")
+       )
+       unlink("_main.html")
+    }
+
+  cli_alert_info(paste0("Your book has been rendered in the directory ", output_dir)) 
+  cli_alert_warning("Please ensure this directory in not listed in your `.gitignore` file !")
+}  
+
+```
   
+```{r example-render_book, eval=FALSE}
+#' \dontrun{
+render_book("index.Rmd", output_format = "lozen::bs4_book_template")
+render_book("index.Rmd", output_format = "lozen::paged_template")
+#' }
+```
+  
+```{r tests-render_book}
+test_that("render_book works", {
+  expect_true(inherits(render_book, "function")) 
+})
+```
+   
+
 
 ```{r development-inflate, eval=FALSE}
 # Run but keep eval=FALSE to avoid infinite loop

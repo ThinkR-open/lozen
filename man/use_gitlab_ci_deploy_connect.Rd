@@ -2,12 +2,14 @@
 % Please edit documentation in R/use_gitlab_ci_deploy_connect.R
 \name{use_gitlab_ci_deploy_connect}
 \alias{use_gitlab_ci_deploy_connect}
+\alias{use_gitlab_ci_deploy_connect_bookdown}
 \alias{use_gitlab_ci_deploy_connect_pkgdown}
 \alias{use_gitlab_ci_deploy_connect_shiny}
 \title{Add a job to deploy a something on Connect}
 \usage{
 use_gitlab_ci_deploy_connect(
-  deploy_function = c("deploy_connect_shiny", "deploy_connect_pkgdown"),
+  deploy_function = c("deploy_connect_shiny", "deploy_connect_pkgdown",
+    "deploy_connect_bookdown"),
   stage_name = "deploy_connect",
   image = "rocker/verse:latest",
   dir = ".",
@@ -15,6 +17,8 @@ use_gitlab_ci_deploy_connect(
   file_name = ".gitlab-ci.yml",
   ...
 )
+
+use_gitlab_ci_deploy_connect_bookdown(...)
 
 use_gitlab_ci_deploy_connect_pkgdown(...)
 
@@ -61,6 +65,7 @@ NB: The environment variable \code{CONNECT_URL} is already defined generically o
 }
 \examples{
 #
+use_gitlab_ci_deploy_connect_bookdown()
 # Exemple avec pkgdown
 deployed_pkgdown <- tempfile(pattern = "pkgdown")
 dir.create(deployed_pkgdown)

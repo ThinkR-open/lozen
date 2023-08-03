@@ -53,7 +53,7 @@ pkgload::load_all(export_all = FALSE)
 #' @export
 #' @examples
 use_gitlab_ci_deploy_connect <- function(
-  deploy_function = c("deploy_connect_shiny", "deploy_connect_pkgdown"),
+  deploy_function = c("deploy_connect_shiny", "deploy_connect_pkgdown", "deploy_connect_bookdown"),
   stage_name = "deploy_connect",
   image = "rocker/verse:latest",
   dir = ".",
@@ -99,15 +99,52 @@ test_that("use_gitlab_ci_deploy_connect works", {
 ```
 
 
+# use_gitlab_ci_deploy_connect_bookdown
+    
+```{r function-use_gitlab_ci_deploy_connect_bookdown}
+#' @rdname use_gitlab_ci_deploy_connect
+#' @importFrom cli cli_alert_warning
+#' 
+#' @export
+use_gitlab_ci_deploy_connect_bookdown <- function(...){    
+    if (!dir.exists("_book")) {
+    cli_alert_warning(
+      "There is no _book directory at the root of your package. You should probably compile your book with `lozen::render_book(\"index.Rmd\", output_format = \"lozen::bs4_book_template\")` or `lozen::render_book(\"index.Rmd\", output_format = \"lozen::paged_template\")` first."
+    )
+    cli_alert_warning(
+      "Once this is done, please ensure your _book directory is not listed in your .gitignore file !"
+    )
+  }
+  use_gitlab_ci_deploy_connect(
+    stage_name = "deploy_connect_bookdown",
+    deploy_function = "deploy_connect_bookdown",
+    ...
+  )    
+}
+```
+  
+```{r example-use_gitlab_ci_deploy_connect_bookdown}
+use_gitlab_ci_deploy_connect_bookdown()
+```
+  
+```{r tests-use_gitlab_ci_deploy_connect_bookdown}
+test_that("use_gitlab_ci_deploy_connect_bookdown works", {
+  expect_true(inherits(use_gitlab_ci_deploy_connect_bookdown, "function")) 
+})
+```
+  
+
+
 ## `use_gitlab_ci_deploy_connect_shiny()`: Add a job to deploy a shiny app on Connect
     
 ```{r function-use_gitlab_ci_deploy_connect_shiny}
+#' @importFrom cli cli_alert_warning
 #' @export
 #' @rdname use_gitlab_ci_deploy_connect
 
 use_gitlab_ci_deploy_connect_shiny <- function(...) {
   if (!file.exists("app.R")) {
-    warning(
+    cli_alert_warning(
       "There is no app.R at the root of your package. You should probably run `golem::add_rstudioconnect_file()` to create this file."
     )
   }
