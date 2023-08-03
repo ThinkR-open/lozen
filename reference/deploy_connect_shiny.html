@@ -143,9 +143,13 @@
 
 
 <dt>forceUpdate</dt>
-<dd><p>If <code>TRUE</code>, update any previously-deployed app without
-asking. If <code>FALSE</code>, ask to update. If unset, defaults to the value of
-<code>getOption("rsconnect.force.update.apps", FALSE)</code>.</p></dd>
+<dd><p>What should happen if there's no deployment record for
+the app, but there's an app with the same name on the server? If <code>TRUE</code>,
+will always update the previously-deployed app. If <code>FALSE</code>, will ask
+the user what to do, or fail if not in an interactive context.</p>
+<p>Defaults to <code>TRUE</code> when called automatically by the IDE, and <code>FALSE</code>
+otherwise. You can override the default by setting option
+<code>rsconnect.force.update.apps</code>.</p></dd>
 
 
 <dt>lint</dt>
