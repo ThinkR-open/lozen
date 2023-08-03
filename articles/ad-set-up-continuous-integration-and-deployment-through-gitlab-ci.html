@@ -174,8 +174,22 @@ nevertheless be run).</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">lozen</span><span class="fu">::</span><span class="fu"><a href="../reference/use_gitlab_ci.html">use_gitlab_ci</a></span><span class="op">(</span></span>
 <span>  project_path <span class="op">=</span> <span class="va">project_path</span>,</span>
-<span>  type <span class="op">=</span> <span class="st">"bookdown"</span></span>
+<span>  type <span class="op">=</span> <span class="st">"bookdown"</span>,</span>
+<span>  bookdown_output_format <span class="op">=</span> <span class="st">"lozen::paged_template"</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># OR </span></span>
+<span></span>
+<span><span class="fu">lozen</span><span class="fu">::</span><span class="fu"><a href="../reference/use_gitlab_ci.html">use_gitlab_ci</a></span><span class="op">(</span></span>
+<span>  project_path <span class="op">=</span> <span class="va">project_path</span>,</span>
+<span>  type <span class="op">=</span> <span class="st">"bookdown"</span>,</span>
+<span>  bookdown_output_format <span class="op">=</span> <span class="st">"lozen::bs4_book_template"</span></span>
 <span><span class="op">)</span></span></code></pre></div>
+<p>Two options are allowed for the parameter
+<code>bookdown_output_format</code>: “lozen::paged_template” or
+“lozen::bs4_book_template”. The former will render the book using
+<code><a href="https://rdrr.io/pkg/pagedown/man/html_paged.html" class="external-link">pagedown::html_paged</a></code> while the latter will use
+<code><a href="https://pkgs.rstudio.com/bookdown/reference/bs4_book.html" class="external-link">bookdown::bs4_book</a></code>.</p>
 </div>
 <div class="section level3">
 <h3 id="how-can-i-find-the-pkgdownbook-associated-with-my-project">How can I find the pkgdown/book associated with my project<a class="anchor" aria-label="anchor" href="#how-can-i-find-the-pkgdownbook-associated-with-my-project"></a>
@@ -200,8 +214,12 @@ be <code>https://username.gitlab.io/your.repository.name</code>.</p>
 <p>For the following to be working, please ensure you are working in a
 valid R package. Your project must be associated with a repository
 present on Gitlab.</p>
+<p>If this is not done yet please go to the vignette
+<code>vignettes/aa-create-a-new-project-with-gitlab.Rmd</code> and
+follow the steps related to the creation of a project on Gitlab and of a
+R package skeleton.</p>
 <p>Before running the following commands please ensure that you are
-working on your R package project.</p>
+working directory is there of your R package project.</p>
 <div class="section level4">
 <h4 id="create-the-pkgdown">Create the pkgdown<a class="anchor" aria-label="anchor" href="#create-the-pkgdown"></a>
 </h4>
@@ -267,9 +285,9 @@ with a repository present on Gitlab.</p>
 <p>If this is not done yet please go to the vignette
 <code>vignettes/aa-create-a-new-project-with-gitlab.Rmd</code> and
 follow the steps related to the creation of a project on Gitlab and of a
-R project skeleton.</p>
+shiny app skeleton.</p>
 <p>Before running the following commands please ensure that you are
-working on your golem app project.</p>
+working directory is there of your golem project.</p>
 <div class="section level4">
 <h4 id="add-an-app-r-at-the-root-of-your-package-to-deploy-on-rstudio-connect">Add an app.R at the root of your package to deploy on RStudio
 Connect<a class="anchor" aria-label="anchor" href="#add-an-app-r-at-the-root-of-your-package-to-deploy-on-rstudio-connect"></a>
@@ -328,9 +346,73 @@ app !</p>
 <div class="section level3">
 <h3 id="cd-of-a-book">CD of a book<a class="anchor" aria-label="anchor" href="#cd-of-a-book"></a>
 </h3>
+<p>For the following to be working, please ensure you are working in a
+book project. Your app project must be associated with a repository
+present on Gitlab.</p>
+<p>If this is not done yet please go to the vignette
+<code>vignettes/aa-create-a-new-project-with-gitlab.Rmd</code> and
+follow the steps related to the creation of a project on Gitlab and of a
+book project skeleton.</p>
+<p>Before running the following commands please ensure that you are
+working directory is there of your book project.</p>
+<div class="section level4">
+<h4 id="build-your-book">Build your book<a class="anchor" aria-label="anchor" href="#build-your-book"></a>
+</h4>
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu">lozen</span><span class="fu">::</span><span class="fu"><a href="../reference/render_book.html">render_book</a></span><span class="op">(</span><span class="st">"index.Rmd"</span>, output_format <span class="op">=</span> <span class="st">"lozen::paged_template"</span><span class="op">)</span></span>
+<span><span class="co"># OR</span></span>
+<span><span class="fu">lozen</span><span class="fu">::</span><span class="fu"><a href="../reference/render_book.html">render_book</a></span><span class="op">(</span><span class="st">"index.Rmd"</span>, output_format <span class="op">=</span> <span class="st">"lozen::bs4_book_template"</span><span class="op">)</span></span></code></pre></div>
+<p>Two options are allowed for the parameter <code>output_format</code>:
+“lozen::paged_template” or “lozen::bs4_book_template”. The former will
+render the book using <code><a href="https://rdrr.io/pkg/pagedown/man/html_paged.html" class="external-link">pagedown::html_paged</a></code> while the latter
+will use <code><a href="https://pkgs.rstudio.com/bookdown/reference/bs4_book.html" class="external-link">bookdown::bs4_book</a></code>.</p>
+</div>
+<div class="section level4">
+<h4 id="initiate-the-deployment-of-your-book">Initiate the deployment of your book<a class="anchor" aria-label="anchor" href="#initiate-the-deployment-of-your-book"></a>
+</h4>
 <div class="section level5">
-<h5 id="to-be-completed">–TO-BE-COMPLETED<a class="anchor" aria-label="anchor" href="#to-be-completed"></a>
+<h5 id="to-be-done-on-your-r-project-2">To be done on your R project<a class="anchor" aria-label="anchor" href="#to-be-done-on-your-r-project-2"></a>
 </h5>
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu">lozen</span><span class="fu">::</span><span class="fu"><a href="../reference/use_gitlab_ci_deploy_connect.html">use_gitlab_ci_deploy_connect_bookdown</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+<p>Any <code>.gitlab-ci.yml</code> file already present in your project
+is now completed with new staged, specific to the deployment on
+Connect.</p>
+<p>Be aware that running this command multiple times would duplicate
+these steps in your <code>.gitlab-ci.yml</code> file. It should be
+avoided.</p>
+</div>
+<div class="section level5">
+<h5 id="to-be-done-on-gitlab-2">To be done on Gitlab<a class="anchor" aria-label="anchor" href="#to-be-done-on-gitlab-2"></a>
+</h5>
+<p>Some environment variables must be set on Gitlab for the CI/CD to be
+working.</p>
+<p>You’ll need to define :</p>
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">CONNECT_URL</span> <span class="op">&lt;-</span> <span class="st">"https://my.connect.url"</span></span>
+<span><span class="va">CONNECT_NAME</span> <span class="op">&lt;-</span> <span class="st">"my.connect.server.name"</span></span>
+<span><span class="va">CONNECT_USER</span> <span class="op">&lt;-</span> <span class="st">"my.connect.username"</span></span>
+<span><span class="va">CONNECT_TOKEN</span> <span class="op">&lt;-</span> <span class="st">"my.api.key.generated.in.connect"</span></span>
+<span><span class="va">APP_NAME</span> <span class="op">&lt;-</span> <span class="st">"the.name.of.your.book.on.connect"</span></span>
+<span><span class="co"># APP_NAME is not mandatory; whether it is not provided, it will be replaced by the name of your project on Gitlab</span></span></code></pre></div>
+<p>For most of them, you may have already set them on your
+<code>.Renviron</code> file (see the dedicated section on the {lozen}
+README).</p>
+<p>If you are not familiar with defining environement variable on
+gitlab, please follow the <a href="https://docs.gitlab.com/ee/ci/variables/index.html" class="external-link">official
+documentation</a>.</p>
+<p>Once this is done, you can commit all your changes and push them to
+your repository remote.</p>
+<p>Thereafter, you should be able to <a href="https://docs.gitlab.com/ee/ci/pipelines/#view-pipelines" class="external-link">see your
+pipeline running</a> on Gitlab.</p>
+</div>
+<div class="section level5">
+<h5 id="how-can-i-find-the-book-deployed-on-posit-connect">How can I find the book deployed on Posit Connect ?<a class="anchor" aria-label="anchor" href="#how-can-i-find-the-book-deployed-on-posit-connect"></a>
+</h5>
+<p>If your pipeline did not raise any error, you book is now deployed on
+your Posit Connect. You can now log in your Posit Connect and enjoy your
+app !</p>
+</div>
 </div>
 </div>
 </div>

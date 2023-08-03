@@ -173,13 +173,16 @@ the gitlab project.</p>
 <span class="r-in"><span><span class="va">output</span> <span class="op">&lt;-</span> <span class="fu">with_gitlab_project</span><span class="op">(</span></span></span>
 <span class="r-in"><span>  gitlab_url <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Sys.getenv.html" class="external-link">Sys.getenv</a></span><span class="op">(</span><span class="st">"GITLAB_URL"</span>, unset <span class="op">=</span> <span class="st">"https://gitlab.com"</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>  namespace_id <span class="op">=</span> <span class="cn">NULL</span>,</span></span>
-<span class="r-in"><span>  project_name <span class="op">=</span> <span class="st">"lozen.test.project"</span>,</span></span>
+<span class="r-in"><span>  private_token <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Sys.getenv.html" class="external-link">Sys.getenv</a></span><span class="op">(</span><span class="st">"GITLAB_TOKEN"</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>  project_name <span class="op">=</span> <span class="st">"bookdown.test.project"</span>,</span></span>
 <span class="r-in"><span>  exp <span class="op">=</span> <span class="op">{</span></span></span>
-<span class="r-in"><span>    <span class="fu">bookdown</span><span class="fu">::</span><span class="fu"><a href="https://pkgs.rstudio.com/bookdown/reference/create_book.html" class="external-link">create_bs4_book</a></span><span class="op">(</span>path <span class="op">=</span> <span class="st">"."</span><span class="op">)</span></span></span>
-<span class="r-in"><span>    <span class="fu">bookdown</span><span class="fu">::</span><span class="fu"><a href="https://pkgs.rstudio.com/bookdown/reference/render_book.html" class="external-link">render_book</a></span><span class="op">(</span><span class="op">)</span></span></span>
-<span class="r-in"><span>    <span class="fu">lozen</span><span class="fu">::</span><span class="fu"><a href="use_gitlab_ci.html">use_gitlab_ci</a></span><span class="op">(</span></span></span>
-<span class="r-in"><span>      type <span class="op">=</span> <span class="st">"bookdown"</span></span></span>
+<span class="r-in"><span>    <span class="fu">lozen</span><span class="fu">::</span><span class="fu"><a href="create_r_project.html">create_r_project</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>      project_path <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/getwd.html" class="external-link">getwd</a></span><span class="op">(</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>      type <span class="op">=</span> <span class="st">"book"</span>,</span></span>
+<span class="r-in"><span>      name_licence <span class="op">=</span> <span class="st">"Bobo"</span>,</span></span>
+<span class="r-in"><span>      type_licence <span class="op">=</span> <span class="fu">usethis</span><span class="fu">::</span><span class="va"><a href="https://usethis.r-lib.org/reference/licenses.html" class="external-link">use_mit_license</a></span></span></span>
 <span class="r-in"><span>    <span class="op">)</span></span></span>
+<span class="r-in"><span>    <span class="fu">lozen</span><span class="fu">::</span><span class="fu"><a href="use_gitlab_ci.html">use_gitlab_ci</a></span><span class="op">(</span>type <span class="op">=</span> <span class="st">"bookdown"</span>, bookdown_output_format <span class="op">=</span> <span class="st">"lozen::paged_template"</span><span class="op">)</span></span></span>
 <span class="r-in"><span>  <span class="op">}</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">output</span></span></span>
