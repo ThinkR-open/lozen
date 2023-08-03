@@ -17,6 +17,8 @@ render_book(
 \item{output_format}{format to be user to render the book}
 
 \item{output_dir}{output directory}
+
+\item{...}{extra params to be used in bookdown::render_book}
 }
 \value{
 a rendered book

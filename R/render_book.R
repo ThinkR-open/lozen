@@ -5,7 +5,7 @@
 #' @param rmd_to_render rmd file to render
 #' @param output_format format to be user to render the book
 #' @param output_dir output directory
-#' @inheritParams bookdown::render_book
+#' @param ... extra params to be used in bookdown::render_book
 #' @importFrom bookdown render_book
 #' @importFrom cli cli_alert_info cli_alert_warning
 #' 
