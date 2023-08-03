@@ -73,12 +73,12 @@ use_gitlab_ci_deploy_connect <- function(
 
 #' @rdname use_gitlab_ci_deploy_connect
 #' @importFrom cli cli_alert_warning
-#' 
+#'
 #' @export
 #' @examples
 #' use_gitlab_ci_deploy_connect_bookdown()
-use_gitlab_ci_deploy_connect_bookdown <- function(...){    
-    if (!dir.exists("_book")) {
+use_gitlab_ci_deploy_connect_bookdown <- function(...) {
+  if (!dir.exists("_book")) {
     cli_alert_warning(
       "There is no _book directory at the root of your package. You should probably compile your book with `lozen::render_book(\"index.Rmd\", output_format = \"lozen::bs4_book_template\")` or `lozen::render_book(\"index.Rmd\", output_format = \"lozen::paged_template\")` first."
     )
@@ -90,7 +90,7 @@ use_gitlab_ci_deploy_connect_bookdown <- function(...){
     stage_name = "deploy_connect_bookdown",
     deploy_function = "deploy_connect_bookdown",
     ...
-  )    
+  )
 }
 
 #' @export

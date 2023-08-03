@@ -55,13 +55,16 @@ expression to initiate a given gitlab ci workflow within a dummy project on a #'
 output <- with_gitlab_project(
   gitlab_url = Sys.getenv("GITLAB_URL", unset = "https://gitlab.com"),
   namespace_id = NULL,
-  project_name = "lozen.test.project",
+  private_token = Sys.getenv("GITLAB_TOKEN"),
+  project_name = "bookdown.test.project",
   exp = {
-    bookdown::create_bs4_book(path = ".")
-    bookdown::render_book()
-    lozen::use_gitlab_ci(
-      type = "bookdown"
+    lozen::create_r_project(
+      project_path = getwd(),
+      type = "book",
+      name_licence = "Bobo",
+      type_licence = usethis::use_mit_license
     )
+    lozen::use_gitlab_ci(type = "bookdown", bookdown_output_format = "lozen::paged_template")
   }
 )
 output

@@ -20,52 +20,64 @@ test_that("init_gitlab_ci throws expected messages", {
 })
 
 
-test_that("init_gitlab_ci works for bookdown", {
+test_that("init_gitlab_ci works for bookdown and  bookdown_output_format = lozen::paged_template", {
   # TODO - Remove ; allow test to pass on CI
   skip_on_ci()
 
   # Test on Gitlab : Create a bookdown and test the CI
   if (Sys.getenv("ALLOW_CI_TESTS_ON_GITLAB", unset = "FALSE") == "TRUE") {
     # Pour un template CI "bookdown"
-    output_bookdown <- with_gitlab_project(
-      gitlab_url = Sys.getenv("GITLAB_URL", unset = "https://gitlab.com"),
-      namespace_id = NULL,
-      private_token = Sys.getenv("GITLAB_TOKEN"),
-      project_name = "bookdown.test.project",
-      exp = {
-        bookdown::create_bs4_book(path = ".")
-        bookdown::render_book()
-        lozen::use_gitlab_ci(type = "bookdown")
-      }
+  output_bookdown <- with_gitlab_project(
+  gitlab_url = Sys.getenv("GITLAB_URL", unset = "https://gitlab.com"),
+  namespace_id = NULL,
+  private_token = Sys.getenv("GITLAB_TOKEN"),
+  project_name = "bookdown.test.project",
+  exp = {
+    lozen::create_r_project(
+      project_path =  getwd(),
+      type = "book", name_licence = "Bobo", type_licence = usethis::use_mit_license    
     )
+    lozen::use_gitlab_ci(type = "bookdown", bookdown_output_format = "lozen::paged_template")
+  }
+)
 
     expect_equal(
       object = output_bookdown$status,
       expected = "success"
     )
-
-    # Pour un template CI "bookdown-production"
-    # output_bookdown_production <- with_gitlab_project(
-    #   gitlab_url = Sys.getenv("GITLAB_URL"),
-    #   namespace_id = 1013,
-    #   private_token = Sys.getenv("GITLAB_TOKEN"),
-    #   project_name = "bookdown.production.test.project",
-    #   branch_focus_for_ci = "production",
-    #   exp = {
-    #     bookdown::create_bs4_book(path = ".")
-    #     bookdown::render_book()
-    #     lozen::use_gitlab_ci(type = "bookdown-production")
-    #   }
-    # )
-    #
-    # expect_equal(object = output_bookdown_production$status,
-    #              expected = "success")
-
-    # Test on gitlab.com : Create a bookdown and test the CI
-    ## run depending on env variable value
-    # TODO
   }
-})
+
+ })
+
+test_that("init_gitlab_ci works for bookdown and  bookdown_output_format = lozen::bs4_book_template", {
+  # TODO - Remove ; allow test to pass on CI
+  skip_on_ci()
+
+  # Test on Gitlab : Create a bookdown and test the CI
+  if (Sys.getenv("ALLOW_CI_TESTS_ON_GITLAB", unset = "FALSE") == "TRUE") {
+    # Pour un template CI "bookdown"
+  output_bookdown <- with_gitlab_project(
+  gitlab_url = Sys.getenv("GITLAB_URL", unset = "https://gitlab.com"),
+  namespace_id = NULL,
+  private_token = Sys.getenv("GITLAB_TOKEN"),
+  project_name = "bookdown.test.project",
+  exp = {
+    lozen::create_r_project(
+      project_path =  getwd(),
+      type = "book", name_licence = "Bobo", type_licence = usethis::use_mit_license    
+    )
+    lozen::use_gitlab_ci(type = "bookdown", bookdown_output_format = "lozen::bs4_book_template")
+  }
+)
+
+    expect_equal(
+      object = output_bookdown$status,
+      expected = "success"
+    )
+  }
+
+ })
+
 
 test_that("init_gitlab_ci works for shiny", {
   # TODO - Remove ; allow test to pass on CI

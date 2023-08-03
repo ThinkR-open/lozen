@@ -4,8 +4,92 @@ test_that("use_gitlab_ci_deploy_connect works", {
   expect_true(inherits(use_gitlab_ci_deploy_connect, "function"))
 })
 
-test_that("use_gitlab_ci_deploy_connect_bookdown works", {
-  expect_true(inherits(use_gitlab_ci_deploy_connect_bookdown, "function")) 
+test_that("use_gitlab_ci_deploy_connect_bookdown works with lozen::bs4_book_template", {
+  skip_on_ci()
+
+  # Test on Gitlab : Create a golem and test the CI
+
+  # Pour un template CI "golem"
+  if (Sys.getenv("ALLOW_CI_TESTS_ON_GITLAB", unset = "FALSE") == "TRUE") {
+    output_book <- with_gitlab_project(
+      gitlab_url = Sys.getenv("GITLAB_URL", unset = "https://gitlab.com"),
+      namespace_id = NULL,
+      private_token = Sys.getenv("GITLAB_TOKEN"),
+      project_name = "book.test.project",
+      exp = {
+        lozen::create_r_project(
+          project_path = getwd(),
+          type = "book",
+          name_licence = "Bobo",
+          type_licence = usethis::use_mit_license
+        )
+        lozen::render_book("index.Rmd", output_format = "lozen::bs4_book_template")
+        gitignore <- readLines(file.path(getwd(), ".gitignore"))
+        book_folder_index <- grep(pattern = "_book", x = gitignore)
+        gitignore <- gitignore[-book_folder_index]
+        writeLines(gitignore, con = file.path(getwd(), ".gitignore"))
+        lozen::use_gitlab_ci_deploy_connect_bookdown()
+      }
+    )
+
+    expect_equal(
+      object = output_book$status,
+      expected = "success"
+    )
+
+    expect_equal(
+      object = output_book$connect,
+      expected = 200
+    )
+
+    if (output_book$connect == 200) {
+      message("Deployment was successful. You can now remove manually what has been deployed on your Connect.")
+    }
+  }
+})
+
+test_that("use_gitlab_ci_deploy_connect_bookdown works with lozen::paged_template", {
+  skip_on_ci()
+
+  # Test on Gitlab : Create a golem and test the CI
+
+  # Pour un template CI "golem"
+  if (Sys.getenv("ALLOW_CI_TESTS_ON_GITLAB", unset = "FALSE") == "TRUE") {
+    output_book <- with_gitlab_project(
+      gitlab_url = Sys.getenv("GITLAB_URL", unset = "https://gitlab.com"),
+      namespace_id = NULL,
+      private_token = Sys.getenv("GITLAB_TOKEN"),
+      project_name = "book.test.project",
+      exp = {
+        lozen::create_r_project(
+          project_path = getwd(),
+          type = "book",
+          name_licence = "Bobo",
+          type_licence = usethis::use_mit_license
+        )
+        lozen::render_book("index.Rmd", output_format = "lozen::paged_template")
+        gitignore <- readLines(file.path(getwd(), ".gitignore"))
+        book_folder_index <- grep(pattern = "_book", x = gitignore)
+        gitignore <- gitignore[-book_folder_index]
+        writeLines(gitignore, con = file.path(getwd(), ".gitignore"))
+        lozen::use_gitlab_ci_deploy_connect_bookdown()
+      }
+    )
+
+    expect_equal(
+      object = output_book$status,
+      expected = "success"
+    )
+
+    expect_equal(
+      object = output_book$connect,
+      expected = 200
+    )
+
+    if (output_book$connect == 200) {
+      message("Deployment was successful. You can now remove manually what has been deployed on your Connect.")
+    }
+  }
 })
 
 test_that("use_gitlab_ci_deploy_connect_shiny works", {
@@ -145,8 +229,8 @@ test_that("use_gitlab_ci_deploy_connect_pkgdown works", {
       expected = 200
     )
 
-    if(output_golem$output_pkgdown == 200) {
-    message("Deployment was successful. You can now remove manually what has been deployed on your Connect.")
-   }
+    if (output_golem$output_pkgdown == 200) {
+      message("Deployment was successful. You can now remove manually what has been deployed on your Connect.")
+    }
   }
 })
