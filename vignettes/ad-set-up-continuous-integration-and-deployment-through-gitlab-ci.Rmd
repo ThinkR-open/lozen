@@ -214,6 +214,8 @@ Any `.gitlab-ci.yml` file already present in your project is now completed with 
 
 Be aware that running this command multiple times would duplicate these steps in your `.gitlab-ci.yml` file. It should be avoided.
 
+**Important**: be sure that the `_book` directory is not listed in your `.gitignore` file !
+
 #### To be done on Gitlab
 
 Some environment variables must be set on Gitlab for the CI/CD to be working.
