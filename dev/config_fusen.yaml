@@ -2,6 +2,9 @@ flat_book_utils.Rmd:
   path: dev/flat_book_utils.Rmd
   state: active
   R:
+  - R/compile_fiche.R
+  - R/compile_fiches.R
+  - R/html_to_odt.R
   - R/render_book.R
   - R/paged_template.R
   - R/bs4_book_template.R
@@ -9,6 +12,9 @@ flat_book_utils.Rmd:
   - tests/testthat/test-paged_template.R
   - tests/testthat/test-bs4_book_template.R
   - tests/testthat/test-render_book.R
+  - tests/testthat/test-html_to_odt.R
+  - tests/testthat/test-compile_fiche.R
+  - tests/testthat/test-compile_fiches.R
   vignettes: []
   inflate:
     flat_file: dev/flat_book_utils.Rmd

@@ -7,9 +7,6 @@ test_that("use_gitlab_ci_deploy_connect works", {
 test_that("use_gitlab_ci_deploy_connect_bookdown works with lozen::bs4_book_template", {
   skip_on_ci()
 
-  # Test on Gitlab : Create a golem and test the CI
-
-  # Pour un template CI "golem"
   if (Sys.getenv("ALLOW_CI_TESTS_ON_GITLAB", unset = "FALSE") == "TRUE") {
     output_book <- with_gitlab_project(
       gitlab_url = Sys.getenv("GITLAB_URL", unset = "https://gitlab.com"),
@@ -17,18 +14,22 @@ test_that("use_gitlab_ci_deploy_connect_bookdown works with lozen::bs4_book_temp
       private_token = Sys.getenv("GITLAB_TOKEN"),
       project_name = "book.test.project",
       exp = {
+        current_dir <- getwd()
         lozen::create_r_project(
-          project_path = getwd(),
+          project_path = current_dir,
           type = "book",
           name_licence = "Bobo",
           type_licence = usethis::use_mit_license
         )
-        lozen::render_book("index.Rmd", output_format = "lozen::bs4_book_template")
-        gitignore <- readLines(file.path(getwd(), ".gitignore"))
-        book_folder_index <- grep(pattern = "_book", x = gitignore)
-        gitignore <- gitignore[-book_folder_index]
-        writeLines(gitignore, con = file.path(getwd(), ".gitignore"))
-        lozen::use_gitlab_ci_deploy_connect_bookdown()
+        withr::with_dir(current_dir, {
+          lozen::render_book("index.Rmd", output_format = "lozen::bs4_book_template")
+          gitignore <- readLines(file.path(current_dir, ".gitignore"))
+          book_folder_index <- grep(pattern = "_book", x = gitignore)
+          gitignore <- gitignore[-book_folder_index]
+          writeLines(gitignore, con = file.path(current_dir, ".gitignore"))
+          lozen::use_gitlab_ci_deploy_connect_bookdown()
+
+        })
       }
     )
 
@@ -51,9 +52,6 @@ test_that("use_gitlab_ci_deploy_connect_bookdown works with lozen::bs4_book_temp
 test_that("use_gitlab_ci_deploy_connect_bookdown works with lozen::paged_template", {
   skip_on_ci()
 
-  # Test on Gitlab : Create a golem and test the CI
-
-  # Pour un template CI "golem"
   if (Sys.getenv("ALLOW_CI_TESTS_ON_GITLAB", unset = "FALSE") == "TRUE") {
     output_book <- with_gitlab_project(
       gitlab_url = Sys.getenv("GITLAB_URL", unset = "https://gitlab.com"),
@@ -61,18 +59,21 @@ test_that("use_gitlab_ci_deploy_connect_bookdown works with lozen::paged_templat
       private_token = Sys.getenv("GITLAB_TOKEN"),
       project_name = "book.test.project",
       exp = {
+        current_dir <- getwd()
         lozen::create_r_project(
-          project_path = getwd(),
+          project_path = current_dir,
           type = "book",
           name_licence = "Bobo",
           type_licence = usethis::use_mit_license
         )
+        withr::with_dir(current_dir, {
         lozen::render_book("index.Rmd", output_format = "lozen::paged_template")
         gitignore <- readLines(file.path(getwd(), ".gitignore"))
         book_folder_index <- grep(pattern = "_book", x = gitignore)
         gitignore <- gitignore[-book_folder_index]
         writeLines(gitignore, con = file.path(getwd(), ".gitignore"))
         lozen::use_gitlab_ci_deploy_connect_bookdown()
+        })
       }
     )
 
@@ -108,7 +109,6 @@ test_that("use_gitlab_ci_deploy_connect_shiny works", {
       exp = {
         lozen::create_r_project(project_path = getwd(), type = "golem", name_licence = "test", type_licence = usethis::use_mit_license)
         golem::add_rstudioconnect_file(open = FALSE)
-        # lozen::use_gitlab_ci(type = "check-coverage-pkgdown")
         lozen::use_gitlab_ci_deploy_connect_shiny()
       }
     )
@@ -134,39 +134,68 @@ test_that("use_gitlab_ci_deploy_connect_pkgdown works", {
 
   skip_on_ci()
 
-  if (Sys.getenv("ALLOW_CI_TESTS_ON_GITLAB", unset = "FALSE") == "TRUE") {
-    output_book <- with_gitlab_project(
+ if (Sys.getenv("ALLOW_CI_TESTS_ON_GITLAB", unset = "FALSE") == "TRUE") {
+     output_pkgdown <- with_gitlab_project(
       gitlab_url = Sys.getenv("GITLAB_URL", unset = "https://gitlab.com"),
       namespace_id = NULL,
       private_token = Sys.getenv("GITLAB_TOKEN"),
-      project_name = "book.test.project",
+      project_name = "pkgdown.test.project",
       exp = {
-        lozen::create_r_project(
-          project_path = getwd(),
-          type = "book",
-          name_licence = "Bobo",
-          type_licence = usethis::use_mit_license
+        project_dir <- getwd()
+        usethis::create_project(path = project_dir, open = FALSE)
+
+        # Add docs
+        fusen::fill_description(
+          pkg = project_dir,
+          fields = list(
+            Title = "Build A Package From Rmarkdown File",
+            Description = "Use Rmarkdown First method to build your package. Start your package with documentation. Everything can be set from a Rmarkdown file in your project.",
+            `Authors@R` = c(
+              person(
+                "John",
+                "Doe",
+                email = "john@email.me",
+                role = c("aut", "cre"),
+                comment = c(ORCID = "0000-0000-0000-0000")
+              )
+            )
+          )
         )
-        lozen::render_book("index.Rmd", output_format = "lozen::bs4_book_template")
-        gitignore <- readLines(file.path(getwd(), ".gitignore"))
-        book_folder_index <- grep(pattern = "_book", x = gitignore)
-        gitignore <- gitignore[-book_folder_index]
-        writeLines(gitignore, con = file.path(getwd(), ".gitignore"))
-        lozen::use_gitlab_ci_deploy_connect_bookdown()
+
+        dev_file <- suppressMessages(fusen::add_minimal_package(pkg = project_dir, overwrite = TRUE, open = FALSE))
+        flat_file <- dev_file[grepl("flat_", dev_file)]
+
+        # Setup directory as active and current workdir
+        usethis::with_project(path = project_dir, code = {
+          # LICENCE
+          usethis::use_mit_license("John Doe")
+
+          # Inflate
+          fusen::inflate(
+            pkg = project_dir,
+            flat_file = flat_file,
+            vignette_name = "Minimal",
+            open_vignette = FALSE,
+            check = FALSE,
+            quiet = TRUE
+          )
+        })
+        pkgdown::build_site(override = list(destination = "inst/site"))
+        lozen::use_gitlab_ci_deploy_connect_pkgdown()
       }
     )
 
     expect_equal(
-      object = output_book$status,
+      object = output_pkgdown$status,
       expected = "success"
     )
 
     expect_equal(
-      object = output_book$connect,
+      object = output_pkgdown$connect,
       expected = 200
     )
 
-    if (output_book$connect == 200) {
+    if (output_pkgdown$connect == 200) {
       message("Deployment was successful. You can now remove manually what has been deployed on your Connect.")
     }
   }

@@ -1,6 +1,6 @@
 Package: lozen
 Title: Management tools for missions
-Version: 1.1.0.9009
+Version: 1.1.0.9010
 Authors@R: c(
     person("Sébastien", "Rochette", , "sebastien@thinkr.fr", role = c("aut", "cre"),
            comment = c(ORCID = "0000-0002-1565-9313")),
@@ -34,6 +34,7 @@ Imports:
     glue,
     golem,
     httr,
+    knitr (>= 1.39),
     lubridate,
     magrittr,
     pagedown,
@@ -59,7 +60,6 @@ Suggests:
     git2r,
     gitdown,
     htmltools,
-    knitr (>= 1.39),
     markdown,
     rcmdcheck,
     remotes,
