@@ -32,7 +32,6 @@ test_that("deploy_connect_pkgdown works", {
       flat_file <- dev_file[grepl("flat_", dev_file)]
 
       usethis::with_project(dummypackage, {
-
         # Add licence
         usethis::use_mit_license("John Doe")
         # we inflate the flat file

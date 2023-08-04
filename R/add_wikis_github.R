@@ -19,11 +19,8 @@
 #'   repo = "areponame"
 #' )
 #' }
-add_wikis_github <- function(
-  owner,
-  repo,
-  type = c("home", "cr", "keys", "weekly")
-    ) {
+add_wikis_github <- function(owner,
+                             repo, type = c("home", "cr", "keys", "weekly")) {
   type <- match.arg(type, several.ok = TRUE)
 
   tempwiki <- tempfile(pattern = "wiki")

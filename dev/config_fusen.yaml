@@ -28,10 +28,10 @@ flat_build_pkgdown_with_reports.Rmd:
   state: active
   R: R/build_pkgdown_with_reports.R
   tests: tests/testthat/test-build_pkgdown_with_reports.R
-  vignettes: vignettes/ad-build-a-pkgdown-with-reports.Rmd
+  vignettes: vignettes/af-build-a-pkgdown-with-reports.Rmd
   inflate:
     flat_file: dev/flat_build_pkgdown_with_reports.Rmd
-    vignette_name: ad - Build a pkgdown with reports
+    vignette_name: af - Build a pkgdown with reports
     open_vignette: false
     check: false
     document: false
@@ -43,7 +43,6 @@ flat_create_new_project_github.Rmd:
   tests: []
   vignettes: vignettes/ab-create-a-new-project-with-github.Rmd
   inflate:
-    pkg: lozen
     flat_file: dev/flat_create_new_project_github.Rmd
     vignette_name: ab - Create a new project with GitHub
     open_vignette: false
@@ -101,10 +100,10 @@ flat_create_special_issues.Rmd:
   - tests/testthat/test-create_special_issues.R
   - tests/testthat/test-gl_add_template_issue.R
   - tests/testthat/test-gh_add_template_issue.R
-  vignettes: vignettes/bf-create-special-issues.Rmd
+  vignettes: []
   inflate:
     flat_file: dev/flat_create_special_issues.Rmd
-    vignette_name: bf - Create special issues
+    vignette_name: .na
     open_vignette: false
     check: false
     document: false
@@ -165,10 +164,10 @@ flat_helper_testthat.Rmd:
   tests:
   - tests/testthat/test-with_gitlab_project.R
   - tests/testthat/test-fetch_connect.R
-  vignettes: vignettes/cb-testthat-tools.Rmd
+  vignettes: []
   inflate:
     flat_file: dev/flat_helper_testthat.Rmd
-    vignette_name: cb - Testthat tools
+    vignette_name: .na
     open_vignette: false
     check: false
     document: false
@@ -192,13 +191,13 @@ flat_init_gitlab_ci.Rmd:
   - tests/testthat/test-check_if_yaml_exists.R
   - tests/testthat/test-create_deploy_ci_stage.R
   - tests/testthat/test-amend_yaml.R
-  vignettes: vignettes/be-initilialise-gitlab-ci.Rmd
+  vignettes: []
   inflate:
     flat_file: dev/flat_init_gitlab_ci.Rmd
-    vignette_name: be - Initilialise GitLab CI
+    vignette_name: .na
     open_vignette: false
     check: false
-    document: false
+    document: true
     overwrite: 'yes'
 flat_manage_git.Rmd:
   path: dev/flat_manage_git.Rmd
@@ -232,7 +231,14 @@ flat_manage_github_projects.Rmd:
   - tests/testthat/test-create_group_project_github.R
   - tests/testthat/test-add_board_github.R
   - tests/testthat/test-add_wikis_github.R
-  vignettes: vignettes/bd-manage-github-projects.Rmd
+  vignettes: []
+  inflate:
+    flat_file: dev/flat_manage_github_projects.Rmd
+    vignette_name: .na
+    open_vignette: false
+    check: false
+    document: false
+    overwrite: 'yes'
 flat_manage_gitlab_projects.Rmd:
   path: dev/flat_manage_gitlab_projects.Rmd
   state: active
@@ -252,13 +258,27 @@ flat_manage_gitlab_projects.Rmd:
   - tests/testthat/test-add_labels.R
   - tests/testthat/test-add_board.R
   - tests/testthat/test-add_wikis.R
-  vignettes: vignettes/bc-manage-gitlab-projects.Rmd
+  vignettes: []
+  inflate:
+    flat_file: dev/flat_manage_gitlab_projects.Rmd
+    vignette_name: .na
+    open_vignette: false
+    check: false
+    document: false
+    overwrite: 'yes'
 flat_move_issues_from_gitlab_to_github.Rmd:
   path: dev/flat_move_issues_from_gitlab_to_github.Rmd
   state: active
   R: R/move_issues_from_gitlab_to_github.R
   tests: tests/testthat/test-move_issues_from_gitlab_to_github.R
-  vignettes: vignettes/bi-move-from-gitlab-to-github.Rmd
+  vignettes: []
+  inflate:
+    flat_file: dev/flat_move_issues_from_gitlab_to_github.Rmd
+    vignette_name: .na
+    open_vignette: false
+    check: false
+    document: false
+    overwrite: 'yes'
 flat_use_gitlab_ci_deploy_connect.Rmd:
   path: dev/flat_use_gitlab_ci_deploy_connect.Rmd
   state: active
@@ -272,3 +292,18 @@ flat_use_gitlab_ci_deploy_connect.Rmd:
     check: false
     document: true
     overwrite: 'yes'
+keep:
+  path: keep
+  state: active
+  R:
+  - R/_disable_autoload.R
+  - R/globals.R
+  - R/lozen-package.R
+  - R/use_dev_history.R
+  - R/utils-pipe.R
+  tests: []
+  vignettes:
+  - vignettes/ad-set-up-continuous-integration-and-deployment-through-gitlab-ci.Rmd
+  - vignettes/ae-create-weekly-with-github-or-gitlab.Rmd
+  - vignettes/ba-manage-forge-board-wiki.Rmd
+  - vignettes/bb-manage-git-tools--branches-commits-etc--.Rmd

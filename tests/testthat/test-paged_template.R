@@ -2,9 +2,8 @@
 
 test_that("paged_template works", {
   skip_on_ci()
-  
+
   withr::with_tempdir({
-    
     lozen::create_r_project(
       project_path = getwd(),
       type = "book",

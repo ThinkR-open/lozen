@@ -20,11 +20,9 @@
 #'   usethis::create_package(path = project_path, open = FALSE)
 #'   add_kit_package(project_path, type = c("package", "book", "renv"))
 #' })
-add_kit_package <- function(
-  project_path = ".",
-  type = c("package", "renv"),
-  pkgdown_yml = NULL
-    ) {
+add_kit_package <- function(project_path = ".",
+                            type = c("package", "renv"),
+                            pkgdown_yml = NULL) {
   type <- match.arg(type, several.ok = TRUE)
 
   ## Add dev_history in "dev/"

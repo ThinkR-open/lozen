@@ -24,6 +24,5 @@ protect_branches(
 )
 # unprotect if wanted
 # protect_branches(project_id, unprotect = TRUE)
-#'
 }
 }

@@ -48,14 +48,13 @@ lozen::use_gitlab_ci(
   bookdown_output_format = "lozen::paged_template"
 )
 
-# OR 
+# OR
 
 lozen::use_gitlab_ci(
   project_path = project_path,
   type = "bookdown",
   bookdown_output_format = "lozen::bs4_book_template"
 )
-
 ```
 
 Two options are allowed for the parameter `bookdown_output_format`: "lozen::paged_template" or "lozen::bs4_book_template". The former will render the book using `pagedown::html_paged` while the latter will use `bookdown::bs4_book`.
