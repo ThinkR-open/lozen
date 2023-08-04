@@ -31,6 +31,8 @@ create_deploy_ci_stage <- function(
   connect_ci_list <- list(
     image = image,
     variables = list(
+      GIT_DEPTH= 10L,
+      REPO_NAME = "https://packagemanager.rstudio.com/all/__linux__/focal/latest",
       R_LIBS_USER = "ci/lib"
     ),
     cache = list(
