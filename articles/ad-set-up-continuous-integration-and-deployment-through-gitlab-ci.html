@@ -58,7 +58,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">lozen</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.1.0.9009</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.1.0.9010</span>
       </span>
     </div>
 
@@ -194,6 +194,16 @@ nevertheless be run).</p>
 <div class="section level3">
 <h3 id="how-can-i-find-the-pkgdownbook-associated-with-my-project">How can I find the pkgdown/book associated with my project<a class="anchor" aria-label="anchor" href="#how-can-i-find-the-pkgdownbook-associated-with-my-project"></a>
 </h3>
+<p>By default, a book project created using
+<code>lozen::create_r_project(type = "book")</code> does not contain a
+<code>.Rproj</code> file, standing for a RStudio project. If this file
+is missing the “Git” panel won’t be visible in RStudio.</p>
+<p>If you wish to display this panel, you must create a RStudio project
+within the directory in which your book files are located. Please do the
+following : - Click on the “File” tab - New project - Existing directory
+- Select the directory of your book</p>
+<p>The other option is to use the Terminal to use the Git command line
+interface.</p>
 <p>Once the former steps are done, you can commit all your changes and
 push them to your repository remote.</p>
 <p>Thereafter, you should be able to <a href="https://docs.gitlab.com/ee/ci/pipelines/#view-pipelines" class="external-link">see your
@@ -219,7 +229,7 @@ present on Gitlab.</p>
 follow the steps related to the creation of a project on Gitlab and of a
 R package skeleton.</p>
 <p>Before running the following commands please ensure that you are
-working directory is there of your R package project.</p>
+working directory is that of your R package project.</p>
 <div class="section level4">
 <h4 id="create-the-pkgdown">Create the pkgdown<a class="anchor" aria-label="anchor" href="#create-the-pkgdown"></a>
 </h4>
@@ -287,7 +297,7 @@ with a repository present on Gitlab.</p>
 follow the steps related to the creation of a project on Gitlab and of a
 shiny app skeleton.</p>
 <p>Before running the following commands please ensure that you are
-working directory is there of your golem project.</p>
+working directory is that of your golem project.</p>
 <div class="section level4">
 <h4 id="add-an-app-r-at-the-root-of-your-package-to-deploy-on-rstudio-connect">Add an app.R at the root of your package to deploy on RStudio
 Connect<a class="anchor" aria-label="anchor" href="#add-an-app-r-at-the-root-of-your-package-to-deploy-on-rstudio-connect"></a>
@@ -354,7 +364,9 @@ present on Gitlab.</p>
 follow the steps related to the creation of a project on Gitlab and of a
 book project skeleton.</p>
 <p>Before running the following commands please ensure that you are
-working directory is there of your book project.</p>
+working directory is that of your book project. If no .RProj exists in
+the directory in which your book files and folders are stored, you can
+use <code>setwd("path/of/your/book")</code>.</p>
 <div class="section level4">
 <h4 id="build-your-book">Build your book<a class="anchor" aria-label="anchor" href="#build-your-book"></a>
 </h4>
@@ -403,8 +415,21 @@ README).</p>
 <p>If you are not familiar with defining environement variable on
 gitlab, please follow the <a href="https://docs.gitlab.com/ee/ci/variables/index.html" class="external-link">official
 documentation</a>.</p>
+<p>By default, a book project created using
+<code>lozen::create_r_project(type = "book")</code> does not contain a
+<code>.Rproj</code> file, standing for a RStudio project. If this file
+is missing the “Git” panel won’t be visible in RStudio.</p>
+<p>If you wish to display this panel, you must create a RStudio project
+within the directory in which your book files are located. Please do the
+following : - Click on the “File” tab - New project - Existing directory
+- Select the directory of your book</p>
+<p>The other option is to use the Terminal to use the Git command line
+interface.</p>
 <p>Once this is done, you can commit all your changes and push them to
 your repository remote.</p>
+<p><strong>Important</strong>: before pushing, be sure that the
+<code>_book</code> directory is not listed in your
+<code>.gitignore</code> file !</p>
 <p>Thereafter, you should be able to <a href="https://docs.gitlab.com/ee/ci/pipelines/#view-pipelines" class="external-link">see your
 pipeline running</a> on Gitlab.</p>
 </div>
