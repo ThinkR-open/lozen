@@ -135,138 +135,31 @@
 
     <div id="ref-examples">
     <h2>Examples</h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co">### R package skeleton</span></span></span>
-<span class="r-in"><span><span class="fu">withr</span><span class="fu">::</span><span class="fu"><a href="https://withr.r-lib.org/reference/with_tempfile.html" class="external-link">with_tempdir</a></span><span class="op">(</span><span class="op">{</span></span></span>
-<span class="r-in"><span>  <span class="va">project_path</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/getwd.html" class="external-link">getwd</a></span><span class="op">(</span><span class="op">)</span></span></span>
-<span class="r-in"><span>  <span class="fu">create_r_project</span><span class="op">(</span></span></span>
-<span class="r-in"><span>    <span class="va">project_path</span>,</span></span>
-<span class="r-in"><span>    type <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"package"</span><span class="op">)</span>,</span></span>
-<span class="r-in"><span>    name_licence <span class="op">=</span> <span class="st">"Bob"</span>,</span></span>
-<span class="r-in"><span>    type_licence <span class="op">=</span> <span class="fu">usethis</span><span class="fu">::</span><span class="va"><a href="https://usethis.r-lib.org/reference/licenses.html" class="external-link">use_proprietary_license</a></span></span></span>
-<span class="r-in"><span>  <span class="op">)</span></span></span>
-<span class="r-in"><span><span class="op">}</span><span class="op">)</span></span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> Setting active project to <span style="color: #0000BB;">'/tmp/RtmpKw8ebC/file176a554079df'</span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> Creating <span style="color: #0000BB;">'R/'</span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> Writing a sentinel file <span style="color: #0000BB;">'.here'</span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #BB0000;">•</span> Build robust paths within your project via <span style="color: #555555;">`here::here()`</span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #BB0000;">•</span> Learn more at &lt;https://here.r-lib.org&gt;</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> Setting active project to <span style="color: #0000BB;">'&lt;no active project&gt;'</span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> Setting active project to <span style="color: #0000BB;">'/tmp/RtmpKw8ebC/file176a554079df'</span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> Setting active project to <span style="color: #0000BB;">'/tmp/RtmpKw8ebC/file176a554079df'</span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> Writing <span style="color: #0000BB;">'DESCRIPTION'</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #0000BB;">Package</span>: file176a554079df</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #0000BB;">Title</span>: What the Package Does (One Line, Title Case)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #0000BB;">Version</span>: 0.0.0.9000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #0000BB;">Authors@R</span> (parsed):</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     * First Last &lt;first.last@example.com&gt; [aut, cre] (YOUR-ORCID-ID)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #0000BB;">Description</span>: What the package does (one paragraph).</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #0000BB;">License</span>: `use_mit_license()`, `use_gpl3_license()` or friends to</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     pick a license</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #0000BB;">Encoding</span>: UTF-8</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #0000BB;">Roxygen</span>: list(markdown = TRUE)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #0000BB;">RoxygenNote</span>: 7.2.3</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> Writing <span style="color: #0000BB;">'NAMESPACE'</span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> Setting active project to <span style="color: #0000BB;">'/tmp/RtmpKw8ebC/file176a554079df'</span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Saving attachment parameters to yaml config file</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Updating file176a554079df documentation</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> Loading <span style="color: #0000BB;">file176a554079df</span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> Loading <span style="color: #0000BB;">file176a554079df</span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> Setting active project to <span style="color: #0000BB;">'&lt;no active project&gt;'</span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> Setting active project to <span style="color: #0000BB;">'/tmp/RtmpKw8ebC/file176a554079df'</span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> Adding <span style="color: #0000BB;">'file LICENSE'</span> to <span style="color: #00BB00;">License</span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> Writing <span style="color: #0000BB;">'LICENSE'</span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> Writing <span style="color: #0000BB;">'NEWS.md'</span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> Setting active project to <span style="color: #0000BB;">'&lt;no active project&gt;'</span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Kit project created</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> Setting active project to <span style="color: #0000BB;">'/tmp/RtmpKw8ebC/file176a554079df'</span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> Adding <span style="color: #0000BB;">'testthat'</span> to <span style="color: #00BB00;">Suggests</span> field in DESCRIPTION</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> Adding <span style="color: #0000BB;">'3'</span> to <span style="color: #00BB00;">Config/testthat/edition</span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> Creating <span style="color: #0000BB;">'tests/testthat/'</span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> Writing <span style="color: #0000BB;">'tests/testthat.R'</span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #BB0000;">•</span> Call <span style="color: #555555;">`use_test()`</span> to initialize a basic test file and open it for editing.</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> Writing <span style="color: #0000BB;">'tests/testthat/test-start.R'</span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #BB0000;">•</span> Edit <span style="color: #0000BB;">'tests/testthat/test-start.R'</span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> Setting active project to <span style="color: #0000BB;">'&lt;no active project&gt;'</span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Kit package created</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "/tmp/RtmpKw8ebC/file176a554079df"</span>
-<span class="r-in"><span></span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span></span></span>
+<span class="r-in"><span><span class="co">### R package skeleton</span></span></span>
+<span class="r-in"><span><span class="fu">create_r_project</span><span class="op">(</span></span></span>
+<span class="r-in"><span>  <span class="va">project_path</span>,</span></span>
+<span class="r-in"><span>  type <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"package"</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>  name_licence <span class="op">=</span> <span class="st">"Bob"</span>,</span></span>
+<span class="r-in"><span>  type_licence <span class="op">=</span> <span class="fu">usethis</span><span class="fu">::</span><span class="va"><a href="https://usethis.r-lib.org/reference/licenses.html" class="external-link">use_proprietary_license</a></span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co">### Shiny app</span></span></span>
-<span class="r-in"><span><span class="fu">withr</span><span class="fu">::</span><span class="fu"><a href="https://withr.r-lib.org/reference/with_tempfile.html" class="external-link">with_tempdir</a></span><span class="op">(</span><span class="op">{</span></span></span>
-<span class="r-in"><span>  <span class="va">project_path</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/getwd.html" class="external-link">getwd</a></span><span class="op">(</span><span class="op">)</span></span></span>
-<span class="r-in"><span>  <span class="fu">create_r_project</span><span class="op">(</span></span></span>
-<span class="r-in"><span>    <span class="va">project_path</span>,</span></span>
-<span class="r-in"><span>    type <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"golem"</span><span class="op">)</span>,</span></span>
-<span class="r-in"><span>    name_licence <span class="op">=</span> <span class="st">"Bob"</span>,</span></span>
-<span class="r-in"><span>    type_licence <span class="op">=</span> <span class="fu">usethis</span><span class="fu">::</span><span class="va"><a href="https://usethis.r-lib.org/reference/licenses.html" class="external-link">use_proprietary_license</a></span></span></span>
-<span class="r-in"><span>  <span class="op">)</span></span></span>
-<span class="r-in"><span><span class="op">}</span><span class="op">)</span></span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> Setting active project to <span style="color: #0000BB;">'/tmp/RtmpKw8ebC/file176a73d5fe6b'</span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> Creating <span style="color: #0000BB;">'R/'</span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> Writing a sentinel file <span style="color: #0000BB;">'.here'</span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #BB0000;">•</span> Build robust paths within your project via <span style="color: #555555;">`here::here()`</span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #BB0000;">•</span> Learn more at &lt;https://here.r-lib.org&gt;</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> Setting active project to <span style="color: #0000BB;">'&lt;no active project&gt;'</span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> Setting active project to <span style="color: #0000BB;">'/tmp/RtmpKw8ebC/file176a73d5fe6b'</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> ── Checking package name ───────────────────────────────────────────────────────</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> Valid package name</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BB0000;">•</span> Overwriting existing project.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> ── Copying package skeleton ────────────────────────────────────────────────────</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> Copied app skeleton</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> ── Running project hook function ───────────────────────────────────────────────</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> All set</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> ── Done ────────────────────────────────────────────────────────────────────────</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> A new golem named file176a73d5fe6b was created at /tmp/RtmpKw8ebC/file176a73d5fe6b .</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> To continue working on your app, start editing the 01_start.R file.</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> We noticed that some dev dependencies are not installed.</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> You can install them with `golem::install_dev_deps()`.</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Saving attachment parameters to yaml config file</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Updating file176a73d5fe6b documentation</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Setting `RoxygenNote` to "7.2.3"</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> Loading <span style="color: #0000BB;">file176a73d5fe6b</span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Writing <span style="color: #0000BB;">NAMESPACE</span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Writing <span style="color: #0000BB;">NAMESPACE</span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Writing <span style="color: #0000BB;">run_app.Rd</span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> Loading <span style="color: #0000BB;">file176a73d5fe6b</span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> Setting active project to <span style="color: #0000BB;">'&lt;no active project&gt;'</span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> Setting active project to <span style="color: #0000BB;">'/tmp/RtmpKw8ebC/file176a73d5fe6b'</span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> Adding <span style="color: #0000BB;">'file LICENSE'</span> to <span style="color: #00BB00;">License</span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> Writing <span style="color: #0000BB;">'LICENSE'</span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> Writing <span style="color: #0000BB;">'NEWS.md'</span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> Setting active project to <span style="color: #0000BB;">'&lt;no active project&gt;'</span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Kit project created</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> Setting active project to <span style="color: #0000BB;">'/tmp/RtmpKw8ebC/file176a73d5fe6b'</span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> Adding <span style="color: #0000BB;">'testthat'</span> to <span style="color: #00BB00;">Suggests</span> field in DESCRIPTION</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> Adding <span style="color: #0000BB;">'3'</span> to <span style="color: #00BB00;">Config/testthat/edition</span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> Creating <span style="color: #0000BB;">'tests/testthat/'</span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> Writing <span style="color: #0000BB;">'tests/testthat.R'</span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #BB0000;">•</span> Call <span style="color: #555555;">`use_test()`</span> to initialize a basic test file and open it for editing.</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> Writing <span style="color: #0000BB;">'tests/testthat/test-start.R'</span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #BB0000;">•</span> Edit <span style="color: #0000BB;">'tests/testthat/test-start.R'</span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> Setting active project to <span style="color: #0000BB;">'&lt;no active project&gt;'</span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Kit package created</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "/tmp/RtmpKw8ebC/file176a73d5fe6b"</span>
+<span class="r-in"><span><span class="fu">create_r_project</span><span class="op">(</span></span></span>
+<span class="r-in"><span>  <span class="va">project_path</span>,</span></span>
+<span class="r-in"><span>  type <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"golem"</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>  name_licence <span class="op">=</span> <span class="st">"Bob"</span>,</span></span>
+<span class="r-in"><span>  type_licence <span class="op">=</span> <span class="fu">usethis</span><span class="fu">::</span><span class="va"><a href="https://usethis.r-lib.org/reference/licenses.html" class="external-link">use_proprietary_license</a></span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co">### Bookdown</span></span></span>
-<span class="r-in"><span><span class="fu">withr</span><span class="fu">::</span><span class="fu"><a href="https://withr.r-lib.org/reference/with_tempfile.html" class="external-link">with_tempdir</a></span><span class="op">(</span><span class="op">{</span></span></span>
-<span class="r-in"><span>  <span class="va">project_path</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/getwd.html" class="external-link">getwd</a></span><span class="op">(</span><span class="op">)</span></span></span>
-<span class="r-in"><span>  <span class="fu">create_r_project</span><span class="op">(</span></span></span>
-<span class="r-in"><span>    <span class="va">project_path</span>,</span></span>
-<span class="r-in"><span>    type <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"book"</span><span class="op">)</span>,</span></span>
-<span class="r-in"><span>    name_licence <span class="op">=</span> <span class="st">"Bob"</span>,</span></span>
-<span class="r-in"><span>    type_licence <span class="op">=</span> <span class="fu">usethis</span><span class="fu">::</span><span class="va"><a href="https://usethis.r-lib.org/reference/licenses.html" class="external-link">use_proprietary_license</a></span></span></span>
-<span class="r-in"><span>  <span class="op">)</span></span></span>
-<span class="r-in"><span><span class="op">}</span><span class="op">)</span></span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> [-] 5 package(s) removed: dplyr, ggplot2, pagedown, tidyr, pagedown.</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> book created</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> You need to follow 'dev_history_book.Rmd' after that for the CI to create the pdf_book.</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> Setting active project to <span style="color: #0000BB;">'/tmp/RtmpKw8ebC/file176a9896bfd'</span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> Writing <span style="color: #0000BB;">'LICENSE'</span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> Writing <span style="color: #0000BB;">'NEWS.md'</span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> Setting active project to <span style="color: #0000BB;">'&lt;no active project&gt;'</span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Kit project created</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "/tmp/RtmpKw8ebC/file176a9896bfd"</span>
-<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="fu">create_r_project</span><span class="op">(</span></span></span>
+<span class="r-in"><span>  project_path <span class="op">=</span> <span class="st">"path/of/my/project"</span>,</span></span>
+<span class="r-in"><span>  type <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"book"</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>  name_licence <span class="op">=</span> <span class="st">"Bob"</span>,</span></span>
+<span class="r-in"><span>  type_licence <span class="op">=</span> <span class="fu">usethis</span><span class="fu">::</span><span class="va"><a href="https://usethis.r-lib.org/reference/licenses.html" class="external-link">use_proprietary_license</a></span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">}</span></span></span>
 </code></pre></div>
     </div>
   </div>
