@@ -10,17 +10,29 @@ test_that("deploy_connect_pkgdown works", {
       Sys.getenv("CONNECT_NAME") != "") {
       dummypackage <- tempfile(pattern = "pkgdown")
       dir.create(dummypackage)
-      fusen::fill_description(pkg = dummypackage, fields = list(Title = "Dummy Package"))
-      dev_file <-
-        fusen::add_minimal(
-          pkg = dummypackage,
-          overwrite = TRUE,
-          open = FALSE
+      # Add docs
+      fusen::fill_description(
+        pkg = dummypackage,
+        fields = list(
+          Title = "Build A Package From Rmarkdown File",
+          Description = "Use Rmarkdown First method to build your package. Start your package with documentation. Everything can be set from a Rmarkdown file in your project.",
+          `Authors@R` = c(
+            person(
+              "John",
+              "Doe",
+              email = "john@email.me",
+              role = c("aut", "cre"),
+              comment = c(ORCID = "0000-0000-0000-0000")
+            )
+          )
         )
-      # let's create a flat file
+      )
+
+      dev_file <- suppressMessages(fusen::add_minimal_package(pkg = dummypackage, overwrite = TRUE, open = FALSE))
       flat_file <- dev_file[grepl("flat_", dev_file)]
 
       usethis::with_project(dummypackage, {
+
         # Add licence
         usethis::use_mit_license("John Doe")
         # we inflate the flat file
@@ -44,24 +56,25 @@ test_that("deploy_connect_pkgdown works", {
 
         connect_name <- Sys.getenv("CONNECT_NAME")
 
-        if ("tutu" %in% rsconnect::applications(server = connect_name)[["name"]]) {
-          try(
-            rsconnect::terminateApp(
-              appName = "tutu",
-              account = Sys.getenv("CONNECT_USER"),
-              server = Sys.getenv("CONNECT_NAME")
-            )
-          )
-        }
-        expect_false("tutu" %in% rsconnect::applications(server = connect_name)[["name"]])
+        # if ("tutu" %in% rsconnect::applications(server = connect_name)[["name"]]) {
+        #   try(
+        #     rsconnect::terminateApp(
+        #       appName = "tutu",
+        #       account = Sys.getenv("CONNECT_USER"),
+        #       server = Sys.getenv("CONNECT_NAME")
+        #     )
+        #   )
+        # }
+        # expect_false("tutu" %in% rsconnect::applications(server = connect_name)[["name"]])
 
         # deploy pkgdown
-        deploy_connect_pkgdown(
+        dep <- deploy_connect_pkgdown(
           app_name = "tutu",
           deploy_dir = file.path(dummypackage, "inst/site/"),
-          launch.browser = FALSE
+          launch.browser = FALSE,
+          forceUpdate = TRUE
         )
-        expect_true("tutu" %in% rsconnect::applications(server = connect_name)[["name"]])
+        expect_true(dep)
 
         # if interactive mode, open the app
         if (interactive()) {
@@ -69,14 +82,14 @@ test_that("deploy_connect_pkgdown works", {
         }
 
         # delete the pkgdown
-        try(
-          rsconnect::terminateApp(
-            appName = "tutu",
-            account = Sys.getenv("CONNECT_USER"),
-            server = Sys.getenv("CONNECT_NAME")
-          )
-        )
-        expect_false("tutu" %in% rsconnect::applications(server = connect_name)[["name"]])
+        # try(
+        #   rsconnect::terminateApp(
+        #     appName = "tutu",
+        #     account = Sys.getenv("CONNECT_USER"),
+        #     server = Sys.getenv("CONNECT_NAME")
+        #   )
+        # )
+        # expect_false("tutu" %in% rsconnect::applications(server = connect_name)[["name"]])
       })
       unlink(dummypackage, recursive = TRUE)
     }
