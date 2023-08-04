@@ -82,6 +82,7 @@ If your pipeline did not raise any error, the deployed pkgdown/book is now hoste
 If you are working on `https://gitlab.com`, the url should be `https://username.gitlab.io/your.repository.name`. 
 
 
+
 # Continuous deployment on Posit Connect
 
 ## CD of a pkgdown
@@ -225,6 +226,17 @@ Any `.gitlab-ci.yml` file already present in your project is now completed with 
 Be aware that running this command multiple times would duplicate these steps in your `.gitlab-ci.yml` file. It should be avoided.
 
 **Important**: be sure that the `_book` directory is not listed in your `.gitignore` file !
+
+_note_: if you wish to compile the html files in odt files please add the following to the produced `.gitlab-ci.yml` file :
+
+```{yaml, eval = FALSE}
+- Rscript -e 'bookdown::render_book("index.Rmd", output_format = "lozen::paged_template", clean = FALSE);file.copy("_main.html", "public/index.html")'
+- Rscript -e 'lozen::html_to_odt(input_html = "public/index.html", output_odt = "public/rapport.odt")'
+- Rscript -e 'toutes_fiches <- list.files(pattern = "[.]Rmd");lozen:::compile_fiches(fiches = toutes_fiches, outdir = "public", type = c("html", "odt"), open=FALSE)'
+- Rscript -e 'utils::zip(files = list.files("public", pattern = "[.]odt", full.names = TRUE ), zipfile = file.path("public", "odt_files.zip"))'
+- mv _main.knit.md public/_main.knit.md
+```
+
 
 #### To be done on Gitlab
 
