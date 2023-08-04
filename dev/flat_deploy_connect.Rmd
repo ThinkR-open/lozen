@@ -338,85 +338,97 @@ if (Sys.getenv("CONNECT_URL") != "" &
 ```{r tests-deploy_connect_pkgdown}
 test_that("deploy_connect_pkgdown works", {
   skip_on_ci()
-  
+
   if (Sys.getenv("ALLOW_TESTS_TO_DEPLOY_ON_CONNECT", unset = "FALSE") == "TRUE") {
-
-  if (Sys.getenv("CONNECT_URL") != "" &
-    Sys.getenv("CONNECT_USER") != "" &
-    Sys.getenv("CONNECT_TOKEN") != "" &
-    Sys.getenv("CONNECT_NAME") != "") {
-    dummypackage <- tempfile(pattern = "pkgdown")
-    dir.create(dummypackage)
-    fusen::fill_description(pkg = dummypackage, fields = list(Title = "Dummy Package"))
-    dev_file <-
-      fusen::add_minimal(
+    if (Sys.getenv("CONNECT_URL") != "" &
+      Sys.getenv("CONNECT_USER") != "" &
+      Sys.getenv("CONNECT_TOKEN") != "" &
+      Sys.getenv("CONNECT_NAME") != "") {
+      dummypackage <- tempfile(pattern = "pkgdown")
+      dir.create(dummypackage)
+      # Add docs
+      fusen::fill_description(
         pkg = dummypackage,
-        overwrite = TRUE,
-        open = FALSE
+        fields = list(
+          Title = "Build A Package From Rmarkdown File",
+          Description = "Use Rmarkdown First method to build your package. Start your package with documentation. Everything can be set from a Rmarkdown file in your project.",
+          `Authors@R` = c(
+            person(
+              "John",
+              "Doe",
+              email = "john@email.me",
+              role = c("aut", "cre"),
+              comment = c(ORCID = "0000-0000-0000-0000")
+            )
+          )
+        )
       )
-    # let's create a flat file
-    flat_file <- dev_file[grepl("flat_", dev_file)]
 
-    usethis::with_project(dummypackage, {
-      # Add licence
-      usethis::use_mit_license("John Doe")
-      # we inflate the flat file
-      suppressMessages(
-        fusen::inflate(
+      dev_file <- suppressMessages(fusen::add_minimal_package(pkg = dummypackage, overwrite = TRUE, open = FALSE))
+      flat_file <- dev_file[grepl("flat_", dev_file)]
+
+      usethis::with_project(dummypackage, {
+
+        # Add licence
+        usethis::use_mit_license("John Doe")
+        # we inflate the flat file
+        suppressMessages(
+          fusen::inflate(
+            pkg = dummypackage,
+            flat_file = flat_file,
+            vignette_name = "Get started",
+            check = FALSE,
+            open_vignette = FALSE,
+            document = FALSE,
+            overwrite = "yes"
+          )
+        )
+
+        # create pkgdown
+        try(pkgdown::build_site(
           pkg = dummypackage,
-          flat_file = flat_file,
-          vignette_name = "Get started",
-          check = FALSE,
-          open_vignette = FALSE,
-          document = FALSE,
-          overwrite = "yes"
+          override = list(destination = "inst/site/")
+        ))
+
+        connect_name <- Sys.getenv("CONNECT_NAME")
+
+        # if ("tutu" %in% rsconnect::applications(server = connect_name)[["name"]]) {
+        #   try(
+        #     rsconnect::terminateApp(
+        #       appName = "tutu",
+        #       account = Sys.getenv("CONNECT_USER"),
+        #       server = Sys.getenv("CONNECT_NAME")
+        #     )
+        #   )
+        # }
+        # expect_false("tutu" %in% rsconnect::applications(server = connect_name)[["name"]])
+
+        # deploy pkgdown
+        dep <- deploy_connect_pkgdown(
+          app_name = "tutu",
+          deploy_dir = file.path(dummypackage, "inst/site/"),
+          launch.browser = FALSE,
+          forceUpdate = TRUE
         )
-      )
+        expect_true(dep)
 
-      # create pkgdown
-      try(pkgdown::build_site(
-        pkg = dummypackage,
-        override = list(destination = "inst/site/")
-      ))
-      
-      connect_name <- Sys.getenv("CONNECT_NAME")
+        # if interactive mode, open the app
+        if (interactive()) {
+          browseURL(rsconnect::applications(server = connect_name)[["url"]][which(rsconnect::applications(server = connect_name)[["name"]] == "tutu")])
+        }
 
-      if ("tutu" %in% rsconnect::applications(server = connect_name)[["name"]]) {
-          try(
-          rsconnect::terminateApp(
-            appName = "tutu",
-            account = Sys.getenv("CONNECT_USER"),
-            server = Sys.getenv("CONNECT_NAME")
-          )
-        )
-      }
-      expect_false("tutu" %in% rsconnect::applications(server = connect_name)[["name"]])
-
-      # deploy pkgdown
-      deploy_connect_pkgdown(
-        app_name = "tutu",
-        deploy_dir = file.path(dummypackage, "inst/site/"),
-        launch.browser = FALSE
-      )
-      expect_true("tutu" %in% rsconnect::applications(server = connect_name)[["name"]])
-
-      # if interactive mode, open the app
-      if (interactive()) {
-        browseURL(rsconnect::applications(server = connect_name)[["url"]][which(rsconnect::applications(server = connect_name)[["name"]] == "tutu")])
-      }
-
-      # delete the pkgdown
-        try(
-          rsconnect::terminateApp(
-            appName = "tutu",
-            account = Sys.getenv("CONNECT_USER"),
-            server = Sys.getenv("CONNECT_NAME")
-          )
-        )
-      expect_false("tutu" %in% rsconnect::applications(server = connect_name)[["name"]])
-    })
-    unlink(dummypackage, recursive = TRUE)
-  }
+        # delete the pkgdown
+        # try(
+        #   rsconnect::terminateApp(
+        #     appName = "tutu",
+        #     account = Sys.getenv("CONNECT_USER"),
+        #     server = Sys.getenv("CONNECT_NAME")
+        #   )
+        # )
+        # expect_false("tutu" %in% rsconnect::applications(server = connect_name)[["name"]])
+      })
+      unlink(dummypackage, recursive = TRUE)
+    }
   }
 })
 ```

@@ -123,11 +123,10 @@ flat_deploy_connect.Rmd:
   - tests/testthat/test-deploy_connect_shiny.R
   - tests/testthat/test-deploy_connect_pkgdown.R
   - tests/testthat/test-deploy_connect_bookdown.R
-  vignettes: vignettes/bg-deploy-on-connect.Rmd
+  vignettes: []
   inflate:
-    pkg: lozen
     flat_file: dev/flat_deploy_connect.Rmd
-    vignette_name: bg - Deploy on Connect
+    vignette_name: .na
     open_vignette: false
     check: false
     document: false

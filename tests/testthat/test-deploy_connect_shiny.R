@@ -2,6 +2,6 @@
 
 test_that("deploy_connect_shiny works", {
   if (Sys.getenv("ALLOW_TESTS_TO_DEPLOY_ON_CONNECT", unset = "FALSE") == "TRUE") {
-    expect_true(inherits(deploy_connect_shiny, "function"))
+  expect_true(inherits(deploy_connect_shiny, "function"))
   }
 })

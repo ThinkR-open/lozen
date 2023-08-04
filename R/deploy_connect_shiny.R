@@ -38,18 +38,16 @@
 #'   app_name = "app_test"
 #' )
 #' }
-deploy_connect_shiny <- function(
-  connect_url = Sys.getenv("CONNECT_URL"),
-  connect_user = Sys.getenv("CONNECT_USER"),
-  connect_api_token = Sys.getenv("CONNECT_TOKEN"),
-  app_name = NULL,
-  deploy_dir = getwd(),
-  connect_name = Sys.getenv("CONNECT_NAME", unset = "connect"),
-  file_to_ignore_regex = ".Rprofile$|^.Renviron$|renv/|rstudio_.*/|deliverables/|dev/|data-raw/|dockerfiles/",
-  forceUpdate = FALSE,
-  lint = FALSE,
-  ...
-    ) {
+deploy_connect_shiny <- function(connect_url = Sys.getenv("CONNECT_URL"),
+                                 connect_user = Sys.getenv("CONNECT_USER"),
+                                 connect_api_token = Sys.getenv("CONNECT_TOKEN"),
+                                 app_name = NULL,
+                                 deploy_dir = getwd(),
+                                 connect_name = Sys.getenv("CONNECT_NAME", unset = "connect"),
+                                 file_to_ignore_regex = ".Rprofile$|^.Renviron$|renv/|rstudio_.*/|deliverables/|dev/|data-raw/|dockerfiles/",
+                                 forceUpdate = FALSE,
+                                 lint = FALSE,
+                                 ...) {
   cli::cat_bullet("Deploying the app on Connect")
   deploy_connect(
     connect_url = connect_url,
