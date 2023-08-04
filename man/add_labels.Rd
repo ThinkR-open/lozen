@@ -22,6 +22,5 @@ Add labels to project
 add_labels(
   project_id = project_id
 )
-#'
 }
 }

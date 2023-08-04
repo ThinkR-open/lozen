@@ -134,7 +134,7 @@ test_that("use_gitlab_ci_deploy_connect_pkgdown works", {
 
   skip_on_ci()
 
- if (Sys.getenv("ALLOW_CI_TESTS_ON_GITLAB", unset = "FALSE") == "TRUE") {
+  if (Sys.getenv("ALLOW_CI_TESTS_ON_GITLAB", unset = "FALSE") == "TRUE") {
     output_book <- with_gitlab_project(
       gitlab_url = Sys.getenv("GITLAB_URL", unset = "https://gitlab.com"),
       namespace_id = NULL,

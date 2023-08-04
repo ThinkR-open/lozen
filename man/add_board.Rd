@@ -29,6 +29,5 @@ Add board in the correct order
 add_board(
   project_id = project_id
 )
-#'
 }
 }

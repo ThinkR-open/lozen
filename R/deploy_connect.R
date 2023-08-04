@@ -15,7 +15,6 @@ deploy_connect <- function(connect_url,
                            forceUpdate,
                            lint,
                            ...) {
-
   if (missing(connect_url)) {
     stop("connect_url is missing")
   }

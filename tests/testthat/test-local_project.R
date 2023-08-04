@@ -76,9 +76,8 @@ test_that("create_book_project works", {
       file.path(
         r_project,
         c(
-          "01-page1.Rmd",          
-          "DESCRIPTION",
-          "_bookdown.yml"
+          "01-page1.Rmd",
+          "DESCRIPTION", "_bookdown.yml"
         )
       )
     )
