@@ -16,10 +16,11 @@
 #'   deploy_function = "deploy_connect_shiny"
 #' )
 create_deploy_ci_stage <- function(
-    image,
-    deploy_function,
-    stage_name = deploy_function,
-    ...) {
+  image,
+  deploy_function,
+  stage_name = deploy_function,
+  ...
+    ) {
   stopifnot("deploy_function exist" = length(getFromNamespace(x = deploy_function, "lozen")) > 0)
 
   le_call <- glue::glue(
@@ -30,7 +31,7 @@ create_deploy_ci_stage <- function(
   connect_ci_list <- list(
     image = image,
     variables = list(
-      GIT_DEPTH= 10L,
+      GIT_DEPTH = 10L,
       REPO_NAME = "https://packagemanager.rstudio.com/all/__linux__/focal/latest",
       R_LIBS_USER = "ci/lib"
     ),

@@ -37,13 +37,14 @@
 #' @examples
 #' #
 use_gitlab_ci_deploy_connect <- function(
-    deploy_function = c("deploy_connect_shiny", "deploy_connect_pkgdown", "deploy_connect_bookdown"),
-    stage_name = "deploy_connect",
-    image = "rocker/verse:latest",
-    dir = ".",
-    append = TRUE,
-    file_name = ".gitlab-ci.yml",
-    ...) {
+  deploy_function = c("deploy_connect_shiny", "deploy_connect_pkgdown", "deploy_connect_bookdown"),
+  stage_name = "deploy_connect",
+  image = "rocker/verse:latest",
+  dir = ".",
+  append = TRUE,
+  file_name = ".gitlab-ci.yml",
+  ...
+    ) {
   deploy_function <- match.arg(deploy_function)
 
   path_to_yaml <- check_if_yaml_exists(

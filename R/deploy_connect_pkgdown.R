@@ -53,23 +53,25 @@
 #'   )
 #' }
 #' }
-deploy_connect_pkgdown <- function(connect_url = Sys.getenv("CONNECT_URL"),
-                                   connect_user = Sys.getenv("CONNECT_USER"),
-                                   connect_api_token = Sys.getenv("CONNECT_TOKEN"),
-                                   app_name = NULL,
-                                   deploy_dir =
-                                     c(
-                                       file.path(getwd(), "public"),
-                                       file.path(getwd(), "docs"),
-                                       file.path(getwd(), "inst/site/"),
-                                       file.path(getwd(), ".")
-                                     ),
-                                   connect_name = Sys.getenv("CONNECT_NAME", unset = "connect"),
-                                   file_to_ignore_regex = ".Rprofile$|^.Renviron$|renv/|rstudio_.*/|deliverables/|dev/|data-raw/|dockerfiles/",
-                                   forceUpdate = FALSE,
-                                   lint = FALSE,
-                                   app_primary_doc = "index.html",
-                                   ...) {
+deploy_connect_pkgdown <- function(
+  connect_url = Sys.getenv("CONNECT_URL"),
+  connect_user = Sys.getenv("CONNECT_USER"),
+  connect_api_token = Sys.getenv("CONNECT_TOKEN"),
+  app_name = NULL,
+  deploy_dir =
+  c(
+    file.path(getwd(), "public"),
+    file.path(getwd(), "docs"),
+    file.path(getwd(), "inst/site/"),
+    file.path(getwd(), ".")
+  ),
+  connect_name = Sys.getenv("CONNECT_NAME", unset = "connect"),
+  file_to_ignore_regex = ".Rprofile$|^.Renviron$|renv/|rstudio_.*/|deliverables/|dev/|data-raw/|dockerfiles/",
+  forceUpdate = FALSE,
+  lint = FALSE,
+  app_primary_doc = "index.html",
+  ...
+    ) {
   cli::cat_bullet("Deploying the pkgdown on Connect")
 
   deploy_dir_to_use <- detect_deploy_dir(deploy_dir)

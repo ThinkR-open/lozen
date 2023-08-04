@@ -31,9 +31,10 @@
 #' # Suppress tmp folder
 #' unlink(project_path, recursive = TRUE)
 gl_add_template_issue <- function(
-    project_path = ".",
-    language = c("fr", "en"),
-    type = c("full", "light")) {
+  project_path = ".",
+  language = c("fr", "en"),
+  type = c("full", "light")
+    ) {
   old <- setwd(project_path)
   on.exit(setwd(old))
 

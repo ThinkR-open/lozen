@@ -18,10 +18,11 @@
 #' render_book("index.Rmd", output_format = "lozen::paged_template")
 #' }
 render_book <- function(
-    rmd_to_render = "index.Rmd",
-    output_format = c("lozen::bs4_book_template", "lozen::paged_template"),
-    output_dir = "_book",
-    ...) {
+  rmd_to_render = "index.Rmd",
+  output_format = c("lozen::bs4_book_template", "lozen::paged_template"),
+  output_dir = "_book",
+  ...
+    ) {
   match.arg(output_format, c("lozen::bs4_book_template", "lozen::paged_template"))
 
   book_format <- output_format[1]

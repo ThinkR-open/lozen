@@ -6,8 +6,8 @@
 #' @param type Choose output type: html or odt
 #' @param open Logical. Whether to open file at the end
 #' @return compiled fiches
-#' @noRd 
-#' 
+#' @noRd
+#'
 #' @examples
 #' compile_fiches()
 compile_fiches <- function(fiches, type = "html", outdir = "public", open = TRUE) {

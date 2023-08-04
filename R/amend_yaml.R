@@ -13,8 +13,9 @@
 #' @examples
 #' # amend_yaml()
 amend_yaml <- function(
-    path_to_yaml,
-    connect_ci_list) {
+  path_to_yaml,
+  connect_ci_list
+    ) {
   # Write CI to yaml
   if (file.exists(path_to_yaml)) {
     # Combine existing and new connect CI if yaml already exist

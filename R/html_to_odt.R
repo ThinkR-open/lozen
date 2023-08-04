@@ -7,7 +7,7 @@
 #' @examples
 #' \dontrun{
 #' html_to_odt(input_html = "_main.html", output_odt = "_main.odt")
-#'}
+#' }
 html_to_odt <- function(input_html = "_main.html", output_odt = "_main.odt") {
   compil_dir <- dirname(input_html)
   # Get template
@@ -15,23 +15,30 @@ html_to_odt <- function(input_html = "_main.html", output_odt = "_main.odt") {
   if (!dir.exists(file.path(compil_dir, "pandoc"))) {
     fs::dir_copy(
       system.file("pandoc", package = "lozen"),
-      compil_dir)
+      compil_dir
+    )
   }
-  
+
   # Create config.pandoc
-  cat('quiet:\ndata-dir:', file.path(compil_dir, "pandoc"), sep = " ",
-      file = file.path(compil_dir, "config.pandoc"))
-  
+  cat(
+    "quiet:\ndata-dir:",
+    file.path(compil_dir, "pandoc"),
+    sep = " ",
+    file = file.path(compil_dir, "config.pandoc")
+  )
+
   # odt first, html then
   message("Convert to odt with pandoc: ", basename(output_odt))
-  knitr::pandoc(input = input_html,
-                format = "odt", ext = ".odt",
-                config = file.path(compil_dir, "config.pandoc"))
-  
+  knitr::pandoc(
+    input = input_html,
+    format = "odt",
+    ext = ".odt",
+    config = file.path(compil_dir, "config.pandoc")
+  )
+
   outodt_intermediate <- gsub("[.]html", ".odt", input_html)
   file.copy(outodt_intermediate, output_odt)
   file.remove(outodt_intermediate)
   file.remove(file.path(compil_dir, "config.pandoc"))
   message(basename(output_odt), " file created")
 }
-
