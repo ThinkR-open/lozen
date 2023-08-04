@@ -395,6 +395,14 @@ these steps in your <code>.gitlab-ci.yml</code> file. It should be
 avoided.</p>
 <p><strong>Important</strong>: be sure that the <code>_book</code>
 directory is not listed in your <code>.gitignore</code> file !</p>
+<p><em>note</em>: if you wish to compile the html files in odt files
+please add the following to the produced <code>.gitlab-ci.yml</code>
+file :</p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="kw">-</span><span class="at"> Rscript -e 'bookdown::render_book("index.Rmd", output_format = "lozen::paged_template", clean = FALSE);file.copy("_main.html", "public/index.html")'</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="kw">-</span><span class="at"> Rscript -e 'lozen::html_to_odt(input_html = "public/index.html", output_odt = "public/rapport.odt")'</span></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a><span class="kw">-</span><span class="at"> Rscript -e 'toutes_fiches &lt;- list.files(pattern = "[.]Rmd");lozen:::compile_fiches(fiches = toutes_fiches, outdir = "public", type = c("html", "odt"), open=FALSE)'</span></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a><span class="kw">-</span><span class="at"> Rscript -e 'utils::zip(files = list.files("public", pattern = "[.]odt", full.names = TRUE ), zipfile = file.path("public", "odt_files.zip"))'</span></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a><span class="kw">-</span><span class="at"> mv _main.knit.md public/_main.knit.md</span></span></code></pre></div>
 </div>
 <div class="section level5">
 <h5 id="to-be-done-on-gitlab-2">To be done on Gitlab<a class="anchor" aria-label="anchor" href="#to-be-done-on-gitlab-2"></a>
@@ -402,7 +410,7 @@ directory is not listed in your <code>.gitignore</code> file !</p>
 <p>Some environment variables must be set on Gitlab for the CI/CD to be
 working.</p>
 <p>You’ll need to define :</p>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">CONNECT_URL</span> <span class="op">&lt;-</span> <span class="st">"https://my.connect.url"</span></span>
 <span><span class="va">CONNECT_NAME</span> <span class="op">&lt;-</span> <span class="st">"my.connect.server.name"</span></span>
 <span><span class="va">CONNECT_USER</span> <span class="op">&lt;-</span> <span class="st">"my.connect.username"</span></span>
