@@ -1,12 +1,14 @@
 
-  - [Installation](#installation)
-  - [Use of the package, depending if you are a user or a
-    developer](#use-of-the-package-depending-if-you-are-a-user-or-a-developer)
-      - [Use {lozen} as user](#use-lozen-as-user)
-      - [Use {lozen} as developer](#use-lozen-as-developer)
-      - [More details about how to create tokens and define environment
-        variables](#more-details-about-how-to-create-tokens-and-define-environment-variables)
-  - [Documentation](#documentation)
+- [Installation](#installation)
+  - [From Github](#from-github)
+  - [From r-universe](#from-r-universe)
+- [Use of the package, depending if you are a user or a
+  developer](#use-of-the-package-depending-if-you-are-a-user-or-a-developer)
+  - [Use {lozen} as user](#use-lozen-as-user)
+  - [Use {lozen} as developer](#use-lozen-as-developer)
+  - [More details about how to create tokens and define environment
+    variables](#more-details-about-how-to-create-tokens-and-define-environment-variables)
+- [Documentation](#documentation)
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
@@ -29,13 +31,28 @@ some tokens and environment variables. Go to the dedicated section below
 
 # Installation
 
+## From Github
+
 ``` r
 remotes::install_github(
   repo = "ThinkR-open/lozen",
-  ref = "main",
-  build_vignettes = TRUE,
-  upgrade = "never"
+  build_vignettes = TRUE
 )
+```
+
+## From r-universe
+
+``` r
+install.packages(
+  "lozen",
+  repos = c("https://thinkr-open.r-universe.dev", "https://cloud.r-project.org")
+)
+#> Installation du package dans 'C:/Users/yohann/AppData/Local/R/win-library/4.2'
+#> (car 'lib' n'est pas spécifié)
+#> le package 'lozen' a été décompressé et les sommes MD5 ont été vérifiées avec succés
+#> 
+#> Les packages binaires téléchargés sont dans
+#>  C:\Users\yohann\AppData\Local\Temp\Rtmp86E83L\downloaded_packages
 ```
 
 # Use of the package, depending if you are a user or a developer
@@ -101,31 +118,31 @@ content at least once before being able to run the tests.
 
 ### GitLab
 
-  - `GITLAB_TOKEN`: Create a personal access token on GitLab, with the
-    rights: “read\_repository”, “write\_repository”, “api”, “read\_api”
-  - `GITLAB_URL`: url of your gitlab instance - if this is `gitlab.com`,
-    you do not have to specify it, because this is the default value
-    used by the package
+- `GITLAB_TOKEN`: Create a personal access token on GitLab, with the
+  rights: “read_repository”, “write_repository”, “api”, “read_api”
+- `GITLAB_URL`: url of your gitlab instance - if this is `gitlab.com`,
+  you do not have to specify it, because this is the default value used
+  by the package
 
 ### GitHub
 
-  - `GITHUB_PAT`: Create a personal access token on GitHub - the
-    following scopes must be granted with your token “admin:org”,
-    “delete\_repo”, “project”, “repo”, “user”, “workflow.”
+- `GITHUB_PAT`: Create a personal access token on GitHub - the following
+  scopes must be granted with your token “admin:org”, “delete_repo”,
+  “project”, “repo”, “user”, “workflow.”
 
 ### Posit Connect
 
-  - `CONNECT_URL`: Url of your Posit Connect
-  - `CONNECT_NAME`: Name of your Posit Connect server - to know this
-    information, please use `rsconnect::accounts()$server`. if this is
-    `connect`, you do not have to specify it, because this is the
-    default value defined by Posit Connect once a first connection has
-    been made to the server
-  - `CONNECT_USER`: Your username in your Posit Connect
-  - `CONNECT_TOKEN`: Personal access token of your Posit Connect -
-    please follow the [official
-    documentation](https://docs.posit.co/connect/user/api-keys/) to
-    create it
+- `CONNECT_URL`: Url of your Posit Connect
+- `CONNECT_NAME`: Name of your Posit Connect server - to know this
+  information, please use `rsconnect::accounts()$server`. if this is
+  `connect`, you do not have to specify it, because this is the default
+  value defined by Posit Connect once a first connection has been made
+  to the server
+- `CONNECT_USER`: Your username in your Posit Connect
+- `CONNECT_TOKEN`: Personal access token of your Posit Connect - please
+  follow the [official
+  documentation](https://docs.posit.co/connect/user/api-keys/) to create
+  it
 
 # Documentation
 
@@ -135,22 +152,22 @@ Access to the pkgdown: <https://thinkr-open.github.io/lozen/>
 
 *Documentation dedicated to the users (Devs, Lead Devs)*
 
-  - `aa - Create a new project with GitLab`: Create a new R project for
-    a mission - managed on GitLab, with everything needed (the R project
-    skeleton, the init of git, the init of the project on GitLab, etc.)
-  - `ab - Create a new project with GitHub`: Create a new R project for
-    a mission - managed on GitHub, with everything needed (the R project
-    skeleton, the init of git, the init of the project on GitLab, etc.)
-    (**WIP**)
-  - `ac - Create the skeleton of the R project (package, app, book)`:
-    Add the skeleton of a R product in your project
-  - `ad - Set up continuous integration and continuous deployment for
-    Gitlab CI/CD`: Set up the publication of your product
-  - `ae - Create Weekly with GitHub or GitLab`: Generate a weekly/daily
-    for a mission
-  - `af - Build a pkgdown with reports`: Build a pkgdown with coverage
-    and test reports
-  - `ba - Manage forge board and wiki`: Create and manage your
-    communication tools on Gitlab
-  - `bb - Manage git tools (branches, commits, etc.)`: Manage your
-    repository on Gitlab
+- `aa - Create a new project with GitLab`: Create a new R project for a
+  mission - managed on GitLab, with everything needed (the R project
+  skeleton, the init of git, the init of the project on GitLab, etc.)
+- `ab - Create a new project with GitHub`: Create a new R project for a
+  mission - managed on GitHub, with everything needed (the R project
+  skeleton, the init of git, the init of the project on GitLab, etc.)
+  (**WIP**)
+- `ac - Create the skeleton of the R project (package, app, book)`: Add
+  the skeleton of a R product in your project
+- `ad - Set up continuous integration and continuous deployment for Gitlab CI/CD`:
+  Set up the publication of your product
+- `ae - Create Weekly with GitHub or GitLab`: Generate a weekly/daily
+  for a mission
+- `af - Build a pkgdown with reports`: Build a pkgdown with coverage and
+  test reports
+- `ba - Manage forge board and wiki`: Create and manage your
+  communication tools on Gitlab
+- `bb - Manage git tools (branches, commits, etc.)`: Manage your
+  repository on Gitlab

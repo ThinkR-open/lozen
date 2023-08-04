@@ -1,3 +1,17 @@
+# lozen 1.2.0.9000
+
+## Major
+
+- Modify vignettes to make them more user-friendly
+- CI/CD works for:
+  + A R package : deployment of the pkgdown can be made on Gitlab Pages / Posit Connect
+  + A golem shiny app : deployment of the pkgdown can be made on Gitlab Pages / deployment of the app on Posit Connect
+  + A bookdown : a book compiled with either pagedown::paged_template or bookdown::bs4_book can be deployed on Gitlab Pages / Posit Connect
+
+## Minor
+
+- Modifications made to make {lozen} usable with `fusen::inflate_all()``
+
 # lozen 1.1.0.9000
 
 ## Major
@@ -7,7 +21,7 @@
 
 ## Minor
 
-- Remove get_author fucntion to thinkridentity
+- Remove get_author function to thinkridentity
 
 # lozen 1.1.0
 

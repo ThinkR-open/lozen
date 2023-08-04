@@ -128,7 +128,7 @@ add_kit_package(project_path)
 ```{r eval = FALSE}
 # The file to create weekly
 file.copy(
-  from = system.file("doc", "ac-create-weekly-with-github-or-gitlab.Rmd",
+  from = system.file("doc", "ae-create-weekly-with-github-or-gitlab.Rmd",
     package = "lozen"
   ),
   to = file.path(

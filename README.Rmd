@@ -30,14 +30,24 @@ To use the package, as user or as developer, you will have to define some tokens
 
 # Installation
 
+## From Github
+
 ```{r, eval=FALSE}
 remotes::install_github(
   repo = "ThinkR-open/lozen",
-  ref = "main",
-  build_vignettes = TRUE,
-  upgrade = "never"
+  build_vignettes = TRUE
 )
 ```
+
+## From r-universe
+
+```{r}
+install.packages(
+  "lozen",
+  repos = c("https://thinkr-open.r-universe.dev", "https://cloud.r-project.org")
+)
+```
+
 
 
 # Use of the package, depending if you are a user or a developer
