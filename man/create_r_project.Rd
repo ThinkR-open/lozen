@@ -33,38 +33,29 @@ Side Effect: Transform project as package or book:
 Create a R project with full content skeleton
 }
 \examples{
+\dontrun{
 ### R package skeleton
-withr::with_tempdir({
-  project_path <- getwd()
-  create_r_project(
-    project_path,
-    type = c("package"),
-    name_licence = "Bob",
-    type_licence = usethis::use_proprietary_license
-  )
-})
-
+create_r_project(
+  project_path,
+  type = c("package"),
+  name_licence = "Bob",
+  type_licence = usethis::use_proprietary_license
+)
 
 ### Shiny app
-withr::with_tempdir({
-  project_path <- getwd()
-  create_r_project(
-    project_path,
-    type = c("golem"),
-    name_licence = "Bob",
-    type_licence = usethis::use_proprietary_license
-  )
-})
+create_r_project(
+  project_path,
+  type = c("golem"),
+  name_licence = "Bob",
+  type_licence = usethis::use_proprietary_license
+)
 
 ### Bookdown
-withr::with_tempdir({
-  project_path <- getwd()
-  create_r_project(
-    project_path,
-    type = c("book"),
-    name_licence = "Bob",
-    type_licence = usethis::use_proprietary_license
-  )
-})
-
+create_r_project(
+  project_path = "path/of/my/project",
+  type = c("book"),
+  name_licence = "Bob",
+  type_licence = usethis::use_proprietary_license
+)
+}
 }

@@ -38,6 +38,5 @@ graphql_to_tibble(
   board_url = board_url_user,
   github_token = github_token
 )
-
 }
 }

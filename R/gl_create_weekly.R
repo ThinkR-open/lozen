@@ -30,22 +30,24 @@
 #' @return A Weekly to copy-paste in a Wiki and a tibble
 #'
 #' @export
-gl_create_weekly <- function(project_id,
-                             date_min = Sys.Date() - 7,
-                             date_max = Sys.Date(),
-                             language = c("fr", "en"),
-                             gitlab_url = Sys.getenv("GITLAB_URL", unset = "https://gitlab.com"),
-                             private_token = Sys.getenv("GITLAB_TOKEN"),
-                             verbose = FALSE,
-                             regex_done = "close|closed|done",
-                             regex_validation = "a valider|validation",
-                             regex_blocked = "blocked|bloque|bloqu\\\\u00e9",
-                             regex_inprogress = "in progress|en cours|review|revision|r\\\\u00e9vision|r\\\\u00e9-validation",
-                             regex_ready = "ready|pret|pr\\\\u00eat",
-                             daily = FALSE,
-                             date_daily = Sys.Date(),
-                             max_page_opened = 10,
-                             max_page_closed = 5) {
+gl_create_weekly <- function(
+  project_id,
+  date_min = Sys.Date() - 7,
+  date_max = Sys.Date(),
+  language = c("fr", "en"),
+  gitlab_url = Sys.getenv("GITLAB_URL", unset = "https://gitlab.com"),
+  private_token = Sys.getenv("GITLAB_TOKEN"),
+  verbose = FALSE,
+  regex_done = "close|closed|done",
+  regex_validation = "a valider|validation",
+  regex_blocked = "blocked|bloque|bloqu\\\\u00e9",
+  regex_inprogress = "in progress|en cours|review|revision|r\\\\u00e9vision|r\\\\u00e9-validation",
+  regex_ready = "ready|pret|pr\\\\u00eat",
+  daily = FALSE,
+  date_daily = Sys.Date(),
+  max_page_opened = 10,
+  max_page_closed = 5
+    ) {
   if (isFALSE(is.numeric(max_page_opened)) | isFALSE(max_page_opened >= 1)) {
     stop("max_page_opened should be upper or equal to 1")
   }
@@ -72,7 +74,8 @@ gl_create_weekly <- function(project_id,
   }
 
   # Language
-  language <- match.arg(language,
+  language <- match.arg(
+    language,
     several.ok = FALSE
   )
 
@@ -123,8 +126,10 @@ gl_create_weekly <- function(project_id,
   issues_closed <- gl_list_issues(project = project_id, state = "closed", max_page = max_page_closed)
   message(paste0(
     "Information: \n",
-    dim(issues_open)[1], " open issues requested \n",
-    dim(issues_closed)[1], " close issues requested"
+    dim(issues_open)[1],
+    " open issues requested \n",
+    dim(issues_closed)[1],
+    " close issues requested"
   ))
 
   issues <- bind_rows(issues_open, issues_closed)
@@ -148,13 +153,17 @@ gl_create_weekly <- function(project_id,
     filter(action != "remove") %>%
     group_by(resource_id) %>%
     filter(created_at == max(created_at)) %>%
-    filter(grepl(str_c(regex_blocked,
-      regex_ready,
-      regex_done,
-      regex_inprogress,
-      regex_validation,
-      sep = "|"
-    ), stri_escape_unicode(tolower(label.name)))) %>%
+    filter(grepl(
+      str_c(
+        regex_blocked,
+        regex_ready,
+        regex_done,
+        regex_inprogress,
+        regex_validation,
+        sep = "|"
+      ),
+      stri_escape_unicode(tolower(label.name))
+    )) %>%
     rename(last_state_date = "created_at") %>%
     select(last_state_date, resource_id, label.name)
 
@@ -170,7 +179,6 @@ gl_create_weekly <- function(project_id,
     rowwise() %>%
     mutate(
       info = case_when(
-
         # 2 - Cards from a column - Blocked
         (state == "opened" &
           any(grepl(regex_blocked, stringi::stri_escape_unicode(tolower(all_labels))))) ~
@@ -284,10 +292,12 @@ gl_create_weekly <- function(project_id,
     proj_info <- gl_get_project(project = project_id)
 
     all_cards_weekly_text_collapse <- all_cards_weekly_text_collapse %>%
-      mutate(text_weekly_all = paste(text_weekly_all,
+      mutate(text_weekly_all = paste(
+        text_weekly_all,
         paste0(":date: ", next_date),
         paste0(
-          ":book: ", last_weekly,
+          ":book: ",
+          last_weekly,
           " ",
           paste0(gitlab_url, "/", proj_info$path_with_namespace, "/-/wikis/Weekly")
         ),
@@ -308,11 +318,13 @@ gl_create_weekly <- function(project_id,
 
 #' Gets a list of all state events for a single issue.
 #' @noRd
-gl_resource_events <- function(project_id,
-                               resource_id,
-                               resource = c("issues", "merge_requests", "epics"),
-                               event = c("label", "iteration", "milestone", "state", "weight"),
-                               ...) {
+gl_resource_events <- function(
+  project_id,
+  resource_id,
+  resource = c("issues", "merge_requests", "epics"),
+  event = c("label", "iteration", "milestone", "state", "weight"),
+  ...
+    ) {
   resource <- match.arg(resource)
   event <- match.arg(event)
 
@@ -326,7 +338,8 @@ gl_resource_events <- function(project_id,
 
   gitlab(
     req = paste0("projects/", project_id, "/", resource, "/", resource_id, "/resource_", event, "_events"),
-    verb = httr::GET, ...
+    verb = httr::GET,
+    ...
   )
 }
 

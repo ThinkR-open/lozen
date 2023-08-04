@@ -30,8 +30,8 @@ Create new project in a group
 \examples{
 \dontrun{
 create_group_project(
-  project_name = project_name, 
-  namespace_id = namespace_id, 
+  project_name = project_name,
+  namespace_id = namespace_id,
   default_branch = "main"
 )
 }

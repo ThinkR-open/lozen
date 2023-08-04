@@ -28,7 +28,6 @@ test_that("use_gitlab_ci_deploy_connect_bookdown works with lozen::bs4_book_temp
           gitignore <- gitignore[-book_folder_index]
           writeLines(gitignore, con = file.path(current_dir, ".gitignore"))
           lozen::use_gitlab_ci_deploy_connect_bookdown()
-
         })
       }
     )
@@ -67,12 +66,12 @@ test_that("use_gitlab_ci_deploy_connect_bookdown works with lozen::paged_templat
           type_licence = usethis::use_mit_license
         )
         withr::with_dir(current_dir, {
-        lozen::render_book("index.Rmd", output_format = "lozen::paged_template")
-        gitignore <- readLines(file.path(getwd(), ".gitignore"))
-        book_folder_index <- grep(pattern = "_book", x = gitignore)
-        gitignore <- gitignore[-book_folder_index]
-        writeLines(gitignore, con = file.path(getwd(), ".gitignore"))
-        lozen::use_gitlab_ci_deploy_connect_bookdown()
+          lozen::render_book("index.Rmd", output_format = "lozen::paged_template")
+          gitignore <- readLines(file.path(getwd(), ".gitignore"))
+          book_folder_index <- grep(pattern = "_book", x = gitignore)
+          gitignore <- gitignore[-book_folder_index]
+          writeLines(gitignore, con = file.path(getwd(), ".gitignore"))
+          lozen::use_gitlab_ci_deploy_connect_bookdown()
         })
       }
     )
@@ -134,8 +133,8 @@ test_that("use_gitlab_ci_deploy_connect_pkgdown works", {
 
   skip_on_ci()
 
- if (Sys.getenv("ALLOW_CI_TESTS_ON_GITLAB", unset = "FALSE") == "TRUE") {
-     output_pkgdown <- with_gitlab_project(
+  if (Sys.getenv("ALLOW_CI_TESTS_ON_GITLAB", unset = "FALSE") == "TRUE") {
+    output_pkgdown <- with_gitlab_project(
       gitlab_url = Sys.getenv("GITLAB_URL", unset = "https://gitlab.com"),
       namespace_id = NULL,
       private_token = Sys.getenv("GITLAB_TOKEN"),

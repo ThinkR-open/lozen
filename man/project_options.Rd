@@ -21,6 +21,7 @@ Define project status for a user
 \examples{
 \dontrun{
 project_options(project_id,
-                level = "watch")
+  level = "watch"
+)
 }
 }

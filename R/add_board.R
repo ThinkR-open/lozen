@@ -18,10 +18,11 @@
 #' )
 #' }
 add_board <- function(
-    project_id,
-    name = "Development",
-    labels_order = c("Bloqu\u00e9", "Pr\u00eat", "En cours", "R\u00e9vision", "Pr\u00e9-validation", "A valider"),
-    lg = "fr") {
+  project_id,
+  name = "Development",
+  labels_order = c("Bloqu\u00e9", "Pr\u00eat", "En cours", "R\u00e9vision", "Pr\u00e9-validation", "A valider"),
+  lg = "fr"
+    ) {
   add_labels(project_id, lg = lg)
 
   ## Checking if the board already exists

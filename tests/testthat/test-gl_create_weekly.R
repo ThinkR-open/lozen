@@ -227,7 +227,8 @@ test_that("gl_create_weekly works checks the max_page", {
       date_max = "2022-07-20",
       private_token = Sys.getenv("GITLAB_TOKEN"),
       max_page_opened = NA
-    ), regexp = "max_page_opened should be upper or equal to 1"
+    ),
+    regexp = "max_page_opened should be upper or equal to 1"
   )
 
   expect_error(
@@ -239,6 +240,7 @@ test_that("gl_create_weekly works checks the max_page", {
       private_token = Sys.getenv("GITLAB_TOKEN"),
       max_page_opened = 11,
       max_page_closed = -5
-    ), regexp = "max_page_closed should be upper or equal to 1"
+    ),
+    regexp = "max_page_closed should be upper or equal to 1"
   )
 })

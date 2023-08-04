@@ -5,11 +5,11 @@
 #'
 #' @noRd
 detect_deploy_dir <- function(deploy_dir = c(
-                                file.path(getwd(), "public"),
-                                file.path(getwd(), "docs"),
-                                file.path(getwd(), "inst/site/"),
-                                file.path(getwd(), ".")
-                              )) {
+    file.path(getwd(), "public"),
+    file.path(getwd(), "docs"),
+    file.path(getwd(), "inst/site/"),
+    file.path(getwd(), ".")
+  )) {
   available <- deploy_dir[which(dir.exists(deploy_dir))]
   used <- available[1]
 

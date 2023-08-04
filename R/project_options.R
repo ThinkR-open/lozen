@@ -9,15 +9,23 @@
 #' @export
 #' @examples
 #' \dontrun{
-#' project_options(project_id,
+#' project_options(
+#'   project_id,
 #'   level = "watch"
 #' )
 #' }
 project_options <- function(project_id, level = "watch") {
-  level <- match.arg(level, c(
-    "disabled", "participating",
-    "watch", "global", "mention", "custom"
-  ))
+  level <- match.arg(
+    level,
+    c(
+      "disabled",
+      "participating",
+      "watch",
+      "global",
+      "mention",
+      "custom"
+    )
+  )
 
   protect_notif <- gitlab(
     req = c("projects", project_id, "notification_settings"),

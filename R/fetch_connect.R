@@ -21,9 +21,10 @@
 #' fetch_connect(app_name = "my_app_name")
 #' }
 fetch_connect <- function(
-    app_name,
-    connect_api_token = Sys.getenv("CONNECT_TOKEN"),
-    connect_url = Sys.getenv("CONNECT_URL")) {
+  app_name,
+  connect_api_token = Sys.getenv("CONNECT_TOKEN"),
+  connect_url = Sys.getenv("CONNECT_URL")
+    ) {
   stopifnot("connect_api_token is missing" = isTRUE(connect_api_token != ""))
   stopifnot("connect_url is missing" = isTRUE(connect_url != ""))
 

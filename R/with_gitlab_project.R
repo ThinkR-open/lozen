@@ -50,25 +50,26 @@
 #' output
 #' }
 with_gitlab_project <- function(
-    gitlab_url = Sys.getenv("GITLAB_URL", unset = "https://gitlab.com"),
-    namespace_id,
-    private_token = Sys.getenv("GITLAB_TOKEN"),
-    connect_url = Sys.getenv(
-      "CONNECT_URL"
-    ),
-    connect_api_token = Sys.getenv(
-      "CONNECT_TOKEN"
-    ),
-    connect_user = Sys.getenv(
-      "CONNECT_USER"
-    ),
-    connect_name = Sys.getenv(
-      "CONNECT_NAME",
-      unset = "connect"
-    ),
-    project_name = "lozen.test.project",
-    branch_focus_for_ci = "main",
-    exp) {
+  gitlab_url = Sys.getenv("GITLAB_URL", unset = "https://gitlab.com"),
+  namespace_id,
+  private_token = Sys.getenv("GITLAB_TOKEN"),
+  connect_url = Sys.getenv(
+    "CONNECT_URL"
+  ),
+  connect_api_token = Sys.getenv(
+    "CONNECT_TOKEN"
+  ),
+  connect_user = Sys.getenv(
+    "CONNECT_USER"
+  ),
+  connect_name = Sys.getenv(
+    "CONNECT_NAME",
+    unset = "connect"
+  ),
+  project_name = "lozen.test.project",
+  branch_focus_for_ci = "main",
+  exp
+    ) {
   # get project name
   unique_project_name <- paste0(project_name, as.numeric(Sys.time()))
 
@@ -229,9 +230,10 @@ with_gitlab_project <- function(
 
 #' @noRd
 get_or_create_var_env_gitlab <- function(
-    project_id,
-    var_env,
-    value) {
+  project_id,
+  var_env,
+  value
+    ) {
   exist_var_env <- try(
     gitlab(
       req = paste0("projects/", project_id, "/variables/", var_env),

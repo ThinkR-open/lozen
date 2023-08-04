@@ -46,14 +46,16 @@ test_that("gl_get_milestones_progress works", {
   # create a milestone
   url <- paste0("projects/", project_id, "/milestones")
 
-  gitlab(url,
+  gitlab(
+    url,
     title = "milestone_test",
     verb = httr::POST
   )
 
   # add an issue in this milestone
 
-  milestones_list <- gitlab(url,
+  milestones_list <- gitlab(
+    url,
     verb = httr::GET
   )
   gitlab(

@@ -16,8 +16,11 @@
 #'   project_id = project_id
 #' )
 #' }
-modify_autoclose_and_coverage <- function(project_id, autoclose = FALSE,
-                                          build_coverage_regex = "Coverage: \\d+\\.\\d+") {
+modify_autoclose_and_coverage <- function(
+  project_id,
+  autoclose = FALSE,
+  build_coverage_regex = "Coverage: \\d+\\.\\d+"
+    ) {
   protect_prod <- gitlab(
     req = paste0("projects/", project_id),
     verb = httr::PUT,
