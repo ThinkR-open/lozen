@@ -63,6 +63,16 @@ Two options are allowed for the parameter `bookdown_output_format`: "lozen::page
 
 ## How can I find the pkgdown/book associated with my project
 
+By default, a book project created using `lozen::create_r_project(type = "book")` does not contain a `.Rproj` file, standing for a RStudio project. If this file is missing the "Git" panel won't be visible in RStudio.
+
+If you wish to display this panel, you must create a RStudio project within the directory in which your book files are located. Please do the following :
+- Click on the "File" tab
+- New project
+- Existing directory
+- Select the directory of your book
+
+The other option is to use the Terminal to use the Git command line interface.
+
 Once the former steps are done, you can commit all your changes and push them to your repository remote.
 
 Thereafter, you should be able to [see your pipeline running](https://docs.gitlab.com/ee/ci/pipelines/#view-pipelines) on Gitlab.
@@ -80,7 +90,7 @@ For the following to be working, please ensure you are working in a valid R pack
 
 If this is not done yet please go to the vignette `vignettes/aa-create-a-new-project-with-gitlab.Rmd` and follow the steps related to the creation of a project on Gitlab and of a R package skeleton.
 
-Before running the following commands please ensure that you are working directory is there of your R package project.
+Before running the following commands please ensure that you are working directory is that of your R package project.
 
 ### Create the pkgdown
 
@@ -135,7 +145,7 @@ For the following to be working, please ensure you are working in a shiny app in
 
 If this is not done yet please go to the vignette `vignettes/aa-create-a-new-project-with-gitlab.Rmd` and follow the steps related to the creation of a project on Gitlab and of a shiny app skeleton.
 
-Before running the following commands please ensure that you are working directory is there of your golem project.
+Before running the following commands please ensure that you are working directory is that of your golem project.
 
 ### Add an app.R at the root of your package to deploy on RStudio Connect 
 
@@ -189,7 +199,7 @@ For the following to be working, please ensure you are working in a book project
 
 If this is not done yet please go to the vignette `vignettes/aa-create-a-new-project-with-gitlab.Rmd` and follow the steps related to the creation of a project on Gitlab and of a book project skeleton.
 
-Before running the following commands please ensure that you are working directory is there of your book project.
+Before running the following commands please ensure that you are working directory is that of your book project. If no .RProj exists in the directory in which your book files and folders are stored, you can use `setwd("path/of/your/book")`.
 
 ### Build your book
 
@@ -235,7 +245,19 @@ For most of them, you may have already set them on your `.Renviron` file (see th
 
 If you are not familiar with defining environement variable on gitlab, please follow the [official documentation](https://docs.gitlab.com/ee/ci/variables/index.html).
 
+By default, a book project created using `lozen::create_r_project(type = "book")` does not contain a `.Rproj` file, standing for a RStudio project. If this file is missing the "Git" panel won't be visible in RStudio.
+
+If you wish to display this panel, you must create a RStudio project within the directory in which your book files are located. Please do the following :
+- Click on the "File" tab
+- New project
+- Existing directory
+- Select the directory of your book
+
+The other option is to use the Terminal to use the Git command line interface.
+
 Once this is done, you can commit all your changes and push them to your repository remote.
+
+**Important**: before pushing, be sure that the `_book` directory is not listed in your `.gitignore` file !
 
 Thereafter, you should be able to [see your pipeline running](https://docs.gitlab.com/ee/ci/pipelines/#view-pipelines) on Gitlab.
 

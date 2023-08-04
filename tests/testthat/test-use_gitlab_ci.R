@@ -35,7 +35,7 @@ test_that("init_gitlab_ci works for bookdown and  bookdown_output_format = lozen
   exp = {
     lozen::create_r_project(
       project_path =  getwd(),
-      type = "book", name_licence = "Bobo", type_licence = usethis::use_mit_license    
+      type = "book", name_licence = "Bobo", type_licence = usethis::use_mit_license
     )
     lozen::use_gitlab_ci(type = "bookdown", bookdown_output_format = "lozen::paged_template")
   }
@@ -64,7 +64,7 @@ test_that("init_gitlab_ci works for bookdown and  bookdown_output_format = lozen
   exp = {
     lozen::create_r_project(
       project_path =  getwd(),
-      type = "book", name_licence = "Bobo", type_licence = usethis::use_mit_license    
+      type = "book", name_licence = "Bobo", type_licence = usethis::use_mit_license
     )
     lozen::use_gitlab_ci(type = "bookdown", bookdown_output_format = "lozen::bs4_book_template")
   }
