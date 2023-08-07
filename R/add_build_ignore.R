@@ -5,10 +5,6 @@
 #' @param x vector of filenames
 #' @param directory path where to Rbuildignore should be written
 #' @noRd
-#' @examples
-#' withr::with_tempdir({
-#'   add_build_ignore("rsconnect/", directory = ".")
-#' })
 add_build_ignore <- function(x, directory = ".") {
   build_file <- file.path(directory, ".Rbuildignore")
 

@@ -88,19 +88,7 @@ withr::with_tempdir({
 
 # Add files to buildignore : `add_build_ignore()`
 
-```{r example-add_build_ignore, eval = FALSE}
-withr::with_tempdir({
-  add_build_ignore("rsconnect/", directory = ".")
-})
-```
-
 # Add files to gitignore : `add_git_ignore()`
-
-```{r example-add_git_ignore, eval = FALSE}
-withr::with_tempdir({
-  add_git_ignore("*.R", directory = ".")
-})
-```
 
 # Use a dev history file
 

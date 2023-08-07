@@ -358,6 +358,7 @@ test_that("add_kit_package works", {
 #'
 #' @param x vector of filenames
 #' @param directory path where to Rbuildignore should be written
+#' @noRd
 add_build_ignore <- function(x, directory = ".") {
   build_file <- file.path(directory, ".Rbuildignore")
 
@@ -377,7 +378,7 @@ add_build_ignore <- function(x, directory = ".") {
 }
 ```
 
-```{r example-add_build_ignore, eval=FALSE}
+```{r dev-example-add_build_ignore, eval=FALSE}
 withr::with_tempdir({
   add_build_ignore("rsconnect/", directory = ".")
 })
@@ -396,6 +397,7 @@ test_that("add_build_ignore works", {
 #'
 #' @param x vector of filenames
 #' @param directory path where to .gitignore should be written
+#' @noRd
 add_git_ignore <- function(x, directory = ".") {
   git_file <- file.path(directory, ".gitignore")
 
@@ -415,7 +417,7 @@ add_git_ignore <- function(x, directory = ".") {
 }
 ```
 
-```{r example-add_git_ignore, eval=FALSE}
+```{r dev-example-add_git_ignore, eval=FALSE}
 withr::with_tempdir({
   add_git_ignore("*.R", directory = ".")
 })
