@@ -176,7 +176,9 @@ stringi::stri_trans_general("é", "hex")
 Be sure to inflate all flat files before to update the documentation and run the check.
 
 ```{r}
-# voir fusen::inflate_all()
+fusen::inflate_all()
+fusen::inflate_all_no_check()
+styler::style_pkg()
 ```
 
 ## Update the documentation with `{attachment}`
