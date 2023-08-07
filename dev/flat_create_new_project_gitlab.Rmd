@@ -5,7 +5,10 @@ editor_options:
   chunk_output_type: console
 ---
 
-*This flat file is only used to generate a vignette that explains how to initiate a new project with Gitlab*. If you need to modify the functions or the unit tests, please go to the dedicated flat file. 
+```{r dev}
+# => *This flat file is only used to generate a vignette that explains how to initiate a new project with Gitlab*. If you need to modify the functions or the unit tests, please go to the dedicated flat file. 
+```
+
 
 The possible products are the following ones:
 
@@ -127,34 +130,61 @@ This code will clone the GitLab project locally, in the path of your choice (if 
 ```{r, eval=FALSE}
 project_path <- clone_locally(
   project_name = the_project[["name"]],
-  project_path = "path/to/the/project",
   group_url = group_url,
   open = FALSE
 )
 ```
 
 ## Create the skeleton for your product and initiate the CI/CD
-   
+
 To initiate a new product, please take a look at the following vignette : `ac-create-the-skeleton-of-the-r-project--package-app-book-.Rmd`.
+
+```{r}
+if (interactive()) {
+  vignette("ac-create-the-skeleton-of-the-r-project--package-app-book-", package = "lozen")
+}
+```
 
 ## Initiate the CI/CD
 
 To set up continuous integration and continuous deployment of your product, please take a look at the following vignette : `ad-set-up-continuous-integration-and-deployment-through-gitlab-ci.Rmd`.
 
+```{r}
+if (interactive()) {
+  vignette("ad-set-up-continuous-integration-and-deployment-through-gitlab-ci", package = "lozen")
+}
+```
 
 # Manage git tools (branches, commits, issues, etc.)
 
 Please take a look at the following vignette : `bb-manage-git-tools--branches-commits-etc--.Rmd`.
 
+```{r}
+if (interactive()) {
+  vignette("bb-manage-git-tools--branches-commits-etc--", package = "lozen")
+}
+```
 
 # Create and manage the forge board and wiki
 
 Please take a look at the following vignette : `ba-manage-forge-board-wiki.Rmd`.
 
+```{r}
+if (interactive()) {
+  vignette("ba-manage-forge-board-wiki", package = "lozen")
+}
+```
 
 # Visualise the status of your project
 
 Please take a look at the following vignette : `ae-create-weekly-with-github-or-gitlab.Rmd`.
+
+```{r}
+if (interactive()) {
+  vignette("ae-create-weekly-with-github-or-gitlab", package = "lozen")
+}
+```
+
 
 <!-- # Units tests -->
 ```{r tests-create_new_project_gitlab, filename = "create_new_project_gitlab"}

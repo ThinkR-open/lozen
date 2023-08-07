@@ -5,7 +5,12 @@ editor_options:
   chunk_output_type: console
 ---
 
-*This flat file is only used to generate a vignette that explains how to create a new projet with GitHub*. If you need to modify the functions or the unit tests, please go to the dedicated flat file. 
+```{r dev}
+# => *This flat file is only used to generate a vignette that explains how to create a new projet with GitHub*. 
+# If you need to modify the functions or the unit tests, please go to the dedicated flat file.
+```
+
+
 
 **Please note that Github-related functions are still a WIP**
 
