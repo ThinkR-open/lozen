@@ -217,18 +217,10 @@ including {golem}<a class="anchor" aria-label="anchor" href="#add_kit_package-ad
 <div class="section level2">
 <h2 id="add-files-to-buildignore-add_build_ignore">Add files to buildignore : <code>add_build_ignore()</code><a class="anchor" aria-label="anchor" href="#add-files-to-buildignore-add_build_ignore"></a>
 </h2>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu">withr</span><span class="fu">::</span><span class="fu"><a href="https://withr.r-lib.org/reference/with_tempfile.html" class="external-link">with_tempdir</a></span><span class="op">(</span><span class="op">{</span></span>
-<span>  <span class="fu">add_build_ignore</span><span class="op">(</span><span class="st">"rsconnect/"</span>, directory <span class="op">=</span> <span class="st">"."</span><span class="op">)</span></span>
-<span><span class="op">}</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="add-files-to-gitignore-add_git_ignore">Add files to gitignore : <code>add_git_ignore()</code><a class="anchor" aria-label="anchor" href="#add-files-to-gitignore-add_git_ignore"></a>
 </h2>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu">withr</span><span class="fu">::</span><span class="fu"><a href="https://withr.r-lib.org/reference/with_tempfile.html" class="external-link">with_tempdir</a></span><span class="op">(</span><span class="op">{</span></span>
-<span>  <span class="fu">add_git_ignore</span><span class="op">(</span><span class="st">"*.R"</span>, directory <span class="op">=</span> <span class="st">"."</span><span class="op">)</span></span>
-<span><span class="op">}</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="use-a-dev-history-file">Use a dev history file<a class="anchor" aria-label="anchor" href="#use-a-dev-history-file"></a>
@@ -241,7 +233,7 @@ package</li>
 <li>“dev_history_renv”: Instructions to init renv</li>
 </ul>
 <p>This function will put the file into your “dev” folder.</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">withr</span><span class="fu">::</span><span class="fu"><a href="https://withr.r-lib.org/reference/with_tempfile.html" class="external-link">with_tempdir</a></span><span class="op">(</span><span class="op">{</span></span>
 <span>  <span class="fu"><a href="../reference/use_dev_history.html">use_dev_history</a></span><span class="op">(</span>path <span class="op">=</span> <span class="st">"."</span>, type <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"package"</span>, <span class="st">"book"</span>, <span class="st">"renv"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="op">}</span><span class="op">)</span></span></code></pre></div>
