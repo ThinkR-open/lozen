@@ -77,8 +77,7 @@ test_that("create_book_project works", {
         r_project,
         c(
           "01-page1.Rmd",
-          "DESCRIPTION",
-          "_bookdown.yml"
+          "DESCRIPTION", "_bookdown.yml"
         )
       )
     )

@@ -18,15 +18,15 @@
 #'   project_path <- getwd()
 #'   create_book_project(project_path)
 #' })
-create_book_project <- function(
-  project_path,
-  bookdown_path = system.file("lozendown", package = "lozen"),
-  css = NULL,
-  footer = NULL,
-  logo = NULL,
-  index = NULL,
-  output_yml = NULL
-    ) {
+create_book_project <- function(project_path,
+                                bookdown_path = system.file("lozendown", package = "lozen"),
+                                css = NULL,
+                                footer = NULL,
+                                logo = NULL,
+                                index = NULL,
+                                output_yml = NULL) {
+  
+  if (!dir.exists(project_path)) {dir.create(project_path)}
   old <- setwd(project_path)
   on.exit(setwd(old))
 
@@ -96,13 +96,8 @@ create_book_project <- function(
   ## Hide _book from git
   # gitignore
   add_git_ignore(c(
-    "_book/",
-    "*.log",
-    "_main.tex",
-    "*_files/",
-    ".Rproj.user",
-    ".Rhistory",
-    "gitbook.*"
+    "_book/", "*.log", "_main.tex", "*_files/", ".Rproj.user",
+    ".Rhistory", "gitbook.*"
   ))
 
   message("book created")
