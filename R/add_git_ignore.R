@@ -5,10 +5,6 @@
 #' @param x vector of filenames
 #' @param directory path where to .gitignore should be written
 #' @noRd
-#' @examples
-#' withr::with_tempdir({
-#'   add_git_ignore("*.R", directory = ".")
-#' })
 add_git_ignore <- function(x, directory = ".") {
   git_file <- file.path(directory, ".gitignore")
 
