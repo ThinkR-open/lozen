@@ -69,9 +69,12 @@ create_r_project <- function(project_path, type = c("package", "golem", "book"),
 
 ```{r example-create_r_project, eval=FALSE}
 #' \dontrun{
+# path to your local project
+project_path <- tempfile("my.local.project")
+
 ### R package skeleton
 create_r_project(
-  project_path,
+  project_path = project_path,
   type = c("package"),
   name_licence = "Bob",
   type_licence = usethis::use_proprietary_license
@@ -79,7 +82,7 @@ create_r_project(
 
 ### Shiny app
 create_r_project(
-  project_path,
+  project_path = project_path,
   type = c("golem"),
   name_licence = "Bob",
   type_licence = usethis::use_proprietary_license
@@ -87,7 +90,7 @@ create_r_project(
 
 ### Bookdown
 create_r_project(
-  project_path = "path/of/my/project",
+  project_path = project_path,
   type = c("book"),
   name_licence = "Bob",
   type_licence = usethis::use_proprietary_license
@@ -126,6 +129,8 @@ create_book_project <- function(project_path,
                                 logo = NULL,
                                 index = NULL,
                                 output_yml = NULL) {
+  
+  if (!dir.exists(project_path)) {dir.create(project_path)}
   old <- setwd(project_path)
   on.exit(setwd(old))
 

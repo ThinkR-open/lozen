@@ -34,9 +34,12 @@ Create a R project with full content skeleton
 }
 \examples{
 \dontrun{
+# path to your local project
+project_path <- tempfile("my.local.project")
+
 ### R package skeleton
 create_r_project(
-  project_path,
+  project_path = project_path,
   type = c("package"),
   name_licence = "Bob",
   type_licence = usethis::use_proprietary_license
@@ -44,7 +47,7 @@ create_r_project(
 
 ### Shiny app
 create_r_project(
-  project_path,
+  project_path = project_path,
   type = c("golem"),
   name_licence = "Bob",
   type_licence = usethis::use_proprietary_license
@@ -52,7 +55,7 @@ create_r_project(
 
 ### Bookdown
 create_r_project(
-  project_path = "path/of/my/project",
+  project_path = project_path,
   type = c("book"),
   name_licence = "Bob",
   type_licence = usethis::use_proprietary_license
