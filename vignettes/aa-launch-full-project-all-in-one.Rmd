@@ -40,6 +40,8 @@ if (interactive()) {
   init_project_with_all(project_name = "newprojectpkg")
   # Change default options with your own config file
   init_project_with_all(project_name = "newprojectpkg", config_path = "<my-config-path>")
+  # Add any extra option to override values of your config file once
+  init_project_with_all(project_name = "newprojectpkg", config_path = "<my-config-path>", gitlab_namespace_id = "000")
 }
 ```
 

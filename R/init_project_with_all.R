@@ -6,6 +6,7 @@
 #' @param project_gitlab_id GitLab ID of the project if it already exist on your Forge
 #' @param config_path The path to the yaml configuration file to use with your options to modify the default one. See details.
 #' @param project_path The path to the project if your want to keep it locally. Default to temporary directory.
+#' @param ... Any parameter existing in the configuration file that you would like to use to override your config files
 #' @details By default, the project is a R package created on <https://gitlab.com/about/> in your personal repository. Use your own configuration file to amend the default one. 
 #' The configuration file is a yaml file with all possible options. You do not have to specify all options as it will be combined with our default ones. Open the default one to see what is in it: `file.edit(system.file("config_default_thinkr_gitlab.yml", package = "lozen"))`
 #' 
@@ -16,9 +17,11 @@
 #'   init_project_with_all(project_name = "newprojectpkg")
 #'   # Change default options with your own config file
 #'   init_project_with_all(project_name = "newprojectpkg", config_path = "<my-config-path>")
+#'   # Add any extra option to override values of your config file once
+#'   init_project_with_all(project_name = "newprojectpkg", config_path = "<my-config-path>", gitlab_namespace_id = "000")
 #' }
 init_project_with_all <- function(project_name, project_gitlab_id = NULL, config_path,
-                                  project_path = tempfile('clone')) {
+                                  project_path = tempfile('clone'), ...) {
   # Read ThinkR default in package
   config_default <- yaml::read_yaml(system.file("config_default_thinkr_gitlab.yml", package = "lozen"))
   if (!missing(config_path)) {
@@ -28,6 +31,9 @@ init_project_with_all <- function(project_name, project_gitlab_id = NULL, config
   } else {
     config <- config_default
   }
+  # Override with ...
+  config_local_dots <- list(...)
+  config <- purrr::list_modify(config, !!!config_local_dots)
   
   forge <- tolower(config$forge)
   if (is.null(config$gitlab_namespace_id) || config$gitlab_namespace_id == "") {
@@ -40,6 +46,8 @@ init_project_with_all <- function(project_name, project_gitlab_id = NULL, config
     cli::cli_text("You are about to create a new project with these configuration:"),
     cli::cli_li(c(
       paste("Forge:", forge),
+      ifelse(forge == "gitlab", paste("Forge URL: ", config$gitlab_forge_url),
+                   paste("GitHub: ", config$github_url)),
       ifelse(forge == "gitlab", paste("namespace: ", namespace_type),
                    paste("GitHub Owner: ", config$github_owner)),
       paste("project_name: ", project_name),
@@ -69,7 +77,7 @@ init_project_with_all <- function(project_name, project_gitlab_id = NULL, config
       # If project does not exist
       project_id <- create_group_project(
         project_name = project_name,
-        namespace_id = config$namespace_id,
+        namespace_id = config$gitlab_namespace_id,
         default_branch = config$default_branch
       )
     } 

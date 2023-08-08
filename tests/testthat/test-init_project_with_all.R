@@ -7,7 +7,8 @@ test_that("init_project_with_all can be used for package in interactive session"
     
     init_project_with_all(
       project_name = "newprojecttest", 
-      config_path = system.file("thinkr_config_test_amend.yml", package = "lozen"))
+      config_path = system.file("thinkr_config_test_amend.yml", package = "lozen"),
+      gitlab_namespace_id = 1013)
     
     cat("Manual test: The project should be a R package with CI and pkgdown on GitLab. There are wikis, issues opened, and templates issues. There is a board of issues.",
             "\nAfter that, you can delete the project.")
