@@ -75,7 +75,7 @@ add_issue_clients <- function(project_id, project_name, group_url) {
     labels = c("Bloqu\u00e9")
   )
 
-  message("Issue Client cr\u00e9\u00e9e : ", issue_client_id[["id"]])
+  message("Issue Client cr\u00e9\u00e9e : ", issue_client_id[["iid"]])
   return(issue_client_id)
 }
 ```
@@ -533,7 +533,7 @@ add_issue_kickoff <- function(project_id) {
     labels = c("Pr\u00eat")
   )
 
-  message("Issue Kickoff cr\u00e9\u00e9e : ", issue_kickoff_id[["id"]])
+  message("Issue Kickoff cr\u00e9\u00e9e : ", issue_kickoff_id[["iid"]])
   return(issue_kickoff_id)
 }
 ```

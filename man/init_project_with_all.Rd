@@ -8,7 +8,8 @@ init_project_with_all(
   project_name,
   project_gitlab_id = NULL,
   config_path,
-  project_path = tempfile("clone")
+  project_path = tempfile("clone"),
+  ...
 )
 }
 \arguments{
@@ -19,6 +20,8 @@ init_project_with_all(
 \item{config_path}{The path to the yaml configuration file to use with your options to modify the default one. See details.}
 
 \item{project_path}{The path to the project if your want to keep it locally. Default to temporary directory.}
+
+\item{...}{Any parameter existing in the configuration file that you would like to use to override your config files}
 }
 \description{
 Init a new project with everything in one command
@@ -33,5 +36,7 @@ if (interactive()) {
   init_project_with_all(project_name = "newprojectpkg")
   # Change default options with your own config file
   init_project_with_all(project_name = "newprojectpkg", config_path = "<my-config-path>")
+  # Add any extra option to override values of your config file once
+  init_project_with_all(project_name = "newprojectpkg", config_path = "<my-config-path>", gitlab_namespace_id = "000")
 }
 }
