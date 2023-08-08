@@ -199,6 +199,19 @@ flat_init_gitlab_ci.Rmd:
     check: false
     document: true
     overwrite: 'yes'
+flat_init_project_with_all.Rmd:
+  path: dev/flat_init_project_with_all.Rmd
+  state: active
+  R: R/init_project_with_all.R
+  tests: tests/testthat/test-init_project_with_all.R
+  vignettes: vignettes/aa-launch-full-project-all-in-one.Rmd
+  inflate:
+    flat_file: dev/flat_init_project_with_all.Rmd
+    vignette_name: aa - Launch full project - all in one
+    open_vignette: false
+    check: false
+    document: true
+    overwrite: 'yes'
 flat_manage_git.Rmd:
   path: dev/flat_manage_git.Rmd
   state: active

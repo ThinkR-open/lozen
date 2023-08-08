@@ -1,0 +1,10 @@
+forge: gitlab # or github
+gitlab_forge_url: https://forge.thinkr.fr # URL of the GitLab forge to create project
+gitlab_envt_token_name: FORGE_THINKR_TOKEN # Name of the environment variable to use
+github_owner: ThinkR-open
+project_type: book # or book, golem
+name_licence: ThinkR
+dev_history: [package]
+gitlab_ci_type: bookdown
+bookdown_output_format: lozen::bs4_book_template  # or lozen::paged_template
+deploy_connect: false

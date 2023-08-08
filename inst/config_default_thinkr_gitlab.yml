@@ -1,0 +1,34 @@
+forge: gitlab # or github
+gitlab_forge_url: https://gitlab.com # URL of the GitLab forge to create project
+gitlab_envt_token_name: GITLAB_PAT # Name of the environment variable to use
+gitlab_namespace_id: NULL # Group id where to create the GitLab projet
+github_url: https://github.com/
+github_owner: NULL
+default_branch: main
+project_type: package # or book, golem
+name_licence: NULL
+type_licence: usethis::use_proprietary_license
+dev_history: [package, book, renv]
+gitlab_ci_type: check-coverage-pkgdown # or bookdown
+bookdown_output_format: lozen::bs4_book_template  # or lozen::paged_template
+github_ci: [check-standard, test-coverage, pkgdown]
+deploy_connect: false
+lang: fr # en - Language of issue templates, wiki, labels, ... when translated
+git_production_branch: true
+git_templates: ["commit", "mr"] # Whether to add commit template and (GitLab) MR template locally
+gitlab_protect_branches: true
+gitlab_autoclose_issue: false
+gitlab_coverage_regex: "Coverage: \\d+\\.\\d+" # Regex in GitLab CI.
+gitlab_labels: ["Blocked", "Ready"] # and others...
+gitlab_board_name: "Development"
+gitlab_board_labels_order: ["Bloqué", "Prêt", "En cours", "Révision", "Pré-validation", "A valider"]
+github_board_columns: ["Open", "Blocked", "Meta", "Ready", "In Progress", "Review", "Validation"] # and others...
+template_issue: true # Whether to include default templates to open issues
+template_issue_type: ["full", "light"]
+first_issue_client: true
+first_issue_dev: true
+issue_client: true # Whether to open an issue to explain the project to clients
+issue_kickoff: true
+issue_dev: true # Whether to open an issue to explain the remainig steps to prepare the project for leaddev
+wiki: true # Whether to add wiki pages
+wiki_types: ["home", "cr", "keys", "weekly"] # Type of wiki to add

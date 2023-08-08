@@ -1,0 +1,431 @@
+---
+title: "flat_init_project_with_all.Rmd empty"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r development, include=FALSE}
+library(testthat)
+```
+
+```{r development-load}
+# Load already included functions if relevant
+pkgload::load_all(export_all = FALSE)
+```
+
+
+```{r dev}
+thinkr_config_default <- here::here("inst", "config_default_thinkr_gitlab.yml")
+cat('forge: gitlab # or github
+gitlab_forge_url: https://gitlab.com # URL of the GitLab forge to create project
+gitlab_envt_token_name: GITLAB_PAT # Name of the environment variable to use
+gitlab_namespace_id: NULL # Group id where to create the GitLab projet
+github_url: https://github.com/
+github_owner: NULL
+default_branch: main
+project_type: package # or book, golem
+name_licence: NULL
+type_licence: usethis::use_proprietary_license
+dev_history: [package, book, renv]
+gitlab_ci_type: check-coverage-pkgdown # or bookdown, bookdown-production, check-coverage-pkgdown-renv. See ?gitlabr::use_gitlab_ci
+bookdown_output_format: lozen::bs4_book_template  # or lozen::paged_template
+github_ci: [check-standard, test-coverage, pkgdown]
+deploy_connect: false
+lang: fr # en - Language of issue templates, wiki, labels, ... when translated
+git_production_branch: true
+git_templates: ["commit", "mr"] # Whether to add commit template and (GitLab) MR template locally
+gitlab_protect_branches: true
+gitlab_autoclose_issue: false
+gitlab_coverage_regex: "Coverage: \\\\d+\\\\.\\\\d+" # Regex in GitLab CI.
+gitlab_labels: ["Blocked", "Ready"] # and others...
+gitlab_board_name: "Development"
+gitlab_board_labels_order: ["Bloqué", "Prêt", "En cours", "Révision", "Pré-validation", "A valider"]
+github_board_columns: ["Open", "Blocked", "Meta", "Ready", "In Progress", "Review", "Validation"] # and others...
+template_issue: true # Whether to include default templates to open issues
+template_issue_type: ["full", "light"]
+first_issue_client: true
+first_issue_dev: true
+issue_client: true # Whether to open an issue to explain the project to clients
+issue_kickoff: true
+issue_dev: true # Whether to open an issue to explain the remainig steps to prepare the project for leaddev
+wiki: true # Whether to add wiki pages
+wiki_types: ["home", "cr", "keys", "weekly"] # Type of wiki to add
+', file = thinkr_config_default
+)
+config_default <- yaml::read_yaml(thinkr_config_default)
+
+# PKG - File for unit test to verify options were changed ----
+thinkr_config_package_gitlab <- here::here("inst", "thinkr_config_test_amend.yml")
+cat('forge: gitlab # or github
+gitlab_forge_url: https://forge.thinkr.fr # URL of the GitLab forge to create project
+gitlab_envt_token_name: FORGE_THINKR_TOKEN # Name of the environment variable to use
+github_owner: ThinkR-open
+project_type: package # or book, golem
+name_licence: ThinkR
+dev_history: [package]
+gitlab_ci_type: check-coverage-pkgdown
+deploy_connect: false
+', file = thinkr_config_package_gitlab
+)
+config <- yaml::read_yaml(thinkr_config_package_gitlab)
+config_path <- thinkr_config_package_gitlab
+
+# BOOK - File for unit test to verify options where changed ----
+thinkr_config_book_gitlab <- here::here("inst", "thinkr_config_book_gitlab.yml")
+cat('forge: gitlab # or github
+gitlab_forge_url: https://forge.thinkr.fr # URL of the GitLab forge to create project
+gitlab_envt_token_name: FORGE_THINKR_TOKEN # Name of the environment variable to use
+github_owner: ThinkR-open
+project_type: book # or book, golem
+name_licence: ThinkR
+dev_history: [package]
+gitlab_ci_type: bookdown-production
+bookdown_output_format: lozen::bs4_book_template  # or lozen::paged_template
+deploy_connect: false
+', file = thinkr_config_book_gitlab
+)
+yaml::read_yaml(thinkr_config_book_gitlab)
+```
+
+# Init a new project with everything in one command
+
+`init_project_with_all()` will follow the ThinkR recommended configuration to init a new project.
+By default, the project is a R package created on <https://gitlab.com/> in your personal repository.  
+After that, you only have to start writing the code ! 
+
+You can amend the default configuration with your own yaml file.
+Open the default one: `file.edit(system.file("config_default_thinkr_gitlab.yml", package = "lozen"))`.  
+Keep only lines that you would like to change, and save your own configuration where you like it to be.  
+Next time you can run `init_project_with_all(project_name = "my.wonderful.project", config_path = "path/to/my/own/config.yaml")`. 
+
+_This function is not currently working with GitHub. Options will be added shortly._
+
+```{r function-init_project_with_all}
+#' Init a new project with everything in one command
+#' 
+#' @param project_name The name of the project to be created
+#' @param project_gitlab_id GitLab ID of the project if it already exist on your Forge
+#' @param config_path The path to the yaml configuration file to use with your options to modify the default one. See details.
+#' @param project_path The path to the project if your want to keep it locally. Default to temporary directory.
+#' @details By default, the project is a R package created on <https://gitlab.com/about/> in your personal repository. Use your own configuration file to amend the default one. 
+#' The configuration file is a yaml file with all possible options. You do not have to specify all options as it will be combined with our default ones. Open the default one to see what is in it: `file.edit(system.file("config_default_thinkr_gitlab.yml", package = "lozen"))`
+#' 
+#' @export
+init_project_with_all <- function(project_name, project_gitlab_id = NULL, config_path,
+                                  project_path = tempfile('clone')) {
+  # Read ThinkR default in package
+  config_default <- yaml::read_yaml(system.file("config_default_thinkr_gitlab.yml", package = "lozen"))
+  if (!missing(config_path)) {
+    config_user <- yaml::read_yaml(config_path)
+    # Combine with user config file so that they do not have to define everything
+    config <- purrr::list_modify(config_default, !!!config_user)
+  } else {
+    config <- config_default
+  }
+  
+  forge <- tolower(config$forge)
+  if (is.null(config$gitlab_namespace_id) || config$gitlab_namespace_id == "") {
+    namespace_type = "user"
+  } else {
+    namespace_type = paste("group with id:", config$gitlab_namespace_id)
+  }
+  
+  cat(
+    cli::cli_text("You are about to create a new project with these configuration:"),
+    cli::cli_li(c(
+      paste("Forge:", forge),
+      ifelse(forge == "gitlab", paste("namespace: ", namespace_type),
+                   paste("GitHub Owner: ", config$github_owner)),
+      paste("project_name: ", project_name),
+      paste("project_type: ", config$project_type)
+    ))
+  )
+  answer <- readline("Are you ok with that? (y/n)")
+  if (answer %in% c("n", "no")) {message("You stopped the process"); return(NULL)}
+  
+  # Connect to GitLab ----
+  if (forge == "gitlab") {
+    # Init GitLab
+    gitlab_url <- Sys.getenv("GITLAB_URL", unset = config$gitlab_forge_url)
+    
+    # GitLab con
+    my_gitlab <- gl_connection(
+      gitlab_url = gitlab_url,
+      private_token = Sys.getenv(config$gitlab_envt_token_name)
+    )
+    
+    # Set the connection for the session
+    set_gitlab_connection(my_gitlab)
+    
+    
+    # Create / Connect project on GitLab ----
+    if (is.null(project_gitlab_id)) {
+      # If project does not exist
+      project_id <- create_group_project(
+        project_name = project_name,
+        namespace_id = config$namespace_id,
+        default_branch = config$default_branch
+      )
+    } 
+    the_project <- gl_get_project(
+      project = project_id
+    )
+    
+    project_name <- the_project[["name"]]
+    group_url <- gsub(the_project[["name"]], "", the_project[["web_url"]])
+    project_url <- the_project$web_url
+  }
+  
+  # Retrieve project locally - GitLab ok, but GitHub ?
+  project_path <- clone_locally(
+    project_name = project_name,
+    project_path = file.path(tempfile('clone'), project_name),
+    group_url = group_url,
+    open = FALSE
+  )
+  
+  # Create the project
+  create_r_project(
+    project_path,
+    type = config$project_type,
+    name_licence = config$name_licence,
+    type_licence = eval(parse(text = config$type_licence))
+  )
+  
+  # Add extra dev_history
+  use_dev_history(path = project_path, type = config$dev_history)
+  
+  # Set up CI ----
+  if (forge == "gitlab") {
+    lozen::use_gitlab_ci(
+      project_path = project_path,
+      type = config$gitlab_ci_type,
+      bookdown_output_format = config$bookdown_output_format
+    )
+  }
+  
+  # What to deploy on Connect ----
+  if (forge == "gitlab") {
+    if (isTRUE(config$deploy_connect)) {
+      message("Note that you will need to specify some required environment variables in your GitLab project")
+      # Deploy book if book
+      if (config$project_type == "book") {
+        withr::with_dir(project_path, {
+          lozen::use_gitlab_ci_deploy_connect_bookdown()
+        })
+      }
+      # Deploy pkgdown if package
+      if (config$project_type == "package") {
+        withr::with_dir(project_path, {
+          lozen::use_gitlab_ci_deploy_connect_pkgdown()
+        })
+      }
+      # Deploy app if golem
+      if (config$project_type == "golem") {
+        withr::with_dir(project_path, {
+          golem::add_rstudioconnect_file(pkg = project_path)
+          use_gitlab_ci_deploy_connect_shiny()
+        })
+      }
+    }
+  }
+  
+  # Commit and MR templates ---- 
+  if (!is.null(config$git_templates) || config$git_templates != "") {
+    add_git_templates(
+      project_path = project_path,
+      type = config$git_templates
+    )
+  }
+  
+  # Push to server ----
+  push_main(
+    project_path = project_path
+  )
+  
+  if (isTRUE(config$git_production_branch)) {
+    create_production(
+      project_path = project_path
+    )
+  }
+  
+  # Git configuration ----
+  if (forge == "gitlab") {
+    # Protect branches ----
+    if (isTRUE(config$gitlab_protect_branches)) {
+      protect_branches(
+        project_id = project_id
+      )
+    }
+    
+    # Autoclose and coverage ----
+    if (isTRUE(config$gitlab_protect_branches)) {
+      modify_autoclose_and_coverage(
+        project_id = project_id,
+        autoclose = config$gitlab_autoclose_issue,
+        build_coverage_regex = config$gitlab_coverage_regex
+      )
+    }
+  }
+  
+  if (forge == "gitlab") {
+    if (!is.null(config$template_issue_type) || config$template_issue_type != "") {
+      gl_add_template_issue(
+        project_path = project_path,
+        language = config$lang, # "fr" # you can use "en" instead
+        type = config$template_issue_type
+      )
+    }
+  }
+  
+  # GitLab project setup ----
+  if (forge == "gitlab") {
+    add_labels(
+      project_id = project_id,
+      lg = config$lang
+    )
+    
+    add_board(
+      project_id = project_id,
+      name = config$gitlab_board_name,
+      labels_order = config$gitlab_board_labels_order,
+      lg = config$lang
+    )
+    
+    if (isTRUE(config$issue_client)) {
+      add_issue_clients(
+        project_id = project_id,
+        project_name = project_name,
+        group_url = group_url
+      )
+    }
+    
+    if (isTRUE(config$issue_kickoff)) {
+      add_issue_kickoff(
+        project_id = project_id
+      )
+    }
+    
+    if (isTRUE(config$issue_dev)) {
+      add_issue_dev(
+        project_id = project_id,
+        group_url = group_url,
+        project_name = project_name
+      )
+    }
+    
+    if (isTRUE(config$wiki)) {
+      add_wikis(
+        project_id = project_id,
+        project_name = project_name,
+        group_url = group_url,
+        group = basename(group_url),
+        type = config$wiki_types
+      )
+    }
+  }
+  # GitHub project setup ----
+  if (forge == "github") {
+    # add_labels(
+    #   project_id = project_id,
+    #   lg = config$lang
+    # )
+    
+    add_board_github(
+      owner = config$github_owner,
+      repo = project_name,
+      columns = config$github_board_columns
+    )
+    
+    if (isTRUE(config$issue_client)) {
+      add_issue_clients_github(
+        owner = config$github_owner,
+        repo = project_name
+      )
+    }
+    
+    if (isTRUE(config$issue_kickoff)) {
+      add_issue_kickoff_github(
+        owner = config$github_owner,
+        repo = project_name
+      )
+    }
+    
+    if (isTRUE(config$issue_dev)) {
+      add_issue_dev_github(
+        owner = config$github_owner,
+        repo = project_name
+      )
+    }
+    
+    if (isTRUE(config$wikis)) {
+      add_wikis_github(
+        owner = config$github_owner,
+        repo = project_name,
+        type = config$wiki_types
+      )
+    }
+  }
+  
+  cat(
+    cli::cli_text("Find your project on: {.url  {project_url}} ")
+  )
+  
+  return(list(project_url = project_url,
+              project_path = project_path))
+}
+
+```
+
+```{r example-init_project_with_all, eval=FALSE}
+if (interactive()) {
+  # Default on GitLab.com
+  init_project_with_all(project_name = "newprojectpkg")
+  # Change default options with your own config file
+  init_project_with_all(project_name = "newprojectpkg", config_path = "<my-config-path>")
+}
+```
+
+```{r test-init_project_with_all}
+test_that("init_project_with_all can be used for package in interactive session", {
+  if (interactive()) {
+    answer <- readline("Do you want to test if `init_project_with_all()` works for packages? (y/n)")
+    if (answer %in% c("n", "no")) {skip()}
+    
+    init_project_with_all(
+      project_name = "newprojecttest", 
+      config_path = system.file("thinkr_config_test_amend.yml", package = "lozen"))
+    
+    cat("Manual test: The project should be a R package with CI and pkgdown on GitLab. There are wikis, issues opened, and templates issues. There is a board of issues.",
+            "\nAfter that, you can delete the project.")
+    answer <- readline("Is the package project correctly initiated and deployed ? (y/n)")
+    expect_true(answer %in% c("y", "yes"))
+  }
+})
+
+test_that("init_project_with_all can be used for books in interactive session", {
+  if (interactive()) {
+    answer <- readline("Do you want to test if `init_project_with_all()` works for books? (y/n)")
+    if (answer %in% c("n", "no")) {skip()}
+    
+    init_project_with_all(
+      project_name = "newbooktest", 
+      config_path = system.file("thinkr_config_book_gitlab.yml", package = "lozen"))
+    
+    cat("Manual test: The project should be a R bookdown with CI and bookd deployed on GitLab. There are wikis, issues opened, and templates issues. There is a board of issues.",
+            "\nAfter that, you can delete the project.")
+    answer <- readline("Is the book project correctly initiated and deployed ? (y/n)")
+    expect_true(answer %in% c("y", "yes"))
+  }
+})
+```
+
+
+
+```{r development-inflate, eval=FALSE}
+# Run but keep eval=FALSE to avoid infinite loop
+# Execute in the console directly
+fusen::inflate(flat_file = "dev/flat_init_project_with_all.Rmd", vignette_name = "aa - Launch full project - all in one", check = FALSE, open_vignette = FALSE, overwrite = TRUE)
+```
+
