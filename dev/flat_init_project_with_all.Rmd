@@ -99,8 +99,6 @@ Open the default one: `file.edit(system.file("config_default_thinkr_gitlab.yml",
 Keep only lines that you would like to change, and save your own configuration where you like it to be.  
 Next time you can run `init_project_with_all(project_name = "my.wonderful.project", config_path = "path/to/my/own/config.yaml")`. 
 
-_This function is not currently working with GitHub. Options will be added shortly._
-
 ```{r function-init_project_with_all}
 #' Init a new project with everything in one command
 #' 
@@ -111,6 +109,16 @@ _This function is not currently working with GitHub. Options will be added short
 #' @param ... Any parameter existing in the configuration file that you would like to use to override your config files
 #' @details By default, the project is a R package created on <https://gitlab.com/about/> in your personal repository. Use your own configuration file to amend the default one. 
 #' The configuration file is a yaml file with all possible options. You do not have to specify all options as it will be combined with our default ones. Open the default one to see what is in it: `file.edit(system.file("config_default_thinkr_gitlab.yml", package = "lozen"))`
+#' 
+#' 
+#' @importFrom yaml read_yaml
+#' @importFrom purrr list_modify pluck
+#' @importFrom cli cli_text cli_li
+#' @importFrom gitlabr gl_connection set_gitlab_connection gl_get_project
+#' @importFrom usethis with_project use_github_action
+#' @importFrom gert git_config_set
+#' @importFrom glue glue
+#' @importFrom gh gh_gql
 #' 
 #' @export
 init_project_with_all <- function(project_name, project_gitlab_id = NULL, config_path,
@@ -183,7 +191,30 @@ init_project_with_all <- function(project_name, project_gitlab_id = NULL, config
     project_url <- the_project$web_url
   }
   
-  # Retrieve project locally - GitLab ok, but GitHub ?
+  # Connect to GitHub ----
+  if (forge == "github") {
+    # GitHub con
+    project_url <- paste(
+      config$github_url,
+      config$github_owner,
+      project_name,
+      sep = "/"
+    )
+    
+    # Create / Connect project on GitHub ----
+    project_id <- create_group_project_github(
+      repo = project_name,
+      owner = config$github_owner
+      )
+    
+    group_url <- paste(
+      config$github_url,
+      config$github_owner,
+      sep = "/"
+    )
+  }
+  
+  # Retrieve project locally
   project_path <- clone_locally(
     project_name = project_name,
     project_path = file.path(tempfile('clone'), project_name),
@@ -202,12 +233,27 @@ init_project_with_all <- function(project_name, project_gitlab_id = NULL, config
   # Add extra dev_history
   use_dev_history(path = project_path, type = config$dev_history)
   
-  # Set up CI ----
+  # Set up CI GitLab ----
   if (forge == "gitlab") {
     lozen::use_gitlab_ci(
       project_path = project_path,
       type = config$gitlab_ci_type,
       bookdown_output_format = config$bookdown_output_format
+    )
+  }
+  
+  # Set up CI GitHub ----
+  if (forge == "github") {
+    usethis::with_project(
+      path = project_path,
+      code = {
+        sapply(
+          X = config$github_ci,
+          FUN = \(x) {usethis::use_github_action(
+            name = x,
+            badge = FALSE # requires readme file
+          )})
+      }
     )
   }
   
@@ -245,7 +291,12 @@ init_project_with_all <- function(project_name, project_gitlab_id = NULL, config
     )
   }
   
-  # Push to server ----
+  # Name branch and push to server ----
+  gert::git_config_set(
+    name = "init.defaultbranch",
+    value = config$default_branch,
+    repo = project_path
+    )
   push_main(
     project_path = project_path
   )
@@ -337,13 +388,42 @@ init_project_with_all <- function(project_name, project_gitlab_id = NULL, config
     #   project_id = project_id,
     #   lg = config$lang
     # )
+
+    # Create project/board from graphql api
+    github_token <- Sys.getenv(config$gitlab_envt_token_name)
+    organization <- config$github_owner
+    # fetch user id
+    req_user_node_id <- glue(
+      'query{
+        user(login: "$_organization_$"){
+          id
+        }
+      }',
+      .open = "$_",
+      .close = "_$")
+    user_node_id <- gh::gh_gql(req_user_node_id, .token = github_token) %>% 
+      purrr::pluck("data", "user", "id")
     
-    add_board_github(
-      owner = config$github_owner,
-      repo = project_name,
-      columns = config$github_board_columns
-    )
-    
+    # create board
+    req_project_create <- glue(
+      'mutation{
+        createProjectV2(
+          input: {
+            ownerId: "$_user_node_id_$",
+            title: "$_project_name_$"
+          }
+        ){
+          projectV2 {
+            id
+          }
+         }
+      }', 
+      .open = "$_",
+      .close = "_$")
+    project_id <- gh::gh_gql(req_project_create, .token = github_token) %>% 
+      purrr::pluck("data", "createProjectV2", "projectV2", "id")
+
+    # Add first issues for dev and client
     if (isTRUE(config$issue_client)) {
       add_issue_clients_github(
         owner = config$github_owner,
@@ -372,6 +452,11 @@ init_project_with_all <- function(project_name, project_gitlab_id = NULL, config
         type = config$wiki_types
       )
     }
+    
+    # List the last manual edits to the user
+    cli::cli_text("You need to link the board to the repo in <", project_url ,"/projects>.")
+    cli::cli_text("You need to assign the issues to the board.")
+    cli::cli_text("You need to add the columns ", paste0(config$github_board_columns, collapse = ", ") ," to the board.")
   }
   
   cat(
@@ -398,7 +483,7 @@ if (interactive()) {
 ```{r test-init_project_with_all}
 test_that("init_project_with_all can be used for package in interactive session", {
   if (interactive()) {
-    answer <- readline("Do you want to test if `init_project_with_all()` works for packages? (y/n)")
+    answer <- readline("Do you want to test if `init_project_with_all()` works for packages on GitLab ? (y/n)")
     if (answer %in% c("n", "no")) {skip()}
     
     init_project_with_all(
@@ -410,6 +495,21 @@ test_that("init_project_with_all can be used for package in interactive session"
             "\nAfter that, you can delete the project.")
     answer <- readline("Is the package project correctly initiated and deployed ? (y/n)")
     expect_true(answer %in% c("y", "yes"))
+    
+    
+    answer <- readline("Do you want to test if `init_project_with_all()` works for packages on GitHub ? (y/n)")
+    if (answer %in% c("n", "no")) {skip()}
+    
+    init_project_with_all(
+      project_name = "newprojecttest", 
+      config_path = system.file("thinkr_config_test_amend_github.yml", package = "lozen"),
+      gitlab_namespace_id = NULL)
+    
+    cat("Manual test: The project should be a R package with CI and pkgdown on GitHub. There are wikis, issues opened, and templates issues. There is a board of issues.",
+        "\nAfter that, you can delete the project.")
+    answer <- readline("Is the package project correctly initiated and deployed ? (y/n)")
+    expect_true(answer %in% c("y", "yes"))
+    
   }
 })
 

@@ -1,0 +1,7 @@
+forge: github
+gitlab_envt_token_name: GITHUB_PAT # Name of the environment variable to use
+github_owner: <owner>
+project_type: package # or book, golem
+name_licence: ThinkR
+dev_history: [package]
+deploy_connect: false
