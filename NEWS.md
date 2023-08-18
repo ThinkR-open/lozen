@@ -1,7 +1,10 @@
-# lozen 1.2.0.9000
+# lozen 1.2.0 (development)
 
 ## Major
 
+- `init_project_with_all()` can initiate a repository based on a configuration file
+  + On GitLab for package, book and golem
+  + On GitHub for package
 - Modify vignettes to make them more user-friendly
 - CI/CD works for:
   + A R package : deployment of the pkgdown can be made on Gitlab Pages / Posit Connect
