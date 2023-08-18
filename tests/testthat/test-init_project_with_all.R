@@ -16,17 +16,15 @@ test_that("init_project_with_all can be used for package in interactive session"
     expect_true(answer %in% c("y", "yes"))
     
     
-    answer <- readline("Do you want to test if `init_project_with_all()` works for packages on GitHub ? (y/n)")
+    answer <- readline("Do you want to test if `init_project_with_all()` works for packages on GitHub ThinkR-open account ? (y/n)")
     if (answer %in% c("n", "no")) {skip()}
-    owner <- readline("Let's create a repo on your personal GitHub account, what is your GitHub username ? ")
     init_project_with_all(
-      project_name = "imalozentest", 
-      config_path = system.file("thinkr_config_test_amend_github.yml", package = "lozen"),
-      gitlab_namespace_id = NULL,
-      github_owner = owner)
+      project_name = "testinitalllozen",
+      config_path = system.file("thinkr_config_test_amend_github.yml", package = "lozen")
+      )
     
     cat("Manual test: The project should be a R package with CI and pkgdown on GitHub. There are wikis, issues opened, and templates issues. There is a board of issues.",
-        "\nAfter that, you can delete the project.")
+        "\nAfter that, you can delete the repo and project.")
     answer <- readline("Is the package project correctly initiated ? (y/n)")
     expect_true(answer %in% c("y", "yes"))
     

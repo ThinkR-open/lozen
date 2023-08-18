@@ -55,17 +55,22 @@ init_project_with_all <- function(project_name, project_gitlab_id = NULL, config
     namespace_type = paste("group with id:", config$gitlab_namespace_id)
   }
 
-  cat(
-    cli_text("You are about to create a new project with these configuration:"),
-    cli_li(c(
-      paste("Forge:", forge),
-      ifelse(forge == "gitlab", paste("Forge URL: ", config$gitlab_forge_url),
-                   paste("GitHub: ", config$github_url)),
-      ifelse(forge == "gitlab", paste("namespace: ", namespace_type),
-                   paste("GitHub Owner: ", config$github_owner)),
-      paste("project_name: ", project_name),
-      paste("project_type: ", config$project_type)
-    ))
+  cat(cli_text("You are about to create a new project with these configuration:"),
+      cli_li(c(
+        paste("Forge:", forge),
+        ifelse(
+          forge == "gitlab",
+          paste("Forge URL: ", config$gitlab_forge_url),
+          paste("GitHub: ", config$github_url)
+        ),
+        ifelse(
+          forge == "gitlab",
+          paste("namespace: ", namespace_type),
+          paste("GitHub Owner (", config$owner_type, "): ", config$github_owner)
+        ),
+        paste("project_name: ", project_name),
+        paste("project_type: ", config$project_type)
+      ))
   )
   # warning for manual steps
   if (forge == "github"){
@@ -317,11 +322,16 @@ init_project_with_all <- function(project_name, project_gitlab_id = NULL, config
       organization = config$github_owner,
       )
     
-    user_node_id <- gh::gh_gql(
+    user_node_id <- gh_gql(
       query = req_user_node_id,
-      .token = Sys.getenv(config$gitlab_envt_token_name)
+      .token = Sys.getenv(config$github_envt_token_name)
       ) %>%
-      pluck("data", "user", "id")
+      pluck("data", config$owner_type, "id")
+    
+    # emit warning if node id is not found
+    if (is.null(user_node_id)) {
+      cli_alert_warning("Failed to fetch {config$github_owner} as a GitHub {config$owner_type}")
+    }
 
     # create board
     req_project_create <- glue(
@@ -343,7 +353,7 @@ init_project_with_all <- function(project_name, project_gitlab_id = NULL, config
     
     project_id <- gh::gh_gql(
       query = req_project_create,
-      .token = Sys.getenv(config$gitlab_envt_token_name)
+      .token = Sys.getenv(config$github_envt_token_name)
       )
     project_id <- project_id %>%
       pluck("data", "createProjectV2", "projectV2")
@@ -361,8 +371,6 @@ init_project_with_all <- function(project_name, project_gitlab_id = NULL, config
       return(NULL)
     }
     
-    board_url <- paste0(proj_url, "/", project_id[["number"]], "/views/2")
-    cli_alert_info("The board is here : {.url {board_url}}")
     cli_alert_info("The following columns of the project should be manually added :")
     cli_li(config$github_board_columns)
     continue <- yesno("Manual step in progress : adding columns to project. Can we continue ?")
