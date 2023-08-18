@@ -1,10 +1,9 @@
 forge: github
-gitlab_envt_token_name: GITHUB_PAT # Name of the environment variable to use
-github_owner: <owner>
-owner_type: user # organization or user
-project_type: package # or book, golem
+github_url: https://github.com/
+github_owner: ThinkR-open
+owner_type: organization
+github_envt_token_name: GITHUB_PAT
+project_type: package
 name_licence: ThinkR
 dev_history: [package]
-deploy_connect: false
-wiki: true # Whether to add wiki pages
-wiki_types: ["home", "cr", "keys", "weekly"]
+github_ci: [check-standard, test-coverage, pkgdown]

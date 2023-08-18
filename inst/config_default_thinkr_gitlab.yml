@@ -4,12 +4,14 @@ gitlab_envt_token_name: GITLAB_PAT # Name of the environment variable to use
 gitlab_namespace_id: NULL # Group id where to create the GitLab projet
 github_url: https://github.com/
 github_owner: NULL
+owner_type: user # user or organization
+github_envt_token_name: GITHUB_PAT
 default_branch: main
 project_type: package # or book, golem
 name_licence: NULL
 type_licence: usethis::use_proprietary_license
 dev_history: [package, book, renv]
-gitlab_ci_type: check-coverage-pkgdown # or bookdown
+gitlab_ci_type: check-coverage-pkgdown # or bookdown, bookdown-production, check-coverage-pkgdown-renv. See ?gitlabr::use_gitlab_ci
 bookdown_output_format: lozen::bs4_book_template  # or lozen::paged_template
 github_ci: [check-standard, test-coverage, pkgdown]
 deploy_connect: false

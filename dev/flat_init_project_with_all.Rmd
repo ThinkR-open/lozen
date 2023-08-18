@@ -23,6 +23,8 @@ gitlab_envt_token_name: GITLAB_PAT # Name of the environment variable to use
 gitlab_namespace_id: NULL # Group id where to create the GitLab projet
 github_url: https://github.com/
 github_owner: NULL
+owner_type: user # user or organization
+github_envt_token_name: GITHUB_PAT
 default_branch: main
 project_type: package # or book, golem
 name_licence: NULL
@@ -70,6 +72,21 @@ deploy_connect: false
 )
 config <- yaml::read_yaml(thinkr_config_package_gitlab)
 config_path <- thinkr_config_package_gitlab
+
+thinkr_config_package_github <- here::here("inst", "thinkr_config_test_amend_github.yml")
+cat('forge: github
+github_url: https://github.com/
+github_owner: ThinkR-open
+owner_type: organization
+github_envt_token_name: GITHUB_PAT
+project_type: package
+name_licence: ThinkR
+dev_history: [package]
+github_ci: [check-standard, test-coverage, pkgdown]
+', file = thinkr_config_package_github
+)
+config <- yaml::read_yaml(thinkr_config_package_github)
+config_path <- thinkr_config_package_github
 
 # BOOK - File for unit test to verify options where changed ----
 thinkr_config_book_gitlab <- here::here("inst", "thinkr_config_book_gitlab.yml")
@@ -146,17 +163,22 @@ init_project_with_all <- function(project_name, project_gitlab_id = NULL, config
     namespace_type = paste("group with id:", config$gitlab_namespace_id)
   }
 
-  cat(
-    cli_text("You are about to create a new project with these configuration:"),
-    cli_li(c(
-      paste("Forge:", forge),
-      ifelse(forge == "gitlab", paste("Forge URL: ", config$gitlab_forge_url),
-                   paste("GitHub: ", config$github_url)),
-      ifelse(forge == "gitlab", paste("namespace: ", namespace_type),
-                   paste("GitHub Owner: ", config$github_owner)),
-      paste("project_name: ", project_name),
-      paste("project_type: ", config$project_type)
-    ))
+  cat(cli_text("You are about to create a new project with these configuration:"),
+      cli_li(c(
+        paste("Forge:", forge),
+        ifelse(
+          forge == "gitlab",
+          paste("Forge URL: ", config$gitlab_forge_url),
+          paste("GitHub: ", config$github_url)
+        ),
+        ifelse(
+          forge == "gitlab",
+          paste("namespace: ", namespace_type),
+          paste("GitHub Owner (", config$owner_type, "): ", config$github_owner)
+        ),
+        paste("project_name: ", project_name),
+        paste("project_type: ", config$project_type)
+      ))
   )
   # warning for manual steps
   if (forge == "github"){
@@ -408,11 +430,16 @@ init_project_with_all <- function(project_name, project_gitlab_id = NULL, config
       organization = config$github_owner,
       )
     
-    user_node_id <- gh::gh_gql(
+    user_node_id <- gh_gql(
       query = req_user_node_id,
-      .token = Sys.getenv(config$gitlab_envt_token_name)
+      .token = Sys.getenv(config$github_envt_token_name)
       ) %>%
-      pluck("data", "user", "id")
+      pluck("data", config$owner_type, "id")
+    
+    # emit warning if node id is not found
+    if (is.null(user_node_id)) {
+      cli_alert_warning("Failed to fetch {config$github_owner} as a GitHub {config$owner_type}")
+    }
 
     # create board
     req_project_create <- glue(
@@ -434,7 +461,7 @@ init_project_with_all <- function(project_name, project_gitlab_id = NULL, config
     
     project_id <- gh::gh_gql(
       query = req_project_create,
-      .token = Sys.getenv(config$gitlab_envt_token_name)
+      .token = Sys.getenv(config$github_envt_token_name)
       )
     project_id <- project_id %>%
       pluck("data", "createProjectV2", "projectV2")
@@ -452,8 +479,6 @@ init_project_with_all <- function(project_name, project_gitlab_id = NULL, config
       return(NULL)
     }
     
-    board_url <- paste0(proj_url, "/", project_id[["number"]], "/views/2")
-    cli_alert_info("The board is here : {.url {board_url}}")
     cli_alert_info("The following columns of the project should be manually added :")
     cli_li(config$github_board_columns)
     continue <- yesno("Manual step in progress : adding columns to project. Can we continue ?")
@@ -580,17 +605,15 @@ test_that("init_project_with_all can be used for package in interactive session"
     expect_true(answer %in% c("y", "yes"))
     
     
-    answer <- readline("Do you want to test if `init_project_with_all()` works for packages on GitHub ? (y/n)")
+    answer <- readline("Do you want to test if `init_project_with_all()` works for packages on GitHub ThinkR-open account ? (y/n)")
     if (answer %in% c("n", "no")) {skip()}
-    owner <- readline("Let's create a repo on your personal GitHub account, what is your GitHub username ? ")
     init_project_with_all(
-      project_name = "imalozentest", 
-      config_path = system.file("thinkr_config_test_amend_github.yml", package = "lozen"),
-      gitlab_namespace_id = NULL,
-      github_owner = owner)
+      project_name = "testinitalllozen",
+      config_path = system.file("thinkr_config_test_amend_github.yml", package = "lozen")
+      )
     
     cat("Manual test: The project should be a R package with CI and pkgdown on GitHub. There are wikis, issues opened, and templates issues. There is a board of issues.",
-        "\nAfter that, you can delete the project.")
+        "\nAfter that, you can delete the repo and project.")
     answer <- readline("Is the package project correctly initiated ? (y/n)")
     expect_true(answer %in% c("y", "yes"))
     
