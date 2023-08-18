@@ -11,5 +11,8 @@ articles:
   af-build-a-pkgdown-with-reports: af-build-a-pkgdown-with-reports.html
   ba-manage-forge-board-wiki: ba-manage-forge-board-wiki.html
   bb-manage-git-tools--branches-commits-etc--: bb-manage-git-tools--branches-commits-etc--.html
-last_built: 2023-08-18T15:42Z
+last_built: 2023-08-18T15:46Z
+urls:
+  reference: https://thinkr-open.github.io/lozen/reference
+  article: https://thinkr-open.github.io/lozen/articles
 
