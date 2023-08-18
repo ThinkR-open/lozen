@@ -1,7 +1,7 @@
 forge: github
 github_url: https://github.com/
 github_owner: ThinkR-open
-owner_type: organization
+github_owner_type: organization
 github_envt_token_name: GITHUB_PAT
 project_type: package
 name_licence: ThinkR

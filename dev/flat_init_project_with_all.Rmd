@@ -23,7 +23,7 @@ gitlab_envt_token_name: GITLAB_PAT # Name of the environment variable to use
 gitlab_namespace_id: NULL # Group id where to create the GitLab projet
 github_url: https://github.com/
 github_owner: NULL
-owner_type: user # user or organization
+github_owner_type: user # user or organization
 github_envt_token_name: GITHUB_PAT
 default_branch: main
 project_type: package # or book, golem
@@ -77,7 +77,7 @@ thinkr_config_package_github <- here::here("inst", "thinkr_config_test_amend_git
 cat('forge: github
 github_url: https://github.com/
 github_owner: ThinkR-open
-owner_type: organization
+github_owner_type: organization
 github_envt_token_name: GITHUB_PAT
 project_type: package
 name_licence: ThinkR
@@ -174,7 +174,7 @@ init_project_with_all <- function(project_name, project_gitlab_id = NULL, config
         ifelse(
           forge == "gitlab",
           paste("namespace: ", namespace_type),
-          paste("GitHub Owner (", config$owner_type, "): ", config$github_owner)
+          paste("GitHub Owner (", config$github_owner_type, "): ", config$github_owner)
         ),
         paste("project_name: ", project_name),
         paste("project_type: ", config$project_type)
@@ -420,13 +420,13 @@ init_project_with_all <- function(project_name, project_gitlab_id = NULL, config
     # fetch user/orga node id
     req_user_node_id <- glue(
       'query{
-        $_owner_type_$(login: "$_organization_$"){
+        $_github_owner_type_$(login: "$_organization_$"){
           id
         }
       }',
       .open = "$_",
       .close = "_$",
-      owner_type = config$owner_type,
+      github_owner_type = config$github_owner_type,
       organization = config$github_owner,
       )
     
@@ -434,11 +434,11 @@ init_project_with_all <- function(project_name, project_gitlab_id = NULL, config
       query = req_user_node_id,
       .token = Sys.getenv(config$github_envt_token_name)
       ) %>%
-      pluck("data", config$owner_type, "id")
+      pluck("data", config$github_owner_type, "id")
     
     # emit warning if node id is not found
     if (is.null(user_node_id)) {
-      cli_alert_warning("Failed to fetch {config$github_owner} as a GitHub {config$owner_type}")
+      cli_alert_warning("Failed to fetch {config$github_owner} as a GitHub {config$github_owner_type}")
     }
 
     # create board

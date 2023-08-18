@@ -66,7 +66,7 @@ init_project_with_all <- function(project_name, project_gitlab_id = NULL, config
         ifelse(
           forge == "gitlab",
           paste("namespace: ", namespace_type),
-          paste("GitHub Owner (", config$owner_type, "): ", config$github_owner)
+          paste("GitHub Owner (", config$github_owner_type, "): ", config$github_owner)
         ),
         paste("project_name: ", project_name),
         paste("project_type: ", config$project_type)
@@ -312,13 +312,13 @@ init_project_with_all <- function(project_name, project_gitlab_id = NULL, config
     # fetch user/orga node id
     req_user_node_id <- glue(
       'query{
-        $_owner_type_$(login: "$_organization_$"){
+        $_github_owner_type_$(login: "$_organization_$"){
           id
         }
       }',
       .open = "$_",
       .close = "_$",
-      owner_type = config$owner_type,
+      github_owner_type = config$github_owner_type,
       organization = config$github_owner,
       )
     
@@ -326,11 +326,11 @@ init_project_with_all <- function(project_name, project_gitlab_id = NULL, config
       query = req_user_node_id,
       .token = Sys.getenv(config$github_envt_token_name)
       ) %>%
-      pluck("data", config$owner_type, "id")
+      pluck("data", config$github_owner_type, "id")
     
     # emit warning if node id is not found
     if (is.null(user_node_id)) {
-      cli_alert_warning("Failed to fetch {config$github_owner} as a GitHub {config$owner_type}")
+      cli_alert_warning("Failed to fetch {config$github_owner} as a GitHub {config$github_owner_type}")
     }
 
     # create board

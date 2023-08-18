@@ -4,7 +4,7 @@ gitlab_envt_token_name: GITLAB_PAT # Name of the environment variable to use
 gitlab_namespace_id: NULL # Group id where to create the GitLab projet
 github_url: https://github.com/
 github_owner: NULL
-owner_type: user # user or organization
+github_owner_type: user # user or organization
 github_envt_token_name: GITHUB_PAT
 default_branch: main
 project_type: package # or book, golem
