@@ -1,4 +1,4 @@
-# lozen 1.2.0 (development)
+# lozen 1.3.0
 
 ## Major
 
@@ -15,7 +15,7 @@
 
 - Modifications made to make {lozen} usable with `fusen::inflate_all()``
 
-# lozen 1.1.0.9000
+# lozen 1.2.0
 
 ## Major
 
