@@ -1,0 +1,388 @@
+---
+title: "exploration_graphql2"
+output: html_document
+date: "2023-08-24"
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+
+library(gh)
+library(dplyr)
+library(purrr)
+library(glue)
+```
+
+# Ressources
+
+https://medium.com/@tharshita13/github-graphql-api-cheatsheet-38e916fe76a3
+https://www.form3.tech/engineering/content/migrating-gh-boards
+https://docs.github.com/en/graphql/guides/using-the-explorer -> utiliser Altair 
+
+**NB : Aucune idée de si tout ca marche au sein d'une organisation ...**
+Il faut peut etre juste switcher les champs user par des champs organisation -> voir ce que j'avais fait pour les weekly
+
+```{r}
+user <- gh::gh("GET /user")
+owner <- user$login
+repo_name <- "gh-create-test"
+
+headers_gh_query <- c("X-Github-Next-Global-ID"= 1)
+# permet d'obtenir des global node id et d'éviter des messages d'insultes comme quoi l'id sera bien deprecated
+```
+
+```{r}
+## Récupération du login
+login_query <- gh_gql("query { viewer { login }}")
+login <- login_query$data$viewer$login
+  
+## Récupération du username et userid
+userid_query <-
+  gh_gql(glue(
+    'query { user(login: "$_login_$") { id, name } }',
+    .open = "$_",
+    .close = "_$"
+  ),
+  .send_headers = headers_gh_query
+)
+# le send_headers ca permet d'éviter de se prendre un warning qui dit que l'id d'utilisateur est déprécié et qu'il faut trouver un next_global_id
+# voir si cet id récent marche avec toutes les opérations ensuite
+
+userid <- userid_query$data$user$id
+# "U_kgDOAu_Iww"
+username <- userid_query$data$user$name
+# "Yohann Msx"
+```
+
+# creation du repo en gh_gql
+
+```{r}
+create_repo <- gh_gql(glue(
+  '
+mutation {
+   createRepository(input: {name: "$_repo_name_$", visibility: PRIVATE, ownerId: "$_userid_$"}) {
+    repository {
+      url,
+      id
+    }
+  }
+}
+'
+, 
+.open = "$_",
+.close = "_$")
+)
+```
+
+# récupération de l'id d'un repository
+
+```{r}
+# Récupération de l'id d'un repo
+repository_id <-
+  gh_gql(
+    glue('query {repository(owner: "$_owner_$", name: "$_repo_name_$") {
+  id
+}}',
+.open = "$_",
+.close = "_$"
+    ),
+    .send_headers = headers_gh_query
+  )
+  
+repository_id <- repository_id$data$repository$id
+```
+
+# Création d'un project et affiliation du repo
+
+```{r}
+project_title <- "projet_new_boardZ"
+create_project <-
+  gh_gql(
+    glue(
+      'mutation { createProjectV2(input: { ownerId: "$_userid_$", title: "$_project_title_$", repositoryId: "$_repository_id_$"}) { projectV2 { id, databaseId } }}',
+      .open = "$_",
+      .close = "_$"
+    ),
+    .send_headers = headers_gh_query
+  )
+```
+
+# Lister les projets d'un utilisateur et récupérer l'id du projet voulu
+
+```{r}
+userprojects <-
+  gh_gql(
+    glue::glue(
+      'query { user(login: "$_login_$") { projectsV2(first: 100) { edges { node { id, title, number, createdAt, public } } } } }',
+      .open = "$_",
+      .close = "_$"
+    ),
+    .send_headers = headers_gh_query
+  )
+  
+edges <- userprojects$data$user$projects$edges
+
+edges_as_df <- purrr::map(edges, "node") %>% 
+  map_dfr(~ map_df(.x, reduce, stringr::str_c, collapse = ", ", sep= " ") )
+
+project_ids <- edges_as_df  |> 
+filter(title == project_title) |> 
+arrange(desc(createdAt))  |> 
+pull(id) 
+
+project_numbers <- edges_as_df  |> 
+filter(title == project_title) |> 
+arrange(desc(createdAt))  |> 
+pull(number) 
+
+# par défaut j'ai considéré que le plus récent était le correct si on avait plusieurs projects avec le même nom (ca se discute ...)
+project_id <- project_ids[1]
+project_number <- project_numbers[1]
+```
+
+# créer des labels
+
+Je crois qu'on ne peut pas le faire -> à vérifier
+
+
+# créer une issue
+
+```{r}
+issue_title <- "toy_issue"
+
+creer_issue <-   gh_gql(
+  glue::glue(
+    'mutation {createIssue(input: {repositoryId: "$_repository_id_$", title: "$_issue_title_$"}) {issue {
+      id
+    }}}',
+    .open = "$_",
+    .close = "_$"
+  ),
+  .send_headers = headers_gh_query
+)
+          
+issueid <- creer_issue$data$createIssue$issue$id
+               
+```
+
+
+# ajouter l'issue dans le project
+
+```{r}
+itemid <- gh_gql(
+  glue::glue(
+    'mutation {  addProjectV2ItemById(input: {projectId: "$_project_id_$", contentId: "$_issueid_$"}) {
+    item {
+      id
+    }
+  }
+}',
+.open = "$_",
+.close = "_$"
+  ),
+  .send_headers = headers_gh_query
+
+)
+
+issue_id_within_project <- itemid$data$addProjectV2ItemById$item$id
+
+```
+
+
+# mettre un status à une issue (i.e affecter une colonne du board)
+
+```{r}
+id_des_status <- gh_gql(glue('query{
+  user(login: "$_login_$") {
+    projectV2(number: $_project_number_$) {
+       id
+                  fields(first:20) {
+                    nodes {
+                      ... on ProjectV2SingleSelectField {
+                        id
+                        name
+                        options {
+                          id
+                          name
+                        }
+          }
+        }
+      }
+    }
+  }
+}',
+   .open = "$_",
+    .close = "_$"
+  ),
+    .send_headers = headers_gh_query
+)
+
+nodes <- id_des_status$data$user$projectV2$fields$nodes
+
+status_as_df <- purrr::map(nodes, "options")  |>
+  compact()
+  
+status_as_df <- status_as_df[[1]] |> 
+  map_dfr(~ map_df(.x, reduce, stringr::str_c, collapse = ", ", sep= " ") )
+
+# au pif
+status_to_use <- "In Progress"
+id_of_status_to_use <- status_as_df  |> 
+filter(name == status_to_use)  |> 
+pull("id")
+
+# le champ "status" a un id également (et oui)
+status_field_id <- nodes  |> 
+map("id")  |> 
+compact()  |> 
+unlist()
+
+# bouger une issue
+gh_gql(glue('mutation {
+              updateProjectV2ItemFieldValue(
+                input: {
+                      projectId:  "$_project_id_$"
+                      itemId: "$_issue_id_within_project_$"
+                      fieldId: "$_status_field_id_$"
+                      value: { 
+                          singleSelectOptionId :"$_id_of_status_to_use_$"
+                      }
+                      
+                }
+                ) {
+                projectV2Item {
+                  id
+                }
+              }
+            }',
+   .open = "$_",
+    .close = "_$"
+  ),
+      .send_headers = headers_gh_query
+)
+
+```
+
+# ajouter des colonnes
+
+Pour le moment ce n'est pas possible : https://github.com/orgs/community/discussions/38225#discussioncomment-5906038
+
+# lister les colonnes
+
+```{r}
+# lister le contenu des colonnes
+req_board_infos <- gh_gql(glue('query{
+    node(id: "$_project_id_$") {
+        ... on ProjectV2 {
+          items(first: 100) {
+            nodes{
+              id
+              fieldValues(first: 100) {
+                nodes{
+                  ... on ProjectV2ItemFieldSingleSelectValue {
+                    name
+                    field {
+                      ... on ProjectV2FieldCommon {
+                        name
+                      }
+                    }
+                  }
+                }
+              }
+              content{
+                ...on Issue {
+                  title
+                  url
+                  number
+                  state
+                  createdAt
+                  updatedAt
+                  closedAt
+                }
+              }
+            }
+          }
+        }
+      }
+    }',
+    .open = "$_",
+    .close = "_$"
+  ),
+      .send_headers = headers_gh_query
+)
+
+```
+
+# enlever une issue d'un projet
+
+```{r}
+deleted_issue <- gh_gql(
+  glue::glue(
+    'mutation {  deleteProjectV2Item(input: {projectId: "$_project_id_$", itemId: "$_issue_id_within_project_$"}) {
+    deletedItemId 
+  }
+}',
+.open = "$_",
+.close = "_$"
+  ),
+  .send_headers = headers_gh_query
+
+)
+```
+
+# fermer une issue
+
+```{r}
+fermer_issue <-   gh_gql(
+  glue::glue(
+    'mutation {updateIssue(input: {id: "$_issueid_$", state: CLOSED}) {issue {
+      id,
+      title
+    }}}',
+    .open = "$_",
+    .close = "_$"
+  ),
+  .send_headers = headers_gh_query
+)
+```
+
+
+# supprimer une issue
+
+```{r}
+supprimer_issue <-   gh_gql(
+  glue::glue(
+    'mutation {deleteIssue(input: {issueId: "$_issueid_$"}) {repository {
+      id
+    }}}',
+    .open = "$_",
+    .close = "_$"
+  ),
+  .send_headers = headers_gh_query
+)
+```
+
+# supprimer un projet
+
+```{r}
+delete_project <-
+  gh_gql(
+    glue(
+      'mutation { createProjectV2(input: { projectId: "$_project_id_$" }) { projectV2 { id, number, closed, closedAt } }}',
+      .open = "$_",
+      .close = "_$"
+    ),
+    .send_headers = headers_gh_query
+  )
+```
+
+# supprimer un repo
+
+pas trouvé avec l'API graphql, faut passer par le truc à l'ancienne 
+
+```{r}
+gh::gh(paste0("DELETE /repos/", owner, "/", repo_name))
+```
