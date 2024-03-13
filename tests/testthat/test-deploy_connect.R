@@ -3,26 +3,26 @@
 test_that("deploy_connect works", {
   # We check that there are errors when no arguments are provided
   if (Sys.getenv("ALLOW_TESTS_TO_DEPLOY_ON_CONNECT", unset = "FALSE") == "TRUE") {
-    expect_error(deploy_connect())
-    expect_error(
-      deploy_connect(
-        connect_url = "pif"
-      )
+  expect_error(deploy_connect())
+  expect_error(
+    deploy_connect(
+      connect_url = "pif"
     )
-    expect_error(
-      deploy_connect(
-        connect_url = "pif",
-        connect_user = "paf"
-      )
+  )
+  expect_error(
+    deploy_connect(
+      connect_url = "pif",
+      connect_user = "paf"
     )
-    expect_error(
-      deploy_connect(
-        connect_url = "pif",
-        connect_user = "paf",
-        connect_api_token = "pouf"
-      )
+  )
+  expect_error(
+    deploy_connect(
+      connect_url = "pif",
+      connect_user = "paf",
+      connect_api_token = "pouf"
     )
+  )
 
-    # TODO TEST DEPLOY_CONNECT MANUAL
+  # TODO TEST DEPLOY_CONNECT MANUAL
   }
 })

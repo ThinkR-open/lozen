@@ -16,40 +16,40 @@
 #' add_board(
 #'   project_id = project_id
 #' )
-#' }
+#'}
 add_board <- function(
-  project_id,
-  name = "Development",
-  labels_order = c("Bloqu\u00e9", "Pr\u00eat", "En cours", "R\u00e9vision", "Pr\u00e9-validation", "A valider"),
-  lg = "fr"
-    ) {
+    project_id,
+    name = "Development",
+    labels_order = c("Bloqu\u00e9", "Pr\u00eat", "En cours", "R\u00e9vision", "Pr\u00e9-validation", "A valider"),
+    lg = "fr"
+) {
+
   add_labels(project_id, lg = lg)
 
   ## Checking if the board already exists
   check_if_board_exists <-
-    gitlab(
-      req = paste0("projects/", project_id, "/boards"),
-      verb = httr::GET,
-      name = name
-    )
+    gitlab(req = paste0("projects/", project_id, "/boards"),
+           verb = httr::GET,
+           name = name)
 
-  if (nrow(check_if_board_exists) == 0) {
-    board <- gitlab(
-      req = paste0("projects/", project_id, "/boards"),
-      verb = httr::POST,
-      name = name
-    )
+  if(nrow(check_if_board_exists) == 0) {
+
+    board <- gitlab(req = paste0("projects/", project_id, "/boards"),
+                    verb = httr::POST,
+                    name = name)
 
     message("Created a new board")
+
   } else {
+    
     message("The board already exists")
+    
   }
 
   # get existing list of labels
   all_labels <- gitlab(
     req = c("projects", project_id, "labels"),
-    verb = httr::GET
-  )
+    verb = httr::GET)
 
   # get those for a list in the correct order
   all_labels_lists <- tibble(name = labels_order) %>%
@@ -61,14 +61,11 @@ add_board <- function(
     gitlab(
       req = c("projects", project_id, "boards", board[["id"]][1], "lists"),
       verb = httr::POST,
-      label_id = label_list
-    )
+      label_id = label_list)
   }
 
-  board <- gitlab(
-    req = paste0("projects/", project_id, "/boards"),
-    verb = httr::GET
-  )
+  board <- gitlab(req = paste0("projects/", project_id, "/boards"),
+                  verb = httr::GET)
 
   return(board)
 }

@@ -35,14 +35,12 @@
 #' }
 #' # Copier dans le presse papier pour copier directement
 #' # clipr::write_clip(weekly$weekly_info)
-gh_create_weekly <- function(
-  date_min = Sys.Date() - 7,
-  date_max = Sys.Date(),
-  user = "thinkr-open",
-  repo = "fusen",
-  verbose = FALSE,
-  board_url
-    ) {
+gh_create_weekly <- function(date_min = Sys.Date() - 7,
+                             date_max = Sys.Date(),
+                             user = "thinkr-open",
+                             repo = "fusen",
+                             verbose = FALSE,
+                             board_url) {
   .Deprecated("lozen::gh_create_weekly_old_and_new_boards()")
 
   date_min <- as_date(date_min)
@@ -137,12 +135,9 @@ gh_create_weekly <- function(
 
   # New issues opened during the week (even if closed)
   # >> DO NOT Change here for new board
-  new_issues <- gh(
-    glue("/repos/{user}/{repo}/issues"),
-    sort = "created",
-    since = format_ISO8601(
-      as_datetime(
-        paste0(date_min, "T00:00:01"),
+  new_issues <- gh(glue("/repos/{user}/{repo}/issues"),
+    sort = "created", since = format_ISO8601(
+      as_datetime(paste0(date_min, "T00:00:01"),
         tz = lubridate::tz(now())
       ),
       usetz = TRUE
