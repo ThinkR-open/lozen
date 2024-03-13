@@ -31,7 +31,7 @@ The following instructions are used to initiate a product on your Forge. But the
 
 # Packages
 
-```{r include = FALSE}
+```{r parsermd-chunk-1, include = FALSE}
 library(gitlabr)
 library(lozen)
 library(dplyr)
@@ -40,7 +40,7 @@ library(stringr)
 
 # Define the name of the principal branch
 
-```{bash}
+```{bash parsermd-chunk-2}
 git config --global init.defaultBranch main
 ```
 
@@ -50,7 +50,7 @@ git config --global init.defaultBranch main
   + Store it in `".Renviron"` with `usethis::edit_r_environ()`
 
 
-```{r eval = FALSE}
+```{r parsermd-chunk-3, eval = FALSE}
 gitlab_url <- Sys.getenv("GITLAB_URL", unset = "https://gitlab.com")
 
 # GitLab con
@@ -84,7 +84,7 @@ Replace the value `"my_group"` by the name of the group.
 The `namespace_id` of the group you want to use will be used in the next steps.
 
 
-```{r eval = FALSE}
+```{r parsermd-chunk-4, eval = FALSE}
 # Get user namespace (= group_id)
 namespace_id <- gitlabr::gitlab(req = "namespaces", search = "my_group")[["id"]]
 # If you are not working within a group, please set it to NULL
@@ -99,14 +99,14 @@ Define:
 - The `namespace_id` of the group where you want to create your project
 
 
-```{r eval = FALSE}
+```{r parsermd-chunk-5, eval = FALSE}
 project_name <- "myrandomproject"
 ```
 
 Create the new project:
 
 
-```{r eval = FALSE}
+```{r parsermd-chunk-6, eval = FALSE}
 project_id <- create_group_project(
   project_name = project_name,
   namespace_id = namespace_id,
@@ -121,13 +121,13 @@ Define:
 - The `project_id` of the project you want to use
 
 
-```{r eval = FALSE}
+```{r parsermd-chunk-7, eval = FALSE}
 project_id <- 123456789
 ```
 
 # Get all information about the project
 
-```{r eval = FALSE}
+```{r parsermd-chunk-8, eval = FALSE}
 the_project <- gl_get_project(
   project = project_id
 )
@@ -146,7 +146,7 @@ You will be able to create the first skeleton of your product, depending if it i
 This code will clone the GitLab project locally, in the path of your choice (if no `project_path` is provided, it will be cloned in a temporary directory).
 
 
-```{r eval = FALSE}
+```{r parsermd-chunk-9, eval = FALSE}
 project_path <- clone_locally(
   project_name = the_project[["name"]],
   group_url = group_url,
@@ -159,7 +159,7 @@ project_path <- clone_locally(
 To initiate a new product, please take a look at the following vignette : `ac-create-the-skeleton-of-the-r-project--package-app-book-.Rmd`.
 
 
-```{r}
+```{r parsermd-chunk-10}
 if (interactive()) {
   vignette("ac-create-the-skeleton-of-the-r-project--package-app-book-", package = "lozen")
 }
@@ -170,7 +170,7 @@ if (interactive()) {
 To set up continuous integration and continuous deployment of your product, please take a look at the following vignette : `ad-set-up-continuous-integration-and-deployment-through-gitlab-ci.Rmd`.
 
 
-```{r}
+```{r parsermd-chunk-11}
 if (interactive()) {
   vignette("ad-set-up-continuous-integration-and-deployment-through-gitlab-ci", package = "lozen")
 }
@@ -181,7 +181,7 @@ if (interactive()) {
 Please take a look at the following vignette : `bb-manage-git-tools--branches-commits-etc--.Rmd`.
 
 
-```{r}
+```{r parsermd-chunk-12}
 if (interactive()) {
   vignette("bb-manage-git-tools--branches-commits-etc--", package = "lozen")
 }
@@ -192,7 +192,7 @@ if (interactive()) {
 Please take a look at the following vignette : `ba-manage-forge-board-wiki.Rmd`.
 
 
-```{r}
+```{r parsermd-chunk-13}
 if (interactive()) {
   vignette("ba-manage-forge-board-wiki", package = "lozen")
 }
@@ -203,7 +203,7 @@ if (interactive()) {
 Please take a look at the following vignette : `ae-create-weekly-with-github-or-gitlab.Rmd`.
 
 
-```{r}
+```{r parsermd-chunk-14}
 if (interactive()) {
   vignette("ae-create-weekly-with-github-or-gitlab", package = "lozen")
 }

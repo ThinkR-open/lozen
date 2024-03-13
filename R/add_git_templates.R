@@ -16,11 +16,9 @@
 #'   type = c("commit", "mr")
 #' )
 #' }
-add_git_templates <- function(
-  project_path = ".",
-  type = c("commit", "mr"),
-  target_dir = ".gitlab"
-    ) {
+add_git_templates <- function(project_path = ".",
+                              type = c("commit", "mr"),
+                              target_dir = ".gitlab") {
   old <- setwd(project_path)
   on.exit(setwd(old))
 
@@ -45,8 +43,7 @@ add_git_templates <- function(
       file.copy(
         system.file("gitlab", "merge_request_templates", package = "lozen"),
         gitlab_path,
-        overwrite = TRUE,
-        recursive = TRUE
+        overwrite = TRUE, recursive = TRUE
       )
     } else if (grepl("github", target_dir)) {
       file.copy(
@@ -64,8 +61,7 @@ add_git_templates <- function(
     file.copy(
       system.file("gitlab", "template_commit", package = "lozen"),
       gitlab_path,
-      overwrite = TRUE,
-      recursive = TRUE
+      overwrite = TRUE, recursive = TRUE
     )
 
     if (dir.exists(file.path(project_path, ".git"))) {

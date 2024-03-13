@@ -40,37 +40,23 @@ test_that("build_pkgdown_with_reports works", {
     expect_setequal(
       object = list.files(file.path(path, "pkgdown", "assets", "testdown")),
       expected = c(
-        "_bookdown.yml",
-        "_output.yml",
-        "404.html",
-        "aggregated-failures-and-errors.html",
-        "aggregated-skipped.html",
-        "aggregated-warnings.html",
-        "global-results-for-package-dummypackage.html",
-        "how-to-read-this-report.html",
-        "index.html",
-        "libs",
-        "style.css",
-        "test-addition.html",
-        "testdown-report-for-dummypackage.html"
+        "_bookdown.yml", "_output.yml", "404.html", "aggregated-failures-and-errors.html",
+        "aggregated-skipped.html", "aggregated-warnings.html", "global-results-for-package-dummypackage.html",
+        "how-to-read-this-report.html", "index.html", "libs", "style.css",
+        "test-addition.html", "testdown-report-for-dummypackage.html"
       )
     )
     expect_true(
       all(
         c(
-          "404.html",
-          "articles",
-          "authors.html",
+          "404.html", "articles", "authors.html",
           # "deps",
           "index.html",
           # "LICENSE-text.html", "LICENSE.html", # if package with license
-          "link.svg",
-          "pkgdown.js",
-          "pkgdown.yml",
-          "reference",
+          "link.svg", "pkgdown.js",
+          "pkgdown.yml", "reference",
           # "search.json", # Bootstrap > 5.0
-          "sitemap.xml",
-          "testdown"
+          "sitemap.xml", "testdown"
         ) %in%
           list.files(file.path(path, "public"))
       )

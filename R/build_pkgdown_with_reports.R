@@ -22,14 +22,12 @@
 #' #    assets_path = "pkgdown/assets",
 #' #    reports = c("testdown","coverage")
 #' }
-build_pkgdown_with_reports <- function(
-  pkg = ".",
-  pkgdown_path = "public",
-  assets_path = "pkgdown/assets",
-  reports = c("coverage", "testdown", "gitdown"),
-  git_branch_ref = "main",
-  overwrite_assets = TRUE
-    ) {
+build_pkgdown_with_reports <- function(pkg = ".",
+                                       pkgdown_path = "public",
+                                       assets_path = "pkgdown/assets",
+                                       reports = c("coverage", "testdown", "gitdown"),
+                                       git_branch_ref = "main",
+                                       overwrite_assets = TRUE) {
   # Selected reports
   reports <- match.arg(
     arg = reports,
@@ -88,9 +86,7 @@ build_pkgdown_with_reports <- function(
     menu[[length(menu) + 1]] <- list(text = "coverage", href = "coverage/coverage.html")
     # Add coverage explanation
     markdown::markdownToHTML(
-      file = system.file(
-        "package",
-        "codecoverage_explanation.md",
+      file = system.file("package", "codecoverage_explanation.md",
         package = "lozen"
       ),
       output = file.path(assets_path, "coverage", "codecoverage_explanation.html")

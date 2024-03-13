@@ -2,62 +2,62 @@
 
 test_that("deploy_connect_bookdown works", {
   skip_on_ci()
-
+  
   if (Sys.getenv("ALLOW_TESTS_TO_DEPLOY_ON_CONNECT", unset = "FALSE") == "TRUE") {
-    if (
-      Sys.getenv("CONNECT_URL") != "" &
-        Sys.getenv("CONNECT_USER") != "" &
-        Sys.getenv("CONNECT_TOKEN") != "" &
-        Sys.getenv("CONNECT_NAME") != ""
-    ) {
-      project_name <- "lozen-example-bookdown"
+  if (
+    Sys.getenv("CONNECT_URL") != "" &
+      Sys.getenv("CONNECT_USER") != "" &
+      Sys.getenv("CONNECT_TOKEN") != "" &
+      Sys.getenv("CONNECT_NAME") != ""
+  ) {
+    project_name <- "lozen-example-bookdown"
 
-      tmpdir <- tempfile(pattern = "book-")
-      dir.create(tmpdir)
-      project_path <- file.path(tmpdir, project_name)
+    tmpdir <- tempfile(pattern = "book-")
+    dir.create(tmpdir)
+    project_path <- file.path(tmpdir, project_name)
 
-      bookdown::create_bs4_book(path = project_path)
+    bookdown::create_bs4_book(path = project_path)
 
-      bookdown::render_book(input = project_path)
+    bookdown::render_book(input = project_path)
 
-      connect_name <- Sys.getenv("CONNECT_NAME")
+    connect_name <- Sys.getenv("CONNECT_NAME")
+    
+    deployed_apps <- rsconnect::applications(server = connect_name)
 
-      deployed_apps <- rsconnect::applications(server = connect_name)
-
-      if (project_name %in% deployed_apps[["name"]]) {
-        try(
-          rsconnect::terminateApp(
-            appName = project_name
-          )
+    if (project_name %in% deployed_apps[["name"]]) {
+      try(
+        rsconnect::terminateApp(
+          appName = project_name
         )
-      }
-
-      deploy_connect_bookdown(
-        app_name = project_name,
-        deploy_dir = file.path(project_path, "_book")
       )
-
-      deployed_apps <- rsconnect::applications(server = connect_name)
-
-      bookdown_is_deployed <- project_name %in% deployed_apps[["name"]]
-
-      expect_true(bookdown_is_deployed)
-
-      if (interactive()) {
-        deployed_apps %>%
-          dplyr::filter(name == project_name) %>%
-          dplyr::pull(url) %>%
-          browseURL()
-      }
-
-      if (isTRUE(bookdown_is_deployed)) {
-        Sys.sleep(10)
-        try(
-          rsconnect::terminateApp(
-            appName = project_name
-          )
-        )
-      }
     }
+
+    deploy_connect_bookdown(
+      app_name = project_name,
+      deploy_dir = file.path(project_path, "_book")
+    )
+
+    deployed_apps <- rsconnect::applications(server = connect_name)
+
+    bookdown_is_deployed <- project_name %in% deployed_apps[["name"]]
+
+    expect_true(bookdown_is_deployed)
+
+    if (interactive()) {
+      deployed_apps %>%
+        dplyr::filter(name == project_name) %>%
+        dplyr::pull(url) %>%
+        browseURL()
+    }
+
+    if (isTRUE(bookdown_is_deployed)) {
+      Sys.sleep(10)
+      try(
+        rsconnect::terminateApp(
+          appName = project_name
+        )
+      )
+    }
+  }
   }
 })

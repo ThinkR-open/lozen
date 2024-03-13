@@ -15,86 +15,54 @@
 #' add_labels(
 #'   project_id = project_id
 #' )
-#' }
+#'}
 add_labels <- function(project_id, lg = "fr") {
   # Get labels
-  labels_already <- gitlab(
-    req = paste0("projects/", project_id, "/labels"),
-    verb = httr::GET
-  )
+  labels_already <- gitlab(req = paste0("projects/", project_id, "/labels"),
+                           verb = httr::GET)
 
   # Create missing labels
-  if (lg == "fr") {
+  if(lg == "fr"){
     labels <- tribble(
-      ~name,
-      ~color,
-      ~description,
-      "A valider",
-      "#D10069",
-      "Validation client pour mise en ligne",
-      "Pr\u00e9-validation",
-      "#F5F5DC",
-      "Validation des tickets par le lead dev avant validation client",
-      "Bloqu\u00e9",
-      "#7F8C8D",
-      "N\u00e9cessite des infos compl\u00e9mentaires pour \u00eatre trait\u00e9",
-      "En cours",
-      "#428BCA",
-      "En cours de traitement",
-      "Pr\u00eat",
-      "#69D100",
-      "Pr\u00eat \u00e0 \u00eatre trait\u00e9",
+      ~name, ~color, ~description,
+      "A valider", "#D10069", "Validation client pour mise en ligne",
+      "Pr\u00e9-validation", "#F5F5DC", "Validation des tickets par le lead dev avant validation client",
+      "Bloqu\u00e9", "#7F8C8D", "N\u00e9cessite des infos compl\u00e9mentaires pour \u00eatre trait\u00e9",
+      "En cours", "#428BCA", "En cours de traitement",
+      "Pr\u00eat", "#69D100", "Pr\u00eat \u00e0 \u00eatre trait\u00e9",
       # "En attente", "#A8D695", "A ce qu\'il faut pour \u00eatre trait\u00e9e, mais il y a trop de choses dans \'Pr\u00eat\'",
-      "R\u00e9vision",
-      "#F0AD4E",
-      "A r\u00e9viser avant int\u00e9gration dans 'main'"
+      "R\u00e9vision", "#F0AD4E", "A r\u00e9viser avant int\u00e9gration dans 'main'"
     )
-  } else {
+  }else{
     message("English by default")
     labels <- tribble(
-      ~name,
-      ~color,
-      ~description,
-      "To be validated",
-      "#D10069",
-      "Customer validation to go online",
-      "Pre-validation",
-      "#F5F5DC",
-      "Validation of tickets by lead dev before customer validation",
-      "Blocked",
-      "#7F8C8D",
-      "Requires additional information to be processed",
-      "In progress",
-      "#428BCA",
-      "In progress",
-      "Ready",
-      "#69D100",
-      "Pending treatment",
+      ~name, ~color, ~description,
+      "To be validated", "#D10069", "Customer validation to go online",
+      "Pre-validation", "#F5F5DC", "Validation of tickets by lead dev before customer validation",
+      "Blocked", "#7F8C8D", "Requires additional information to be processed",
+      "In progress", "#428BCA", "In progress",
+      "Ready", "#69D100", "Pending treatment",
       # "Waiting", "#A8D695", "For what it takes to be treated, but there are too many things in Ready",
-      "Review",
-      "#F0AD4E",
-      "To be reviewed before integration into 'main'"
+      "Review", "#F0AD4E", "To be reviewed before integration into 'main'"
     )
   }
+  
 
-
-  if (nrow(labels_already) != 0) {
+  if(nrow(labels_already) !=0){
     labels_to_add <- labels %>%
-      filter(!name %in% labels_already$name)
-  } else {
+    filter(!name %in% labels_already$name)
+  }else{
     labels_to_add <- labels
   }
-
+  
 
   if (nrow(labels_to_add) > 0) {
     for (i in 1:nrow(labels_to_add)) {
-      gitlab(
-        req = paste0("projects/", project_id, "/labels"),
-        verb = httr::POST,
-        name = labels_to_add$name[i],
-        color = labels_to_add$color[i],
-        description = labels_to_add$description[i]
-      )
+      gitlab(req = paste0("projects/", project_id, "/labels"),
+             verb = httr::POST,
+             name = labels_to_add$name[i],
+             color = labels_to_add$color[i],
+             description = labels_to_add$description[i])
     }
     message("Labels manquants ajout\u00e9s")
   } else {
@@ -103,3 +71,4 @@ add_labels <- function(project_id, lg = "fr") {
 
   labels_to_add
 }
+

@@ -47,22 +47,22 @@ Visualise the nature of the developments (conventional commits)
 \examples{
 \dontrun{
 
-visualise_commits(
-  project_id = "<get_your_id_project>",
-  gitlab_url = Sys.getenv("GITLAB_URL", unset = "https://gitlab.com"),
-  date_min = "2022-09-22",
-  date_max = "2022-09-29",
-  private_token = Sys.getenv("GITLAB_TOKEN")
-)
+  visualise_commits(
+    project_id = "<get_your_id_project>",
+    gitlab_url = Sys.getenv("GITLAB_URL", unset = "https://gitlab.com"),
+    date_min = "2022-09-22",
+    date_max = "2022-09-29",
+    private_token = Sys.getenv("GITLAB_TOKEN")
+  )
 
-# Or on project already cloned
-tempdir <-
-  clone_locally(full_url = "https://gitlab.com/my_name/my_repo", open = FALSE)
+  # Or on project already cloned
+  tempdir <-
+    clone_locally(full_url = "https://gitlab.com/my_name/my_repo", open = FALSE)
 
-visualise_commits(
-  path = tempdir,
-  date_min = "2022-09-22",
-  date_max = "2022-09-29"
-)
+  visualise_commits(
+    path = tempdir,
+    date_min = "2022-09-22",
+    date_max = "2022-09-29"
+  )
 }
 }

@@ -16,64 +16,54 @@
 #' )
 #' # unprotect if wanted
 #' # protect_branches(project_id, unprotect = TRUE)
-#' }
+#'}
 protect_branches <- function(project_id, unprotect = FALSE) {
-  p_branches <- gitlab(
-    req = paste0("projects/", project_id, "/protected_branches"),
-    verb = httr::GET
-  )
+
+  p_branches <- gitlab(req = paste0("projects/", project_id, "/protected_branches"),
+                       verb = httr::GET)
 
   # Delete master protection if exists
   if (nrow(p_branches) != 0 && "master" %in% p_branches[["name"]]) {
-    gitlab(
-      req = paste0("projects/", project_id, "/protected_branches/master"),
-      verb = httr::DELETE
-    )
+    gitlab(req = paste0("projects/", project_id, "/protected_branches/master"),
+           verb = httr::DELETE)
   }
 
   # Add master protection
-  protect_master <- gitlab(
-    req = paste0("projects/", project_id, "/protected_branches"),
-    verb = httr::POST,
-    name = "master",
-    push_access_level = ifelse(isTRUE(unprotect), 40, 0),
-    merge_access_level = 40 # Maintainers
+  protect_master <- gitlab(req = paste0("projects/", project_id, "/protected_branches"),
+                           verb = httr::POST,
+                           name = "master",
+                           push_access_level = ifelse(isTRUE(unprotect), 40, 0),
+                           merge_access_level = 40 # Maintainers
   )
   message("\'master\'", ifelse(isTRUE(unprotect), " not ", " "), "protected from Push. Merge allowed for Maintainers")
 
   # Delete main protection if exists
   if (nrow(p_branches) != 0 && "main" %in% p_branches[["name"]]) {
-    gitlab(
-      req = paste0("projects/", project_id, "/protected_branches/main"),
-      verb = httr::DELETE
-    )
+    gitlab(req = paste0("projects/", project_id, "/protected_branches/main"),
+           verb = httr::DELETE)
   }
 
   # Add main protection
-  protect_master <- gitlab(
-    req = paste0("projects/", project_id, "/protected_branches"),
-    verb = httr::POST,
-    name = "main",
-    push_access_level = ifelse(isTRUE(unprotect), 40, 0),
-    merge_access_level = 40 # Maintainers
+  protect_master <- gitlab(req = paste0("projects/", project_id, "/protected_branches"),
+                           verb = httr::POST,
+                           name = "main",
+                           push_access_level = ifelse(isTRUE(unprotect), 40, 0),
+                           merge_access_level = 40 # Maintainers
   )
   message("\'main\'", ifelse(isTRUE(unprotect), " not ", " "), "protected from Push. Merge allowed for Maintainers")
 
   # Delete production protection if exists
   if (nrow(p_branches) != 0 && "production" %in% p_branches[["name"]]) {
-    gitlab(
-      req = paste0("projects/", project_id, "/protected_branches/production"),
-      verb = httr::DELETE
-    )
+    gitlab(req = paste0("projects/", project_id, "/protected_branches/production"),
+           verb = httr::DELETE)
   }
 
   # Add production protection
-  protect_prod <- gitlab(
-    req = paste0("projects/", project_id, "/protected_branches"),
-    verb = httr::POST,
-    name = "production",
-    push_access_level = ifelse(isTRUE(unprotect), 40, 0), # 0 = No Ones
-    merge_access_level = 40 # Maintainers
+  protect_prod <- gitlab(req = paste0("projects/", project_id, "/protected_branches"),
+                         verb = httr::POST,
+                         name = "production",
+                         push_access_level = ifelse(isTRUE(unprotect), 40, 0), # 0 = No Ones
+                         merge_access_level = 40 # Maintainers
   )
   message("\'production\'", ifelse(isTRUE(unprotect), " not ", " "), " protected from Push and from. Merge allowed for Maintainers")
 }

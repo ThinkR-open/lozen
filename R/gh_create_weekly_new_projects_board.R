@@ -43,15 +43,10 @@
 #' }
 #' # Copier dans le presse papier pour copier directement
 #' # clipr::write_clip(weekly$weekly_info)
-gh_create_weekly_new_projects_board <- function(
-  date_min,
-  date_max,
-  user,
-  repo,
-  board_url,
-  github_token = Sys.getenv("GITHUB_PAT"),
-  verbose = FALSE
-    ) {
+gh_create_weekly_new_projects_board <- function(date_min, date_max,
+                                                user, repo,
+                                                board_url, github_token = Sys.getenv("GITHUB_PAT"),
+                                                verbose = FALSE) {
   .Deprecated("lozen::gh_create_weekly_old_and_new_boards()")
 
   date_min <- as_date(date_min)
@@ -89,8 +84,7 @@ gh_create_weekly_new_projects_board <- function(
     filter(grepl("close|closed|a valider|validation|done", tolower(board_column)))
 
   if (nrow(cards_tbl_done) != 0) {
-    cards_tbl_done <- inner_join(
-      cards_tbl_done,
+    cards_tbl_done <- inner_join(cards_tbl_done,
       select(all_issues_tbl, id, number, assignees),
       by = "number"
     )
@@ -108,8 +102,7 @@ gh_create_weekly_new_projects_board <- function(
     filter(grepl("blocked|bloque|bloqu\\\\u00e9", tolower(board_column)))
 
   if (nrow(cards_tbl_blocked) != 0) {
-    cards_tbl_blocked <- inner_join(
-      cards_tbl_blocked,
+    cards_tbl_blocked <- inner_join(cards_tbl_blocked,
       select(all_issues_tbl, id, number, assignees),
       by = "number"
     )
@@ -123,8 +116,7 @@ gh_create_weekly_new_projects_board <- function(
     filter(grepl("a valider|validation", tolower(board_column)))
 
   if (nrow(cards_tbl_valid) != 0) {
-    cards_tbl_valid <- inner_join(
-      cards_tbl_valid,
+    cards_tbl_valid <- inner_join(cards_tbl_valid,
       select(all_issues_tbl, id, number, assignees),
       by = "number"
     )
@@ -139,8 +131,7 @@ gh_create_weekly_new_projects_board <- function(
     filter(grepl("in progress|en cours|review|revision|r\\\\u00e9vision", tolower(board_column)))
 
   if (nrow(cards_tbl_progress) != 0) {
-    cards_tbl_progress <- inner_join(
-      cards_tbl_progress,
+    cards_tbl_progress <- inner_join(cards_tbl_progress,
       select(all_issues_tbl, id, number, assignees),
       by = "number"
     )
@@ -154,12 +145,9 @@ gh_create_weekly_new_projects_board <- function(
 
   # New issues opened during the week (even if closed)
   # >> DO NOT Change here for new board
-  new_issues <- gh(
-    glue("/repos/{user}/{repo}/issues"),
-    sort = "created",
-    since = format_ISO8601(
-      as_datetime(
-        paste0(date_min, "T00:00:01"),
+  new_issues <- gh(glue("/repos/{user}/{repo}/issues"),
+    sort = "created", since = format_ISO8601(
+      as_datetime(paste0(date_min, "T00:00:01"),
         tz = lubridate::tz(now())
       ),
       usetz = TRUE

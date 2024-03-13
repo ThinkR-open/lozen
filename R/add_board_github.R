@@ -18,13 +18,10 @@
 #'   repo = "areponame"
 #' )
 #' }
-add_board_github <- function(
-  owner,
-  repo,
-  columns = c("Open", "Blocked", "Meta", "Ready", "In Progress", "Review", "Validation")
-    ) {
-  board <- gh::gh(
-    glue("POST /repos/{owner}/{repo}/projects"),
+add_board_github <- function(owner,
+                             repo,
+                             columns = c("Open", "Blocked", "Meta", "Ready", "In Progress", "Review", "Validation")) {
+  board <- gh::gh(glue("POST /repos/{owner}/{repo}/projects"),
     name = "Development"
   )
 
@@ -33,8 +30,7 @@ add_board_github <- function(
 
   # Add columns
   for (the_col in columns) {
-    gh::gh(
-      glue("POST /projects/{project_id}/columns"),
+    gh::gh(glue("POST /projects/{project_id}/columns"),
       name = the_col
     )
     message(glue("Column '{the_col}' created"))
