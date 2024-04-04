@@ -1,4 +1,4 @@
-pandoc: 2.19.2
+pandoc: 3.1.11
 pkgdown: 2.0.7
 pkgdown_sha: ~
 articles:
@@ -11,7 +11,7 @@ articles:
   af-build-a-pkgdown-with-reports: af-build-a-pkgdown-with-reports.html
   ba-manage-forge-board-wiki: ba-manage-forge-board-wiki.html
   bb-manage-git-tools--branches-commits-etc--: bb-manage-git-tools--branches-commits-etc--.html
-last_built: 2023-08-18T15:54Z
+last_built: 2024-04-04T08:37Z
 urls:
   reference: https://thinkr-open.github.io/lozen/reference
   article: https://thinkr-open.github.io/lozen/articles
