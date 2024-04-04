@@ -24,7 +24,7 @@ create_deploy_ci_stage <- function(
   stopifnot("deploy_function exist" = length(getFromNamespace(x = deploy_function, "lozen")) > 0)
 
   le_call <- glue::glue(
-    "Rscript -e 'options(rsconnect.packrat = TRUE); lozen::{deploy_function}(forceUpdate=TRUE, connect_url = Sys.getenv(\"CONNECT_URL\"),connect_user = Sys.getenv(\"CONNECT_USER\"),connect_api_token = Sys.getenv(\"CONNECT_TOKEN\"),app_name = Sys.getenv(\"APP_NAME\", unset = Sys.getenv(\"CI_PROJECT_NAME\")))'"
+    "Rscript -e 'lozen::{deploy_function}(forceUpdate=TRUE, connect_url = Sys.getenv(\"CONNECT_URL\"),connect_user = Sys.getenv(\"CONNECT_USER\"),connect_api_token = Sys.getenv(\"CONNECT_TOKEN\"),app_name = Sys.getenv(\"APP_NAME\", unset = Sys.getenv(\"CI_PROJECT_NAME\")))'"
   )
 
   # Create list of Connect CI parameters
