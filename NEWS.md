@@ -1,5 +1,9 @@
 # lozen (development)
 
+# lozen 1.3.9001
+
+- Use {renv} in gitlab ci connect deploy job
+
 # lozen 1.3.0
 
 ## Major
