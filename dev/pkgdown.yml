@@ -1,5 +1,5 @@
 pandoc: 3.1.11
-pkgdown: 2.0.7
+pkgdown: 2.1.3
 pkgdown_sha: ~
 articles:
   aa-create-a-new-project-with-gitlab: aa-create-a-new-project-with-gitlab.html
@@ -11,8 +11,7 @@ articles:
   af-build-a-pkgdown-with-reports: af-build-a-pkgdown-with-reports.html
   ba-manage-forge-board-wiki: ba-manage-forge-board-wiki.html
   bb-manage-git-tools--branches-commits-etc--: bb-manage-git-tools--branches-commits-etc--.html
-last_built: 2024-04-04T08:37Z
+last_built: 2025-10-23T18:59Z
 urls:
   reference: https://thinkr-open.github.io/lozen/reference
   article: https://thinkr-open.github.io/lozen/articles
-
