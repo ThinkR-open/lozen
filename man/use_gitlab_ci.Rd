@@ -16,7 +16,10 @@ use_gitlab_ci(
 \arguments{
 \item{image}{Docker image used as basis. See \url{https://github.com/rocker-org/rocker}}
 
-\item{repo_name}{REPO_NAME environment variable for R CRAN mirror used}
+\item{repo_name}{Deprecated. Kept for backward compatibility but ignored: as of
+gitlabr 2.1, the CRAN mirror is set via the \code{REPO_NAME} GitLab CI/CD variable
+(see \code{inst/gitlab-ci/bookdown-production.yml} in gitlabr) rather than as
+an argument to \code{gitlabr::use_gitlab_ci()}.}
 
 \item{project_path}{Path of the project to add CI in.}
 
@@ -40,7 +43,6 @@ withr::with_tempdir({
 withr::with_tempdir({
   use_gitlab_ci(
     image = "rocker/verse",
-    repo_name = "https://packagemanager.rstudio.com/all/__linux__/focal/latest",
     type = "check-coverage-pkgdown"
   )
 })

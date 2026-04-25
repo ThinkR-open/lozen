@@ -5,10 +5,14 @@
 #' Set gitlab continuous integration
 #'
 #' @param image Docker image used as basis. See \url{https://github.com/rocker-org/rocker}
+#' @param repo_name Deprecated. Kept for backward compatibility but ignored: as of
+#'   gitlabr 2.1, the CRAN mirror is set via the `REPO_NAME` GitLab CI/CD variable
+#'   (see \code{inst/gitlab-ci/bookdown-production.yml} in gitlabr) rather than as
+#'   an argument to `gitlabr::use_gitlab_ci()`.
 #' @param project_path Path of the project to add CI in.
 #' @param bookdown_output_format If type="bookdown" it corresponds to the function used to output the bookdown
 #' @inheritParams gitlabr::use_gitlab_ci
-#' @importFrom cli cli_alert_info
+#' @importFrom cli cli_alert_info cli_alert_warning
 #'
 #' @details See \code{\link[gitlabr]{use_gitlab_ci}}
 #'
@@ -21,7 +25,6 @@
 #' withr::with_tempdir({
 #'   use_gitlab_ci(
 #'     image = "rocker/verse",
-#'     repo_name = "https://packagemanager.rstudio.com/all/__linux__/focal/latest",
 #'     type = "check-coverage-pkgdown"
 #'   )
 #' })
@@ -33,6 +36,12 @@ use_gitlab_ci <- function(
   bookdown_output_format = c("lozen::paged_template", "lozen::bs4_book_template"),
   overwrite = TRUE
     ) {
+  if (!missing(repo_name)) {
+    cli_alert_warning(
+      "Argument `repo_name` is deprecated and ignored: gitlabr 2.1+ takes the CRAN mirror from the REPO_NAME CI/CD variable, not from a function argument."
+    )
+  }
+
   ci_file <- file.path(project_path, ".gitlab-ci.yml")
 
   if (
@@ -62,7 +71,6 @@ use_gitlab_ci <- function(
 
   gitlabr::use_gitlab_ci(
     image = image,
-    repo_name = repo_name,
     path = ci_file,
     type = type
   )
