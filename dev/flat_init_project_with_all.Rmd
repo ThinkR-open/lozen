@@ -137,7 +137,7 @@ Next time you can run `init_project_with_all(project_name = "my.wonderful.projec
 #' @importFrom glue glue
 #' @importFrom gh gh_gql
 #' @importFrom yesno yesno
-#' @importFrom golem add_rstudioconnect_file
+#' @importFrom golem add_positconnect_file
 #' @importFrom withr with_dir
 #' 
 #' @export
@@ -310,7 +310,7 @@ init_project_with_all <- function(project_name, project_gitlab_id = NULL, config
       # Deploy app if golem
       if (config$project_type == "golem") {
         with_dir(project_path, {
-          golem::add_rstudioconnect_file(pkg = project_path)
+          golem::add_positconnect_file(pkg = project_path)
           use_gitlab_ci_deploy_connect_shiny()
         })
       }

@@ -16,7 +16,7 @@
 #'   + Add `CONNECT_TOKEN` with the token.
 #'
 #' If you want to deploy an app
-#' Be sure to have an app.R to deploy at the root of the folder, (if needed: use [golem::add_rstudioconnect_file()])
+#' Be sure to have an app.R to deploy at the root of the folder, (if needed: use [golem::add_positconnect_file()])
 #'
 #' NB: The environment variable `CONNECT_URL` is already defined generically on forge (only for group "thinkr").
 #'
@@ -127,7 +127,7 @@ use_gitlab_ci_deploy_connect_pkgdown <- function(...) {
 use_gitlab_ci_deploy_connect_shiny <- function(...) {
   if (!file.exists("app.R")) {
     cli_alert_warning(
-      "There is no app.R at the root of your package. You should probably run `golem::add_rstudioconnect_file()` to create this file."
+      "There is no app.R at the root of your package. You should probably run `golem::add_positconnect_file()` to create this file."
     )
   }
 

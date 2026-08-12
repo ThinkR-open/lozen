@@ -6,7 +6,6 @@
 \usage{
 use_gitlab_ci(
   image = "rocker/verse",
-  repo_name = "https://packagemanager.rstudio.com/all/__linux__/focal/latest",
   project_path = ".",
   type = "check-coverage-pkgdown",
   bookdown_output_format = c("lozen::paged_template", "lozen::bs4_book_template"),
@@ -15,8 +14,6 @@ use_gitlab_ci(
 }
 \arguments{
 \item{image}{Docker image used as basis. See \url{https://github.com/rocker-org/rocker}}
-
-\item{repo_name}{REPO_NAME environment variable for R CRAN mirror used}
 
 \item{project_path}{Path of the project to add CI in.}
 
@@ -40,7 +37,6 @@ withr::with_tempdir({
 withr::with_tempdir({
   use_gitlab_ci(
     image = "rocker/verse",
-    repo_name = "https://packagemanager.rstudio.com/all/__linux__/focal/latest",
     type = "check-coverage-pkgdown"
   )
 })

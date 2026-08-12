@@ -150,7 +150,7 @@ Before running the following commands please ensure that you are working directo
 ### Add an app.R at the root of your package to deploy on RStudio Connect 
 
 ```{r, eval=FALSE}
-golem::add_rstudioconnect_file()
+golem::add_positconnect_file()
 ```
 
 ### Initiate the deployment of your app
