@@ -45,10 +45,10 @@ withr::with_tempdir({
   usethis::create_package(path = project_path, open = FALSE)
   add_kit_package(project_path, type = c("package", "book", "renv"))
 })
-#> ✔ Setting active project to "/tmp/RtmprJwyrI/file1caa3d8aa07a".
+#> ✔ Setting active project to "/tmp/RtmpZIpE1u/file19612fa56d".
 #> ✔ Creating R/.
 #> ✔ Writing DESCRIPTION.
-#> Package: file1caa3d8aa07a
+#> Package: file19612fa56d
 #> Title: What the Package Does (One Line, Title Case)
 #> Version: 0.0.0.9000
 #> Authors@R (parsed):
@@ -61,7 +61,7 @@ withr::with_tempdir({
 #> RoxygenNote: 8.1.0
 #> ✔ Writing NAMESPACE.
 #> ✔ Setting active project to "<no active project>".
-#> ✔ Setting active project to "/tmp/RtmprJwyrI/file1caa3d8aa07a".
+#> ✔ Setting active project to "/tmp/RtmpZIpE1u/file19612fa56d".
 #> ✔ Adding testthat to Suggests field in DESCRIPTION.
 #> ✔ Adding "3" to Config/testthat/edition.
 #> ✔ Creating tests/testthat/.
@@ -72,5 +72,5 @@ withr::with_tempdir({
 #> ☐ Edit tests/testthat/test-start.R.
 #> ✔ Setting active project to "<no active project>".
 #> Kit package created
-#> [1] "/tmp/RtmprJwyrI/file1caa3d8aa07a"
+#> [1] "/tmp/RtmpZIpE1u/file19612fa56d"
 ```

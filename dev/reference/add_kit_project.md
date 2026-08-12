@@ -43,13 +43,13 @@ withr::with_tempdir({
     type_licence = usethis::use_proprietary_license
   )
 })
-#> ✔ Setting active project to "/tmp/RtmprJwyrI/file1caab217844".
+#> ✔ Setting active project to "/tmp/RtmpZIpE1u/file1961682a7da4".
 #> ✔ Creating R/.
 #> ✔ Writing a sentinel file .here.
 #> ☐ Build robust paths within your project via `here::here()`.
 #> ℹ Learn more at <https://here.r-lib.org>.
 #> ✔ Setting active project to "<no active project>".
-#> ✔ Setting active project to "/tmp/RtmprJwyrI/file1caab217844".
+#> ✔ Setting active project to "/tmp/RtmpZIpE1u/file1961682a7da4".
 #> ✔ Writing LICENSE.
 #> ✔ Writing NEWS.md.
 #> ✔ Setting active project to "<no active project>".

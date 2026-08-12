@@ -61,5 +61,5 @@ withr::with_tempdir({
 #> Warning: Invalid ORCID iD: ‘YOUR-ORCID-ID’.
 #> book created
 #> You need to follow 'dev_history_book.Rmd' after that for the CI to create the pdf_book.
-#> [1] "/tmp/RtmprJwyrI/file1caa50263cde"
+#> [1] "/tmp/RtmpZIpE1u/file196171662257"
 ```
