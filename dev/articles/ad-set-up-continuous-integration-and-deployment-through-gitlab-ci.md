@@ -1,0 +1,354 @@
+# ad - Set up continuous integration and continuous deployment for Gitlab CI/CD
+
+``` r
+
+library(lozen)
+```
+
+## Initiate the Continuous Integration (CI) / Continuous Deployment (CD)
+
+These operations will set up on Gitlab : - the continuous integration of
+your project - the continuous deployment, on Gitlab Pages, of your
+pkgdown (if you are working with a R package or a golem app) or of your
+bookdown.
+
+A `.gitlab-ci.yml` file will be created at the root of your project.
+Please ensure that this file will be pushed on your repository for the
+CI/CD to be working.
+
+Please note that any `.gitlab-ci.yml` file already present would be
+overwritten.
+
+### For a R package or a {golem} app
+
+``` r
+
+lozen::use_gitlab_ci(
+  project_path = project_path,
+  type = "check-coverage-pkgdown"
+)
+```
+
+Please note that the `R/` and `tests/` folders will be missing from a R
+package created using `create_r_project(type = "package")`. If these
+folders remains missing, the “coverage” job of the “test” stage of the
+CI pipeline will fail (the following steps of the CI pipeline will
+nevertheless be run).
+
+### For a book
+
+``` r
+
+lozen::use_gitlab_ci(
+  project_path = project_path,
+  type = "bookdown",
+  bookdown_output_format = "lozen::paged_template"
+)
+
+# OR
+
+lozen::use_gitlab_ci(
+  project_path = project_path,
+  type = "bookdown",
+  bookdown_output_format = "lozen::bs4_book_template"
+)
+```
+
+Two options are allowed for the parameter `bookdown_output_format`:
+“lozen::paged_template” or “lozen::bs4_book_template”. The former will
+render the book using
+[`pagedown::html_paged`](https://rdrr.io/pkg/pagedown/man/html_paged.html)
+while the latter will use
+[`bookdown::bs4_book`](https://pkgs.rstudio.com/bookdown/reference/bs4_book.html).
+
+### How can I find the pkgdown/book associated with my project
+
+By default, a book project created using
+`lozen::create_r_project(type = "book")` does not contain a `.Rproj`
+file, standing for a RStudio project. If this file is missing the “Git”
+panel won’t be visible in RStudio.
+
+If you wish to display this panel, you must create a RStudio project
+within the directory in which your book files are located. Please do the
+following : - Click on the “File” tab - New project - Existing
+directory - Select the directory of your book
+
+The other option is to use the Terminal to use the Git command line
+interface.
+
+Once the former steps are done, you can commit all your changes and push
+them to your repository remote.
+
+Thereafter, you should be able to [see your pipeline
+running](https://docs.gitlab.com/ee/ci/pipelines/#view-pipelines) on
+Gitlab.
+
+If your pipeline did not raise any error, the deployed pkgdown/book is
+now hosted on [Gitlab
+pages](https://docs.gitlab.com/ee/user/project/pages/getting_started_part_one.html).
+
+If you are working on `https://gitlab.com`, the url should be
+`https://username.gitlab.io/your.repository.name`.
+
+## Continuous deployment on Posit Connect
+
+### CD of a pkgdown
+
+For the following to be working, please ensure you are working in a
+valid R package. Your project must be associated with a repository
+present on Gitlab.
+
+If this is not done yet please go to the vignette
+`vignettes/aa-create-a-new-project-with-gitlab.Rmd` and follow the steps
+related to the creation of a project on Gitlab and of a R package
+skeleton.
+
+Before running the following commands please ensure that you are working
+directory is that of your R package project.
+
+#### Create the pkgdown
+
+``` r
+
+usethis::use_pkgdown()
+pkgdown::build_site(override = list(destination = "inst/site"))
+```
+
+#### Initiate the deployment of your pkgdown
+
+##### To be done on your R project
+
+``` r
+
+lozen::use_gitlab_ci_deploy_connect_pkgdown()
+```
+
+Any `.gitlab-ci.yml` file already present in your project is now
+completed with new staged, specific to the deployment on Connect.
+
+Be aware that running this command multiple times would duplicate these
+steps in your `.gitlab-ci.yml` file. It should be avoided.
+
+##### To be done on Gitlab
+
+Some environment variables must be set on Gitlab for the CI/CD to be
+working.
+
+You’ll need to define :
+
+``` r
+
+CONNECT_URL <- "https://my.connect.url"
+CONNECT_NAME <- "my.connect.server.name"
+CONNECT_USER <- "my.connect.username"
+CONNECT_TOKEN <- "my.api.key.generated.in.connect"
+APP_NAME <- "the.name.of.your.pkgdown.on.connect"
+# APP_NAME is not mandatory; whether it is not provided, it will be replaced by the name of your project on Gitlab
+```
+
+For most of them, you may have already set them on your `.Renviron` file
+(see the dedicated section on the {lozen} README).
+
+If you are not familiar with defining environement variable on gitlab,
+please follow the [official
+documentation](https://docs.gitlab.com/ee/ci/variables/index.html).
+
+Once this is done, you can commit all your changes and push them to your
+repository remote.
+
+Thereafter, you should be able to [see your pipeline
+running](https://docs.gitlab.com/ee/ci/pipelines/#view-pipelines) on
+Gitlab.
+
+##### How can I find the pkgdown associated with my R package on Posit Connect
+
+If your pipeline did not raise any error, you app is now deployed on
+your Posit Connect. You can now log in your Posit Connect and enjoy your
+pkgdown !
+
+### CD of a golem shiny app
+
+For the following to be working, please ensure you are working in a
+shiny app initiated with {golem}. Your app project must be associated
+with a repository present on Gitlab.
+
+If this is not done yet please go to the vignette
+`vignettes/aa-create-a-new-project-with-gitlab.Rmd` and follow the steps
+related to the creation of a project on Gitlab and of a shiny app
+skeleton.
+
+Before running the following commands please ensure that you are working
+directory is that of your golem project.
+
+#### Add an app.R at the root of your package to deploy on RStudio Connect
+
+``` r
+
+golem::add_positconnect_file()
+```
+
+#### Initiate the deployment of your app
+
+##### To be done on your R project
+
+``` r
+
+use_gitlab_ci_deploy_connect_shiny()
+```
+
+Any `.gitlab-ci.yml` file already present in your project is now
+completed with new staged, specific to the deployment on Connect.
+
+Be aware that running this command multiple times would duplicate these
+steps in your `.gitlab-ci.yml` file. It should be avoided.
+
+##### To be done on Gitlab
+
+Some environment variables must be set on Gitlab for the CI/CD to be
+working.
+
+You’ll need to define :
+
+``` r
+
+CONNECT_URL <- "https://my.connect.url"
+CONNECT_NAME <- "my.connect.server.name"
+CONNECT_USER <- "my.connect.username"
+CONNECT_TOKEN <- "my.api.key.generated.in.connect"
+APP_NAME <- "the.name.of.your.app.on.connect"
+# APP_NAME is not mandatory; whether it is not provided, it will be replaced by the name of your project on Gitlab
+```
+
+For most of them, you may have already set them on your `.Renviron` file
+(see the dedicated section on the {lozen} README).
+
+If you are not familiar with defining environement variable on gitlab,
+please follow the [official
+documentation](https://docs.gitlab.com/ee/ci/variables/index.html).
+
+Once this is done, you can commit all your changes and push them to your
+repository remote.
+
+Thereafter, you should be able to [see your pipeline
+running](https://docs.gitlab.com/ee/ci/pipelines/#view-pipelines) on
+Gitlab.
+
+##### How can I find the app associated with my {golem} package
+
+If your pipeline did not raise any error, you app is now deployed on
+your Posit Connect. You can now log in your Posit Connect and enjoy your
+app !
+
+### CD of a book
+
+For the following to be working, please ensure you are working in a book
+project. Your app project must be associated with a repository present
+on Gitlab.
+
+If this is not done yet please go to the vignette
+`vignettes/aa-create-a-new-project-with-gitlab.Rmd` and follow the steps
+related to the creation of a project on Gitlab and of a book project
+skeleton.
+
+Before running the following commands please ensure that you are working
+directory is that of your book project. If no .RProj exists in the
+directory in which your book files and folders are stored, you can use
+`setwd("path/of/your/book")`.
+
+#### Build your book
+
+``` r
+
+lozen::render_book("index.Rmd", output_format = "lozen::paged_template")
+# OR
+lozen::render_book("index.Rmd", output_format = "lozen::bs4_book_template")
+```
+
+Two options are allowed for the parameter `output_format`:
+“lozen::paged_template” or “lozen::bs4_book_template”. The former will
+render the book using
+[`pagedown::html_paged`](https://rdrr.io/pkg/pagedown/man/html_paged.html)
+while the latter will use
+[`bookdown::bs4_book`](https://pkgs.rstudio.com/bookdown/reference/bs4_book.html).
+
+#### Initiate the deployment of your book
+
+##### To be done on your R project
+
+``` r
+
+lozen::use_gitlab_ci_deploy_connect_bookdown()
+```
+
+Any `.gitlab-ci.yml` file already present in your project is now
+completed with new staged, specific to the deployment on Connect.
+
+Be aware that running this command multiple times would duplicate these
+steps in your `.gitlab-ci.yml` file. It should be avoided.
+
+**Important**: be sure that the `_book` directory is not listed in your
+`.gitignore` file !
+
+*note*: if you wish to compile the html files in odt files please add
+the following to the produced `.gitlab-ci.yml` file :
+
+``` yaml
+- Rscript -e 'bookdown::render_book("index.Rmd", output_format = "lozen::paged_template", clean = FALSE);file.copy("_main.html", "public/index.html")'
+- Rscript -e 'lozen::html_to_odt(input_html = "public/index.html", output_odt = "public/rapport.odt")'
+- Rscript -e 'toutes_fiches <- list.files(pattern = "[.]Rmd");lozen:::compile_fiches(fiches = toutes_fiches, outdir = "public", type = c("html", "odt"), open=FALSE)'
+- Rscript -e 'utils::zip(files = list.files("public", pattern = "[.]odt", full.names = TRUE ), zipfile = file.path("public", "odt_files.zip"))'
+- mv _main.knit.md public/_main.knit.md
+```
+
+##### To be done on Gitlab
+
+Some environment variables must be set on Gitlab for the CI/CD to be
+working.
+
+You’ll need to define :
+
+``` r
+
+CONNECT_URL <- "https://my.connect.url"
+CONNECT_NAME <- "my.connect.server.name"
+CONNECT_USER <- "my.connect.username"
+CONNECT_TOKEN <- "my.api.key.generated.in.connect"
+APP_NAME <- "the.name.of.your.book.on.connect"
+# APP_NAME is not mandatory; whether it is not provided, it will be replaced by the name of your project on Gitlab
+```
+
+For most of them, you may have already set them on your `.Renviron` file
+(see the dedicated section on the {lozen} README).
+
+If you are not familiar with defining environement variable on gitlab,
+please follow the [official
+documentation](https://docs.gitlab.com/ee/ci/variables/index.html).
+
+By default, a book project created using
+`lozen::create_r_project(type = "book")` does not contain a `.Rproj`
+file, standing for a RStudio project. If this file is missing the “Git”
+panel won’t be visible in RStudio.
+
+If you wish to display this panel, you must create a RStudio project
+within the directory in which your book files are located. Please do the
+following : - Click on the “File” tab - New project - Existing
+directory - Select the directory of your book
+
+The other option is to use the Terminal to use the Git command line
+interface.
+
+Once this is done, you can commit all your changes and push them to your
+repository remote.
+
+**Important**: before pushing, be sure that the `_book` directory is not
+listed in your `.gitignore` file !
+
+Thereafter, you should be able to [see your pipeline
+running](https://docs.gitlab.com/ee/ci/pipelines/#view-pipelines) on
+Gitlab.
+
+##### How can I find the book deployed on Posit Connect ?
+
+If your pipeline did not raise any error, you book is now deployed on
+your Posit Connect. You can now log in your Posit Connect and enjoy your
+app !

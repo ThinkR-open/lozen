@@ -1,0 +1,204 @@
+# aa - Create a new project with GitLab
+
+``` r
+
+library(lozen)
+```
+
+The possible products are the following ones:
+
+- An R package, versioned, continuously integrated and whose pkgdown is
+  continuously deployed on Connect
+- A Shiny app ({golem}), versioned, continuously integrated and whose
+  pkgdown and the corresponding app are continuously deployed on Connect
+- A bookdown, versioned, continuously integrated and continuously
+  deployed on Connect
+
+The following instructions are used to initiate a product on your Forge.
+But they can be adapted to initiate a product on GitLab.com, by changing
+the `gitlab_url` and the `private_token` where needed.
+
+## Packages
+
+## Define the name of the principal branch
+
+``` bash
+git config --global init.defaultBranch main
+```
+
+## Connection to GitLab
+
+- Create environment variable `GITLAB_TOKEN` with api token on
+  gitlab.com or your own gitlab
+  - Store it in `".Renviron"` with
+    [`usethis::edit_r_environ()`](https://usethis.r-lib.org/reference/edit.html)
+
+``` r
+
+gitlab_url <- Sys.getenv("GITLAB_URL", unset = "https://gitlab.com")
+
+# GitLab con
+my_gitlab <- gl_connection(
+  gitlab_url = gitlab_url,
+  private_token = Sys.getenv("GITLAB_TOKEN")
+)
+
+# Set the connection for the session
+set_gitlab_connection(my_gitlab)
+```
+
+## Create a new project or use an existing project
+
+Here, you will have to choose if:
+
+- You want to create a new project
+- You wan to use an existing project, previously created on Forge
+
+Go to the dedicated subsection below.
+
+### Create a new project
+
+#### Get groups
+
+You must define in which group you want to create your project.
+
+Replace the value `"my_group"` by the name of the group.
+
+The `namespace_id` of the group you want to use will be used in the next
+steps.
+
+``` r
+
+# Get user namespace (= group_id)
+namespace_id <- gitlabr::gitlab(req = "namespaces", search = "my_group")[["id"]]
+# If you are not working within a group, please set it to NULL
+namespace_id <- NULL
+```
+
+#### Create the new project
+
+Define:
+
+- The name of the project you want to create in `project_name` *(Choose
+  it as for package name. No special character, only dot if needed)*
+- The `namespace_id` of the group where you want to create your project
+
+``` r
+
+project_name <- "myrandomproject"
+```
+
+Create the new project:
+
+``` r
+
+project_id <- create_group_project(
+  project_name = project_name,
+  namespace_id = namespace_id,
+  default_branch = "main"
+)
+```
+
+### Use an existing project
+
+Define:
+
+- The `project_id` of the project you want to use
+
+``` r
+
+project_id <- 123456789
+```
+
+## Get all information about the project
+
+``` r
+
+the_project <- gl_get_project(
+  project = project_id
+)
+
+project_name <- the_project[["name"]]
+group_url <- gsub(the_project[["name"]], "", the_project[["web_url"]])
+```
+
+## Clone your project and add the skeleton for your product (package, app, bookdown)
+
+You will be able to create the first skeleton of your product, depending
+if it is a package, a Shiny app, etc.
+
+### Define local installation and clone
+
+This code will clone the GitLab project locally, in the path of your
+choice (if no `project_path` is provided, it will be cloned in a
+temporary directory).
+
+``` r
+
+project_path <- clone_locally(
+  project_name = the_project[["name"]],
+  group_url = group_url,
+  open = FALSE
+)
+```
+
+### Create the skeleton for your product and initiate the CI/CD
+
+To initiate a new product, please take a look at the following vignette
+: `ac-create-the-skeleton-of-the-r-project--package-app-book-.Rmd`.
+
+``` r
+
+if (interactive()) {
+  vignette("ac-create-the-skeleton-of-the-r-project--package-app-book-", package = "lozen")
+}
+```
+
+### Initiate the CI/CD
+
+To set up continuous integration and continuous deployment of your
+product, please take a look at the following vignette :
+`ad-set-up-continuous-integration-and-deployment-through-gitlab-ci.Rmd`.
+
+``` r
+
+if (interactive()) {
+  vignette("ad-set-up-continuous-integration-and-deployment-through-gitlab-ci", package = "lozen")
+}
+```
+
+## Manage git tools (branches, commits, issues, etc.)
+
+Please take a look at the following vignette :
+`bb-manage-git-tools--branches-commits-etc--.Rmd`.
+
+``` r
+
+if (interactive()) {
+  vignette("bb-manage-git-tools--branches-commits-etc--", package = "lozen")
+}
+```
+
+## Create and manage the forge board and wiki
+
+Please take a look at the following vignette :
+`ba-manage-forge-board-wiki.Rmd`.
+
+``` r
+
+if (interactive()) {
+  vignette("ba-manage-forge-board-wiki", package = "lozen")
+}
+```
+
+## Visualise the status of your project
+
+Please take a look at the following vignette :
+`ae-create-weekly-with-github-or-gitlab.Rmd`.
+
+``` r
+
+if (interactive()) {
+  vignette("ae-create-weekly-with-github-or-gitlab", package = "lozen")
+}
+```
