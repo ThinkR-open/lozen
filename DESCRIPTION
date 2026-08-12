@@ -30,7 +30,7 @@ Imports:
     gert,
     ggplot2,
     gh,
-    gitlabr (>= 2.0.1.9000),
+    gitlabr (>= 2.1.0),
     glue,
     golem,
     httr,

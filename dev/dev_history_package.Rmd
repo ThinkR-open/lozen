@@ -55,8 +55,6 @@ usethis::use_testthat()
 # _CI (cf {gitlabr} templates) ----
 lozen::use_gitlab_ci(
   image = "rocker/verse",
-  gitlab_url = Sys.getenv("GITLAB_URL", unset = "https://gitlab.com"),
-  repo_name = "https://packagemanager.rstudio.com/all/__linux__/focal/latest",
   type = "check-coverage-pkgdown"
 )
 ```

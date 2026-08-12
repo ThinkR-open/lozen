@@ -1,5 +1,8 @@
 # lozen (development)
 
+- `use_gitlab_ci()` loses its `repo_name` argument, following the breaking change of {gitlabr} 2.1.0 where `gitlabr::use_gitlab_ci()` no longer uses it. {lozen} now requires {gitlabr} >= 2.1.0.
+- `use_gitlab_ci_deploy_connect()` and `init_project_with_all()` use `golem::add_positconnect_file()` instead of the deprecated `golem::add_rstudioconnect_file()`.
+
 # lozen 1.3.9001
 
 - Use {renv} in gitlab ci connect deploy job

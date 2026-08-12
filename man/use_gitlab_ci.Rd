@@ -6,7 +6,6 @@
 \usage{
 use_gitlab_ci(
   image = "rocker/verse",
-  repo_name = "https://packagemanager.rstudio.com/all/__linux__/focal/latest",
   project_path = ".",
   type = "check-coverage-pkgdown",
   bookdown_output_format = c("lozen::paged_template", "lozen::bs4_book_template"),
@@ -38,7 +37,6 @@ withr::with_tempdir({
 withr::with_tempdir({
   use_gitlab_ci(
     image = "rocker/verse",
-    repo_name = "https://packagemanager.rstudio.com/all/__linux__/focal/latest",
     type = "check-coverage-pkgdown"
   )
 })
