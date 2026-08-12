@@ -16,8 +16,6 @@ use_gitlab_ci(
 \arguments{
 \item{image}{Docker image used as basis. See \url{https://github.com/rocker-org/rocker}}
 
-\item{repo_name}{REPO_NAME environment variable for R CRAN mirror used}
-
 \item{project_path}{Path of the project to add CI in.}
 
 \item{type}{type of the CI template to use}

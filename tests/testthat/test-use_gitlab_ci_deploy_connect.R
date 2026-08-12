@@ -107,7 +107,7 @@ test_that("use_gitlab_ci_deploy_connect_shiny works", {
       project_name = "golem.test.project",
       exp = {
         lozen::create_r_project(project_path = getwd(), type = "golem", name_licence = "test", type_licence = usethis::use_mit_license)
-        golem::add_rstudioconnect_file(open = FALSE)
+        golem::add_positconnect_file(open = FALSE)
         lozen::use_gitlab_ci_deploy_connect_shiny()
       }
     )

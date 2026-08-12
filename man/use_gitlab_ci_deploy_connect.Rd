@@ -59,7 +59,7 @@ Settings > CI/CD > Variables > Expand > Add variable /!\ if you check "Protected
 }
 
 If you want to deploy an app
-Be sure to have an app.R to deploy at the root of the folder, (if needed: use \code{\link[golem:rstudio_deploy]{golem::add_rstudioconnect_file()}})
+Be sure to have an app.R to deploy at the root of the folder, (if needed: use \code{\link[golem:rstudio_deploy]{golem::add_positconnect_file()}})
 
 NB: The environment variable \code{CONNECT_URL} is already defined generically on forge (only for group "thinkr").
 }

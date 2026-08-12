@@ -33,7 +33,7 @@ pkgload::load_all(export_all = FALSE)
 #'   + Add `CONNECT_TOKEN` with the token.
 #'
 #' If you want to deploy an app
-#' Be sure to have an app.R to deploy at the root of the folder, (if needed: use [golem::add_rstudioconnect_file()])
+#' Be sure to have an app.R to deploy at the root of the folder, (if needed: use [golem::add_positconnect_file()])
 #'
 #' NB: The environment variable `CONNECT_URL` is already defined generically on forge (only for group "thinkr").
 #'
@@ -230,7 +230,7 @@ test_that("use_gitlab_ci_deploy_connect_bookdown works with lozen::paged_templat
 use_gitlab_ci_deploy_connect_shiny <- function(...) {
   if (!file.exists("app.R")) {
     cli_alert_warning(
-      "There is no app.R at the root of your package. You should probably run `golem::add_rstudioconnect_file()` to create this file."
+      "There is no app.R at the root of your package. You should probably run `golem::add_positconnect_file()` to create this file."
     )
   }
 
@@ -269,7 +269,7 @@ test_that("use_gitlab_ci_deploy_connect_shiny works", {
       project_name = "golem.test.project",
       exp = {
         lozen::create_r_project(project_path = getwd(), type = "golem", name_licence = "test", type_licence = usethis::use_mit_license)
-        golem::add_rstudioconnect_file(open = FALSE)
+        golem::add_positconnect_file(open = FALSE)
         lozen::use_gitlab_ci_deploy_connect_shiny()
       }
     )
